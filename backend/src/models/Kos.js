@@ -32,7 +32,10 @@ const kosSchema = new mongoose.Schema(
             enum: ['Putra', 'Putri', 'Campur'],
             required: true
         },
-        fasilitas: [String],
+        fasilitas: {
+            type: [String],
+            default: []
+        },
         jumlahKamar: {
             type: Number,
             required: true
@@ -41,7 +44,10 @@ const kosSchema = new mongoose.Schema(
             type: Number,
             required: true
         },
-        fotoUrls: [String],
+        fotoUrls: {
+            type: [String],
+            default: []
+        },
         statusVerifikasi: {
             type: String,
             enum: ['Pending', 'Approved', 'Rejected'],
@@ -55,4 +61,5 @@ const kosSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-export default mongoose.model('Kos', kosSchema);
+const Kos = mongoose.model('Kos', kosSchema);
+export default Kos;
