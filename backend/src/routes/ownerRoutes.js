@@ -10,7 +10,7 @@ import {
 } from '../controllers/ownerController.js';
 
 // Import middleware pengamanan
-import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { verifyToken, authorizeRoles } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 

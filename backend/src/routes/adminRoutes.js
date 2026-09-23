@@ -5,18 +5,27 @@ import {
     approveSubmission,
     rejectSubmission,
     updateUserRole,
+    getAllUsers,
+    getAdminStats,
 } from '../controllers/adminController.js';
+import { verifyToken, authorizeRoles } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/submissions', getPendingSubmissions);
+// Lindungi seluruh endpoint admin: hanya user login dengan role ADMIN yang bisa akses
+router.use(verifyToken, authorizeRoles('ADMIN'));
 
-router.get('/submissions/:id', getSubmissionDetail);
+// Statistik Dashboard Admin
+router.get('/stats', getAdminStats);
 
-router.patch('/submissions/:id/approve', approveSubmission);
-
-router.patch('/submissions/:id/reject', rejectSubmission);
-
+// Manajemen Data Pengguna
+router.get('/users', getAllUsers);
 router.patch('/users/:id/role', updateUserRole);
+
+// Verifikasi Pengajuan Kos
+router.get('/submissions', getPendingSubmissions);
+router.get('/submissions/:id', getSubmissionDetail);
+router.patch('/submissions/:id/approve', approveSubmission);
+router.patch('/submissions/:id/reject', rejectSubmission);
 
 export default router;
