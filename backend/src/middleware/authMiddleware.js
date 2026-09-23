@@ -31,3 +31,16 @@ export const verifyToken = (req, res, next) => {
       .json({ message: "Tidak mendapat otorisasi, tidak ada token" });
   }
 };
+
+// Middleware otorisasi berdasarkan persona/role (Role-Based Access Control)
+export const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Akses ditolak: role '${req.user?.role || "Guest"}' tidak memiliki akses ke endpoint ini`
+      });
+    }
+    next();
+  };
+};
