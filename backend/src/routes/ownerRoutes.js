@@ -9,15 +9,20 @@ import {
   getKosStatus
 } from '../controllers/ownerController.js';
 
+// Import middleware pengamanan
+import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+
 const router = express.Router();
 
-// Route untuk manajemen data kos utama (GET, POST, PUT, DELETE)
+// Terapkan perlindungan autentikasi dan otorisasi
+router.use(verifyToken);
+router.use(authorizeRoles('PEMILIK_KOS'));
+
 router.get('/kos', getOwnerKos);
 router.post('/kos', createKos);
 router.put('/kos/:id', updateKos);
 router.delete('/kos/:id', deleteKos);
 
-// Route untuk fitur spesifik pemilik kos
 router.patch('/kos/:id/availability', updateAvailability);
 router.post('/kos/:id/submit', submitKosForVerification);
 router.get('/kos/:id/status', getKosStatus);

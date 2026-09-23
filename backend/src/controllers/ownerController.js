@@ -1,232 +1,112 @@
-// Simulasi penyimpanan data sementara (In-Memory Database)
-let kosData = [
-  {
-    id: 1,
-    nama: "Kos Mawar Indah",
-    harga: 850000,
-    lokasi: "Jl. Kaliurang KM 5, Yogyakarta",
-    tipe: "Putri",
-    fasilitas: ["Wi-Fi", "Kamar Mandi Dalam", "Kasur", "Lemari"],
-    jumlahKamar: 10,
-    jumlahKamarTersedia: 3,
-    statusVerifikasi: "Approved",
-    alasanPenolakan: null
-  }
-];
+import * as ownerService from '../services/ownerService.js';
 
-// 1. Menampilkan daftar seluruh kos milik pemilik kos
-export const getOwnerKos = (req, res) => {
+export const getOwnerKos = async (req, res) => {
   try {
-    res.status(200).json({
-      success: true,
-      message: "Berhasil mengambil daftar kos milik pemilik",
-      data: kosData
-    });
+    const ownerId = req.user.id;
+    const data = await ownerService.getOwnerKosService(ownerId);
+    res.status(200).json({ success: true, message: 'Berhasil mengambil data kos', data });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Gagal mengambil data kos",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 2. Mendaftarkan / membuat data kos baru
-export const createKos = (req, res) => {
+export const createKos = async (req, res) => {
   try {
-    const { nama, harga, lokasi, tipe, fasilitas, jumlahKamar } = req.body;
+    const ownerId = req.user.id;
+    const { nama, harga, lokasi, latitude, longitude, tipe, fasilitas, jumlahKamar, fotoUrls } = req.body;
 
-    const newKos = {
-      id: kosData.length + 1,
-      nama,
-      harga,
-      lokasi,
-      tipe,
-      fasilitas,
-      jumlahKamar,
-      jumlahKamarTersedia: jumlahKamar,
-      statusVerifikasi: "Pending",
-      alasanPenolakan: null
-    };
-
-    kosData.push(newKos);
-
-    res.status(201).json({
-      success: true,
-      message: "Data kos berhasil didaftarkan dan menunggu verifikasi admin",
-      data: newKos
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Gagal mendaftarkan kos baru",
-      error: error.message
-    });
-  }
-};
-
-// 3. Mengubah / memperbarui data kos
-export const updateKos = (req, res) => {
-  try {
-    const { id } = req.params;
-    const { nama, harga, lokasi, tipe, fasilitas, jumlahKamar } = req.body;
-
-    const kosIndex = kosData.findIndex(item => item.id === parseInt(id));
-
-    if (kosIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: `Kos dengan ID ${id} tidak ditemukan`
-      });
+    if (!nama || !harga || !lokasi || !latitude || !longitude || !tipe || !jumlahKamar) {
+      return res.status(400).json({ success: false, message: 'Harap isi seluruh field wajib' });
     }
 
-    kosData[kosIndex] = {
-      ...kosData[kosIndex],
-      nama: nama || kosData[kosIndex].nama,
-      harga: harga || kosData[kosIndex].harga,
-      lokasi: lokasi || kosData[kosIndex].lokasi,
-      tipe: tipe || kosData[kosIndex].tipe,
-      fasilitas: fasilitas || kosData[kosIndex].fasilitas,
-      jumlahKamar: jumlahKamar || kosData[kosIndex].jumlahKamar
-    };
+    const newKos = await ownerService.createKosService(ownerId, {
+      nama, harga, lokasi, latitude, longitude, tipe, fasilitas, jumlahKamar, fotoUrls
+    });
 
-    res.status(200).json({
-      success: true,
-      message: `Data kos dengan ID ${id} berhasil diperbarui`,
-      data: kosData[kosIndex]
-    });
+    res.status(201).json({ success: true, message: 'Kos berhasil diajukan dan menunggu verifikasi', data: newKos });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Gagal memperbarui data kos",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 4. Menghapus data kos
-export const deleteKos = (req, res) => {
+export const updateKos = async (req, res) => {
   try {
+    const ownerId = req.user.id;
     const { id } = req.params;
-    const kosIndex = kosData.findIndex(item => item.id === parseInt(id));
+    const updatedKos = await ownerService.updateKosService(ownerId, id, req.body);
 
-    if (kosIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: `Kos dengan ID ${id} tidak ditemukan`
-      });
+    if (!updatedKos) {
+      return res.status(404).json({ success: false, message: 'Kos tidak ditemukan atau tidak memiliki akses' });
     }
 
-    kosData = kosData.filter(item => item.id !== parseInt(id));
-
-    res.status(200).json({
-      success: true,
-      message: `Kos dengan ID ${id} berhasil dihapus`
-    });
+    res.status(200).json({ success: true, message: 'Data kos berhasil diperbarui', data: updatedKos });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Gagal menghapus kos",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 5. Memperbarui jumlah / status ketersediaan kamar
-export const updateAvailability = (req, res) => {
+export const deleteKos = async (req, res) => {
   try {
+    const ownerId = req.user.id;
+    const { id } = req.params;
+    const deletedKos = await ownerService.deleteKosService(ownerId, id);
+
+    if (!deletedKos) {
+      return res.status(404).json({ success: false, message: 'Kos tidak ditemukan atau tidak memiliki akses' });
+    }
+
+    res.status(200).json({ success: true, message: 'Kos berhasil dihapus' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateAvailability = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
     const { id } = req.params;
     const { jumlahKamarTersedia } = req.body;
 
-    const kos = kosData.find(item => item.id === parseInt(id));
+    const updatedKos = await ownerService.updateAvailabilityService(ownerId, id, jumlahKamarTersedia);
 
-    if (!kos) {
-      return res.status(404).json({
-        success: false,
-        message: `Kos dengan ID ${id} tidak ditemukan`
-      });
+    if (!updatedKos) {
+      return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });
     }
 
-    kos.jumlahKamarTersedia = jumlahKamarTersedia;
-
-    res.status(200).json({
-      success: true,
-      message: `Ketersediaan kamar untuk kos ID ${id} berhasil diperbarui`,
-      data: {
-        id: kos.id,
-        nama: kos.nama,
-        jumlahKamarTersedia: kos.jumlahKamarTersedia
-      }
-    });
+    res.status(200).json({ success: true, message: 'Ketersediaan kamar berhasil diperbarui', data: updatedKos });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Gagal mengubah ketersediaan kamar",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 6. Mengirimkan pengajuan verifikasi kos ke administrator
-export const submitKosForVerification = (req, res) => {
+export const submitKosForVerification = async (req, res) => {
   try {
+    const ownerId = req.user.id;
     const { id } = req.params;
-    const kos = kosData.find(item => item.id === parseInt(id));
+    const updatedKos = await ownerService.submitKosForVerificationService(ownerId, id);
 
-    if (!kos) {
-      return res.status(404).json({
-        success: false,
-        message: `Kos dengan ID ${id} tidak ditemukan`
-      });
+    if (!updatedKos) {
+      return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });
     }
 
-    kos.statusVerifikasi = "Pending";
-
-    res.status(200).json({
-      success: true,
-      message: `Pengajuan verifikasi untuk kos ID ${id} berhasil dikirim ke administrator`,
-      data: {
-        id: kos.id,
-        statusVerifikasi: kos.statusVerifikasi
-      }
-    });
+    res.status(200).json({ success: true, message: 'Pengajuan verifikasi terkirim', data: updatedKos });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Gagal mengajukan verifikasi kos",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 7. Mengecek status verifikasi kos (Pending / Approved / Rejected)
-export const getKosStatus = (req, res) => {
+export const getKosStatus = async (req, res) => {
   try {
+    const ownerId = req.user.id;
     const { id } = req.params;
-    const kos = kosData.find(item => item.id === parseInt(id));
+    const kosStatus = await ownerService.getKosStatusService(ownerId, id);
 
-    if (!kos) {
-      return res.status(404).json({
-        success: false,
-        message: `Kos dengan ID ${id} tidak ditemukan`
-      });
+    if (!kosStatus) {
+      return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });
     }
 
-    res.status(200).json({
-      success: true,
-      message: `Status verifikasi untuk kos ID ${id}`,
-      data: {
-        id: kos.id,
-        nama: kos.nama,
-        statusVerifikasi: kos.statusVerifikasi,
-        alasanPenolakan: kos.alasanPenolakan
-      }
-    });
+    res.status(200).json({ success: true, data: kosStatus });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Gagal mengecek status verifikasi",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
