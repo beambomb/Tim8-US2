@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Kos from '../models/Kos.js';
 
 // 1. Menampilkan daftar kos yang sudah Approved
@@ -71,6 +72,14 @@ export const getAllKos = async (req, res) => {
 export const getKosById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Validasi format ID kos
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID kos tidak valid'
+      });
+    }
 
     const kos = await Kos.findById(id);
 
