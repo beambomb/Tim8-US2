@@ -2,10 +2,17 @@ import mongoose from 'mongoose';
 import Kos from '../models/Kos.js';
 
 // 1. Menampilkan daftar kos yang sudah Approved
-// Mendukung filter: harga, lokasi, tipe, fasilitas
+// Mendukung filter: harga, lokasi, tipe, fasilitas, ketersediaan
 export const getAllKos = async (req, res) => {
   try {
-    const { hargaMin, hargaMax, lokasi, tipe, fasilitas } = req.query;
+    const {
+      hargaMin,
+      hargaMax,
+      lokasi,
+      tipe,
+      fasilitas,
+      tersedia
+    } = req.query;
 
     // Filter dasar: hanya kos yang sudah Approved
     const filter = {
@@ -49,6 +56,13 @@ export const getAllKos = async (req, res) => {
       filter.fasilitas = {
         $regex: fasilitas,
         $options: 'i'
+      };
+    }
+
+    // Filter ketersediaan kamar
+    if (tersedia === 'true') {
+      filter.jumlahKamarTersedia = {
+        $gt: 0
       };
     }
 
