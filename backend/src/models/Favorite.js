@@ -18,6 +18,12 @@ const favoriteSchema = new mongoose.Schema(
   }
 );
 
+// Setiap user hanya boleh memiliki satu Favorite untuk satu kos
+favoriteSchema.index(
+  { userId: 1, kosId: 1 },
+  { unique: true }
+);
+
 const Favorite = mongoose.model('Favorite', favoriteSchema);
 
 export default Favorite;
