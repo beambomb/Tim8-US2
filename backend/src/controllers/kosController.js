@@ -1,72 +1,12 @@
-import mongoose from 'mongoose';
-import Kos from '../models/Kos.js';
+import {
+  getAllKosService,
+  getKosByIdService
+} from '../services/kosService.js';
 
-// 1. Menampilkan daftar kos yang sudah Approved
-// Mendukung filter: harga, lokasi, tipe, fasilitas, ketersediaan
+// 1. Menampilkan daftar kos
 export const getAllKos = async (req, res) => {
   try {
-    const {
-      hargaMin,
-      hargaMax,
-      lokasi,
-      tipe,
-      fasilitas,
-      tersedia
-    } = req.query;
-
-    // Filter dasar: hanya kos yang sudah Approved
-    const filter = {
-      statusVerifikasi: 'Approved'
-    };
-
-    // Filter harga minimum
-    if (hargaMin) {
-      filter.harga = {
-        ...filter.harga,
-        $gte: Number(hargaMin)
-      };
-    }
-
-    // Filter harga maksimum
-    if (hargaMax) {
-      filter.harga = {
-        ...filter.harga,
-        $lte: Number(hargaMax)
-      };
-    }
-
-    // Filter lokasi
-    if (lokasi) {
-      filter.lokasi = {
-        $regex: lokasi,
-        $options: 'i'
-      };
-    }
-
-    // Filter tipe
-    if (tipe) {
-      filter.tipe = {
-        $regex: tipe,
-        $options: 'i'
-      };
-    }
-
-    // Filter fasilitas
-    if (fasilitas) {
-      filter.fasilitas = {
-        $regex: fasilitas,
-        $options: 'i'
-      };
-    }
-
-    // Filter ketersediaan kamar
-    if (tersedia === 'true') {
-      filter.jumlahKamarTersedia = {
-        $gt: 0
-      };
-    }
-
-    const kos = await Kos.find(filter);
+    const kos = await getAllKosService(req.query);
 
     res.status(200).json({
       success: true,
@@ -74,10 +14,12 @@ export const getAllKos = async (req, res) => {
       data: kos
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
-      message: 'Gagal mengambil daftar kos',
-      error: error.message
+      message: error.statusCode
+        ? error.message
+        : 'Gagal mengambil daftar kos',
+      ...(error.statusCode ? {} : { error: error.message })
     });
   }
 };
@@ -85,33 +27,7 @@ export const getAllKos = async (req, res) => {
 // 2. Menampilkan detail kos berdasarkan ID
 export const getKosById = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    // Validasi format ID kos
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'ID kos tidak valid'
-      });
-    }
-
-    const kos = await Kos.findById(id);
-
-    // Jika kos tidak ditemukan
-    if (!kos) {
-      return res.status(404).json({
-        success: false,
-        message: `Kos dengan ID ${id} tidak ditemukan`
-      });
-    }
-
-    // Hanya kos yang sudah Approved yang boleh dilihat pencari
-    if (kos.statusVerifikasi !== 'Approved') {
-      return res.status(404).json({
-        success: false,
-        message: 'Kos tidak ditemukan'
-      });
-    }
+    const kos = await getKosByIdService(req.params.id);
 
     res.status(200).json({
       success: true,
@@ -119,10 +35,12 @@ export const getKosById = async (req, res) => {
       data: kos
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
-      message: 'Gagal mengambil detail kos',
-      error: error.message
+      message: error.statusCode
+        ? error.message
+        : 'Gagal mengambil detail kos',
+      ...(error.statusCode ? {} : { error: error.message })
     });
   }
 };
