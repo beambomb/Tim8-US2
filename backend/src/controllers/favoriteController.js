@@ -36,6 +36,14 @@ export const addFavorite = async (req, res) => {
       });
     }
 
+    // Validasi format ID kos
+    if (!mongoose.isValidObjectId(kosId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'kosId tidak valid'
+      });
+    }
+
     // Cek apakah kos tersedia di database
     const kos = await Kos.findById(kosId);
 
