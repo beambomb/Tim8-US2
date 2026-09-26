@@ -1,4 +1,5 @@
 import Favorite from '../models/Favorite.js';
+import Kos from '../models/Kos.js';
 
 // 1. Menampilkan daftar favorit milik user yang sedang login
 export const getFavorites = async (req, res) => {
@@ -26,6 +27,7 @@ export const addFavorite = async (req, res) => {
   try {
     const { kosId } = req.body;
 
+    // Validasi kosId
     if (!kosId) {
       return res.status(400).json({
         success: false,
@@ -33,6 +35,25 @@ export const addFavorite = async (req, res) => {
       });
     }
 
+    // Cek apakah kos tersedia di database
+    const kos = await Kos.findById(kosId);
+
+    if (!kos) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kos tidak ditemukan'
+      });
+    }
+
+    // Hanya kos yang sudah Approved yang dapat difavoritkan
+    if (kos.statusVerifikasi !== 'Approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'Kos belum tersedia untuk publik'
+      });
+    }
+
+    // Cek apakah kos sudah ada di daftar favorit user
     const existingFavorite = await Favorite.findOne({
       userId: req.user.id,
       kosId
@@ -45,6 +66,7 @@ export const addFavorite = async (req, res) => {
       });
     }
 
+    // Membuat data favorite
     const favorite = await Favorite.create({
       userId: req.user.id,
       kosId
