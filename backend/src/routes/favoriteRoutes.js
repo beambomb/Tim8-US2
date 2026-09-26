@@ -4,13 +4,33 @@ import {
   addFavorite,
   deleteFavorite
 } from '../controllers/favoriteController.js';
-import { verifyToken } from '../middleware/authMiddleware.js';
+import {
+  verifyToken,
+  authorizeRoles
+} from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Semua endpoint favorit membutuhkan login
-router.get('/', verifyToken, getFavorites);
-router.post('/', verifyToken, addFavorite);
-router.delete('/:id', verifyToken, deleteFavorite);
+// Semua endpoint favorit membutuhkan login dan hanya dapat diakses Pencari Kos
+router.get(
+  '/',
+  verifyToken,
+  authorizeRoles('PENCARI_KOS'),
+  getFavorites
+);
+
+router.post(
+  '/',
+  verifyToken,
+  authorizeRoles('PENCARI_KOS'),
+  addFavorite
+);
+
+router.delete(
+  '/:id',
+  verifyToken,
+  authorizeRoles('PENCARI_KOS'),
+  deleteFavorite
+);
 
 export default router;
