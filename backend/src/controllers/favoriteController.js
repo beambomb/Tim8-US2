@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Favorite from '../models/Favorite.js';
 import Kos from '../models/Kos.js';
 
@@ -90,6 +91,14 @@ export const addFavorite = async (req, res) => {
 export const deleteFavorite = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Validasi format ID Favorite
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID favorit tidak valid'
+      });
+    }
 
     const favorite = await Favorite.findOneAndDelete({
       _id: id,
