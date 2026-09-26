@@ -1,13 +1,13 @@
-import mongoose from 'mongoose';
-import Favorite from '../models/Favorite.js';
-import Kos from '../models/Kos.js';
+import {
+  getFavoritesService,
+  addFavoriteService,
+  deleteFavoriteService
+} from '../services/favoriteService.js';
 
-// 1. Menampilkan daftar favorit milik user yang sedang login
+// 1. Menampilkan daftar favorit
 export const getFavorites = async (req, res) => {
   try {
-    const favorites = await Favorite.find({
-      userId: req.user.id
-    }).populate('kosId');
+    const favorites = await getFavoritesService(req.user.id);
 
     res.status(200).json({
       success: true,
@@ -15,10 +15,12 @@ export const getFavorites = async (req, res) => {
       data: favorites
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
-      message: 'Gagal mengambil daftar favorit',
-      error: error.message
+      message: error.statusCode
+        ? error.message
+        : 'Gagal mengambil daftar favorit',
+      ...(error.statusCode ? {} : { error: error.message })
     });
   }
 };
@@ -26,60 +28,10 @@ export const getFavorites = async (req, res) => {
 // 2. Menambahkan kos ke favorit
 export const addFavorite = async (req, res) => {
   try {
-    const { kosId } = req.body;
-
-    // Validasi kosId
-    if (!kosId) {
-      return res.status(400).json({
-        success: false,
-        message: 'kosId wajib diisi'
-      });
-    }
-
-    // Validasi format ID kos
-    if (!mongoose.isValidObjectId(kosId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'kosId tidak valid'
-      });
-    }
-
-    // Cek apakah kos tersedia di database
-    const kos = await Kos.findById(kosId);
-
-    if (!kos) {
-      return res.status(404).json({
-        success: false,
-        message: 'Kos tidak ditemukan'
-      });
-    }
-
-    // Hanya kos yang sudah Approved yang dapat difavoritkan
-    if (kos.statusVerifikasi !== 'Approved') {
-      return res.status(400).json({
-        success: false,
-        message: 'Kos belum tersedia untuk publik'
-      });
-    }
-
-    // Cek apakah kos sudah ada di daftar favorit user
-    const existingFavorite = await Favorite.findOne({
-      userId: req.user.id,
-      kosId
-    });
-
-    if (existingFavorite) {
-      return res.status(400).json({
-        success: false,
-        message: 'Kos sudah ada di favorit'
-      });
-    }
-
-    // Membuat data favorite
-    const favorite = await Favorite.create({
-      userId: req.user.id,
-      kosId
-    });
+    const favorite = await addFavoriteService(
+      req.user.id,
+      req.body.kosId
+    );
 
     res.status(201).json({
       success: true,
@@ -87,10 +39,12 @@ export const addFavorite = async (req, res) => {
       data: favorite
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
-      message: 'Gagal menambahkan favorit',
-      error: error.message
+      message: error.statusCode
+        ? error.message
+        : 'Gagal menambahkan favorit',
+      ...(error.statusCode ? {} : { error: error.message })
     });
   }
 };
@@ -98,37 +52,22 @@ export const addFavorite = async (req, res) => {
 // 3. Menghapus favorit
 export const deleteFavorite = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    // Validasi format ID Favorite
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'ID favorit tidak valid'
-      });
-    }
-
-    const favorite = await Favorite.findOneAndDelete({
-      _id: id,
-      userId: req.user.id
-    });
-
-    if (!favorite) {
-      return res.status(404).json({
-        success: false,
-        message: 'Favorit tidak ditemukan'
-      });
-    }
+    await deleteFavoriteService(
+      req.user.id,
+      req.params.id
+    );
 
     res.status(200).json({
       success: true,
       message: 'Favorit berhasil dihapus'
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
-      message: 'Gagal menghapus favorit',
-      error: error.message
+      message: error.statusCode
+        ? error.message
+        : 'Gagal menghapus favorit',
+      ...(error.statusCode ? {} : { error: error.message })
     });
   }
 };
