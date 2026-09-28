@@ -44,6 +44,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/owner", ownerRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/favorites", favoriteRoutes);
 app.use("/api/favorite", favoriteRoutes);
 app.use("/api/kos", kosRoutes);
 app.use("/api/chat", chatRoutes);

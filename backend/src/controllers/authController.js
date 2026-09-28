@@ -2,27 +2,26 @@ import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-// 1. Fungsi Registrasi
 export const register = async (req, res) => {
   try {
-    const { nama, email, password, role } = req.body;
+    const { nama, email, password, role, noHp } = req.body;
 
-    // Cek apakah email sudah terdaftar
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email sudah terdaftar" });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Simpan user baru ke database
+    const assignedRole = role === "PEMILIK_KOS" ? "PEMILIK_KOS" : "PENCARI_KOS";
+
     const newUser = new User({
       nama,
       email,
       password: hashedPassword,
-      role: role || "PENCARI_KOS",
+      noHp: noHp || null,
+      role: assignedRole,
     });
     await newUser.save();
 
@@ -32,6 +31,7 @@ export const register = async (req, res) => {
         id: newUser._id,
         nama: newUser.nama,
         email: newUser.email,
+        noHp: newUser.noHp,
         role: newUser.role,
       },
     });
@@ -42,24 +42,20 @@ export const register = async (req, res) => {
   }
 };
 
-// 2. Fungsi Login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Cari user berdasarkan email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "Email tidak terdaftar" });
     }
 
-    // Bandingkan password input dengan password hash
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Kredensial tidak valid" });
     }
 
-    // Buat JSON Web Token (JWT) yang berisi payload ID dan role user
     const jwtSecret = process.env.JWT_SECRET || "rahasia_jwt_carikos_123";
     const token = jwt.sign({ id: user._id, role: user.role }, jwtSecret, {
       expiresIn: "1d",
@@ -68,6 +64,13 @@ export const login = async (req, res) => {
     res.status(200).json({
       message: "Login berhasil",
       token,
+      user: {
+        id: user._id,
+        nama: user.nama,
+        email: user.email,
+        noHp: user.noHp,
+        role: user.role,
+      },
     });
   } catch (error) {
     res

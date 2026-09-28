@@ -68,7 +68,7 @@ export const getKosByIdService = async (id) => {
     throw error;
   }
 
-  const kos = await Kos.findById(id);
+  const kos = await Kos.findById(id).populate('ownerId', 'nama email noHp');
 
   if (!kos) {
     const error = new Error(`Kos dengan ID ${id} tidak ditemukan`);
