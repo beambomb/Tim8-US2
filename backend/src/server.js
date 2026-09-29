@@ -13,6 +13,7 @@ import authRoutes from "./routes/authRoutes.js";
 import favoriteRoutes from "./routes/favoriteRoutes.js";
 import kosRoutes from "./routes/kosRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
 
 // Service
 import { saveMessageService } from "./services/chatService.js";
@@ -48,6 +49,7 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/favorite", favoriteRoutes);
 app.use("/api/kos", kosRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 // Health Check
 app.get("/", (req, res) => {
