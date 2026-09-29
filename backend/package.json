@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "seed:admin": "node src/seedAdmin.js",
+    "db:reset": "node src/resetDatabase.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

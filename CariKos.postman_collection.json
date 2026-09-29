@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "c8f9b110-3d3e-4b6a-9a99-carikos2026",
-    "name": "CariKos API Collection",
-    "description": "Koleksi pengujian otomatis API CariKos (Milestone 1) yang terbagi dalam 4 kategori persona & modul sesuai laporan pengujian.",
+    "_postman_id": "c8f9b110-3d3e-4b6a-9a99-carikos-scenarios-2026",
+    "name": "CariKos API - 5 Skenario Use Case",
+    "description": "Pengujian End-to-End API CariKos berbasis 5 Skenario Alur Pengguna (User Journey) yang mencakup seluruh endpoint sistem secara berurutan dan terintegrasi.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -27,10 +27,6 @@
       "value": ""
     },
     {
-      "key": "newKosId",
-      "value": ""
-    },
-    {
       "key": "bookingId",
       "value": ""
     },
@@ -41,7 +37,7 @@
   ],
   "item": [
     {
-      "name": "1. Autentikasi & Akun (Fitur Pendukung Lintas Peran)",
+      "name": "Skenario 1 - Onboarding & Autentikasi Pengguna",
       "item": [
         {
           "name": "1.1 Registrasi Akun Pencari Kos",
@@ -74,8 +70,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 201 or 400 (if already registered)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400]);",
+                  "pm.test('Registrasi Pencari Berhasil (201 Created)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -114,8 +110,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 201 or 400 (if already registered)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400]);",
+                  "pm.test('Registrasi Pemilik Berhasil (201 Created)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -124,7 +120,7 @@
           ]
         },
         {
-          "name": "1.3 Login Pencari Kos",
+          "name": "1.3 Login Pencari Kos [SS SKENARIO 1]",
           "request": {
             "method": "POST",
             "header": [
@@ -248,7 +244,7 @@
           ]
         },
         {
-          "name": "1.6 Ambil Riwayat Notifikasi Pengguna",
+          "name": "1.6 Cek Kotak Notifikasi Awal",
           "request": {
             "method": "GET",
             "header": [
@@ -273,43 +269,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Riwayat Notifikasi Berhasil Diambil (200 OK)', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.7 Tandai Seluruh Notifikasi Dibaca",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pencariToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/notifications/read-all",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "notifications",
-                "read-all"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Tandai Notifikasi Berhasil (200 OK)', function () {",
+                  "pm.test('Kotak Notifikasi Siap (200 OK)', function () {",
                   "    pm.response.to.have.status(200);",
                   "});"
                 ],
@@ -321,396 +281,10 @@
       ]
     },
     {
-      "name": "2. Fitur Pencari Kos",
+      "name": "Skenario 2 - Pendaftaran Kos, Upload Foto & Pengajuan Verifikasi (Pemilik)",
       "item": [
         {
-          "name": "2.1 Direktori Kos (Approved)",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/kos",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "kos"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Direktori Kos Berhasil Ditampilkan (200 OK)', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "    var json = pm.response.json();",
-                  "    var list = json.data || json;",
-                  "    if (Array.isArray(list) && list.length > 0) {",
-                  "        pm.collectionVariables.set('kosId', list[0]._id);",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.2 Pencarian Radius Jarak (Nearby Kos)",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/kos/nearby?lat=-7.77&lng=110.37&radius=10",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "kos",
-                "nearby"
-              ],
-              "query": [
-                {
-                  "key": "lat",
-                  "value": "-7.77"
-                },
-                {
-                  "key": "lng",
-                  "value": "110.37"
-                },
-                {
-                  "key": "radius",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Pencarian Radius Berhasil (200 OK)', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.3 Detail Lengkap Kos",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/kos/{{kosId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "kos",
-                "{{kosId}}"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Detail Kos Berhasil Diambil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.4 Tambah Kos ke Favorit",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pencariToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"kosId\": \"{{kosId}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/favorites",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "favorites"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Tambah Favorit Berhasil (200/201 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 404]);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.5 Lihat Daftar Kos Favorit",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pencariToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/favorites",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "favorites"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Daftar Favorit Berhasil Ditampilkan (200 OK)', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.6 Hapus Kos dari Favorit",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pencariToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/favorites/{{kosId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "favorites",
-                "{{kosId}}"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Hapus Favorit Berhasil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.7 Ajukan Booking / Sewa Kamar",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pencariToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"kosId\": \"{{kosId}}\",\n  \"tanggalMulai\": \"2026-10-01\",\n  \"durasiSewa\": 6,\n  \"catatan\": \"Kamar lantai 1 jika ada\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/bookings",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookings"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Pengajuan Booking Berhasil (201/200)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 404]);",
-                  "    var json = pm.response.json();",
-                  "    if (json.data && json.data._id) {",
-                  "        pm.collectionVariables.set('bookingId', json.data._id);",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.8 Riwayat Booking Saya",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pencariToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/bookings/my",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookings",
-                "my"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Riwayat Booking Berhasil Diambil (200 OK)', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.9 Beri Ulasan & Rating Kos",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pencariToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Kos nyaman, bersih, fasilitas lengkap dan pemilik ramah.\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/kos/{{kosId}}/reviews",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "kos",
-                "{{kosId}}",
-                "reviews"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Beri Ulasan Berhasil (200/201/400)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 404]);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.10 Lihat Ulasan & Rata-rata Rating",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/kos/{{kosId}}/reviews",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "kos",
-                "{{kosId}}",
-                "reviews"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Ulasan Kos Berhasil Diambil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "3. Fitur Pemilik Kos",
-      "item": [
-        {
-          "name": "3.1 Mendaftarkan Kos Baru",
+          "name": "2.1 Mendaftarkan Kos Baru [SS SKENARIO 2]",
           "request": {
             "method": "POST",
             "header": [
@@ -725,7 +299,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nama\": \"Kos Pogung Asri Jaya\",\n  \"harga\": 950000,\n  \"lokasi\": \"Jl. Pogung Dalangan No. 45, Sleman\",\n  \"latitude\": -7.766,\n  \"longitude\": 110.374,\n  \"tipe\": \"Putra\",\n  \"fasilitas\": [\n    \"WiFi\",\n    \"Kasur\",\n    \"Kamar Mandi Dalam\",\n    \"Parkir Motor\"\n  ],\n  \"jumlahKamar\": 8,\n  \"fotoUrls\": [\n    \"https://res.cloudinary.com/b45tueeo/image/upload/v1790642535/carikos_test/ybjb2r9nmi7xoayupoxa.png\"\n  ]\n}"
+              "raw": "{\n  \"nama\": \"Kos Pogung Asri Jaya\",\n  \"harga\": 950000,\n  \"lokasi\": \"Jl. Pogung Dalangan No. 45, Sleman\",\n  \"latitude\": -7.766,\n  \"longitude\": 110.374,\n  \"tipe\": \"Putra\",\n  \"fasilitas\": [\n    \"WiFi Cepat\",\n    \"Kasur\",\n    \"Kamar Mandi Dalam\",\n    \"Parkir Motor\"\n  ],\n  \"jumlahKamar\": 8,\n  \"fotoUrls\": [\n    \"https://res.cloudinary.com/b45tueeo/image/upload/v1790642535/carikos_test/ybjb2r9nmi7xoayupoxa.png\"\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/owner/kos",
@@ -748,7 +322,7 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
                   "    var json = pm.response.json();",
                   "    if (json.data && json.data._id) {",
-                  "        pm.collectionVariables.set('newKosId', json.data._id);",
+                  "        pm.collectionVariables.set('kosId', json.data._id);",
                   "    }",
                   "});"
                 ],
@@ -758,7 +332,7 @@
           ]
         },
         {
-          "name": "3.2 Daftar Kos Milik Pemilik",
+          "name": "2.2 Daftar Kos Milik Pemilik",
           "request": {
             "method": "GET",
             "header": [
@@ -784,7 +358,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Daftar Kos Pemilik Berhasil Diambil (200 OK)', function () {",
+                  "pm.test('Daftar Kos Pemilik Diambil (200 OK)', function () {",
                   "    pm.response.to.have.status(200);",
                   "});"
                 ],
@@ -794,7 +368,7 @@
           ]
         },
         {
-          "name": "3.3 Update Data Kos",
+          "name": "2.3 Perbarui Kelengkapan Data Kos",
           "request": {
             "method": "PUT",
             "header": [
@@ -809,10 +383,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"harga\": 1000000,\n  \"fasilitas\": [\n    \"WiFi Cepat\",\n    \"Kasur Springbed\",\n    \"Kamar Mandi Dalam\",\n    \"Dapur Bersama\"\n  ]\n}"
+              "raw": "{\n  \"harga\": 950000,\n  \"fasilitas\": [\n    \"WiFi Cepat\",\n    \"Kasur Springbed\",\n    \"Kamar Mandi Dalam\",\n    \"Dapur Bersama\",\n    \"CCTV 24 Jam\"\n  ]\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/owner/kos/{{newKosId}}",
+              "raw": "{{baseUrl}}/api/owner/kos/{{kosId}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -820,7 +394,7 @@
                 "api",
                 "owner",
                 "kos",
-                "{{newKosId}}"
+                "{{kosId}}"
               ]
             }
           },
@@ -829,8 +403,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Update Data Kos Berhasil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "pm.test('Data Kos Diperbarui (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -839,7 +413,7 @@
           ]
         },
         {
-          "name": "3.4 Update Ketersediaan Kamar Kos",
+          "name": "2.4 Atur Ketersediaan Kamar Terkini",
           "request": {
             "method": "PATCH",
             "header": [
@@ -854,10 +428,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"jumlahKamarTersedia\": 5\n}"
+              "raw": "{\n  \"jumlahKamarTersedia\": 8\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/owner/kos/{{newKosId}}/availability",
+              "raw": "{{baseUrl}}/api/owner/kos/{{kosId}}/availability",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -865,7 +439,7 @@
                 "api",
                 "owner",
                 "kos",
-                "{{newKosId}}",
+                "{{kosId}}",
                 "availability"
               ]
             }
@@ -875,8 +449,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Update Ketersediaan Kamar Berhasil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "pm.test('Ketersediaan Kamar Diperbarui (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -885,7 +459,7 @@
           ]
         },
         {
-          "name": "3.5 Ajukan Verifikasi Kos ke Admin",
+          "name": "2.5 Ajukan Kos ke Verifikasi Admin",
           "request": {
             "method": "POST",
             "header": [
@@ -895,7 +469,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/owner/kos/{{newKosId}}/submit",
+              "raw": "{{baseUrl}}/api/owner/kos/{{kosId}}/submit",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -903,7 +477,7 @@
                 "api",
                 "owner",
                 "kos",
-                "{{newKosId}}",
+                "{{kosId}}",
                 "submit"
               ]
             }
@@ -914,80 +488,6 @@
               "script": {
                 "exec": [
                   "pm.test('Pengajuan Verifikasi Terkirim (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "3.6 Cek Status Verifikasi Kos",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pemilikToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/owner/kos/{{newKosId}}/status",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "owner",
-                "kos",
-                "{{newKosId}}",
-                "status"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status Verifikasi Kos Berhasil Dicek (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "3.7 Daftar Pengajuan Booking Masuk",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pemilikToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/bookings/owner",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookings",
-                "owner"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Daftar Booking Masuk Berhasil Diambil (200 OK)', function () {",
                   "    pm.response.to.have.status(200);",
                   "});"
                 ],
@@ -997,32 +497,25 @@
           ]
         },
         {
-          "name": "3.8 Konfirmasi Status Pengajuan Booking",
+          "name": "2.6 Pantau Status Verifikasi Kos",
           "request": {
-            "method": "PATCH",
+            "method": "GET",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
               {
                 "key": "Authorization",
                 "value": "Bearer {{pemilikToken}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"Approved\"\n}"
-            },
             "url": {
-              "raw": "{{baseUrl}}/api/bookings/{{bookingId}}/status",
+              "raw": "{{baseUrl}}/api/owner/kos/{{kosId}}/status",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "bookings",
-                "{{bookingId}}",
+                "owner",
+                "kos",
+                "{{kosId}}",
                 "status"
               ]
             }
@@ -1032,8 +525,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Konfirmasi Booking Berhasil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);",
+                  "pm.test('Status Verifikasi Dicek (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -1044,10 +537,10 @@
       ]
     },
     {
-      "name": "4. Fitur Administrator",
+      "name": "Skenario 3 - Verifikasi Pengajuan Kos & Tata Kelola Platform (Administrator)",
       "item": [
         {
-          "name": "4.0 Login Administrator",
+          "name": "3.1 Login Administrator",
           "request": {
             "method": "POST",
             "header": [
@@ -1091,7 +584,7 @@
           ]
         },
         {
-          "name": "4.1 Statistik Dashboard Platform",
+          "name": "3.2 Statistik Dashboard Platform",
           "request": {
             "method": "GET",
             "header": [
@@ -1118,7 +611,7 @@
               "script": {
                 "exec": [
                   "pm.test('Statistik Admin Berhasil Diambil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401, 403]);",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -1127,7 +620,7 @@
           ]
         },
         {
-          "name": "4.2 Daftar Pengajuan Kos Berstatus Pending",
+          "name": "3.3 Antrean Kos Status Pending",
           "request": {
             "method": "GET",
             "header": [
@@ -1153,8 +646,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Daftar Submissions Pending Berhasil Diambil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401, 403]);",
+                  "pm.test('Antrean Kos Pending Diambil (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -1163,7 +656,7 @@
           ]
         },
         {
-          "name": "4.3 Periksa Detail Pengajuan Kos",
+          "name": "3.4 Periksa Detail Pengajuan Kos",
           "request": {
             "method": "GET",
             "header": [
@@ -1173,7 +666,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/admin/submissions/{{newKosId}}",
+              "raw": "{{baseUrl}}/api/admin/submissions/{{kosId}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1181,7 +674,7 @@
                 "api",
                 "admin",
                 "submissions",
-                "{{newKosId}}"
+                "{{kosId}}"
               ]
             }
           },
@@ -1190,8 +683,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Detail Submission Berhasil Diperiksa (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                  "pm.test('Detail Submission Diperiksa (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -1200,7 +693,7 @@
           ]
         },
         {
-          "name": "4.4 Setujui Pengajuan Kos (Approve)",
+          "name": "3.5 Setujui Pengajuan Kos (Approve) [SS SKENARIO 3]",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1210,7 +703,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/admin/submissions/{{newKosId}}/approve",
+              "raw": "{{baseUrl}}/api/admin/submissions/{{kosId}}/approve",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1218,7 +711,7 @@
                 "api",
                 "admin",
                 "submissions",
-                "{{newKosId}}",
+                "{{kosId}}",
                 "approve"
               ]
             }
@@ -1228,8 +721,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Persetujuan Kos Berhasil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                  "pm.test('Kos Berhasil Disetujui (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -1238,7 +731,7 @@
           ]
         },
         {
-          "name": "4.5 Daftar Pengguna (Manajemen Akun)",
+          "name": "3.6 Manajemen Akun Pengguna",
           "request": {
             "method": "GET",
             "header": [
@@ -1264,8 +757,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Daftar Pengguna Berhasil Diambil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401, 403]);",
+                  "pm.test('Daftar Pengguna Diambil (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
                   "    var json = pm.response.json();",
                   "    if (json.data && Array.isArray(json.data) && json.data.length > 0) {",
                   "        pm.collectionVariables.set('targetUserId', json.data[0]._id);",
@@ -1278,7 +771,7 @@
           ]
         },
         {
-          "name": "4.6 Kelola Role Hak Akses Pengguna",
+          "name": "3.7 Kelola Role Hak Akses Pengguna",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1314,8 +807,546 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Update Role Pengguna Berhasil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 403, 404]);",
+                  "pm.test('Role Pengguna Diperbarui (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Skenario 4 - Eksplorasi, Pencarian Radius Peta & Favorit (Pencari Kos)",
+      "item": [
+        {
+          "name": "4.1 Direktori Kos Publik Terverifikasi",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Direktori Kos Berhasil Ditampilkan (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 Pencarian Kos Radius Terdekat [SS SKENARIO 4]",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kos/nearby?lat=-7.766&lng=110.374&radius=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kos",
+                "nearby"
+              ],
+              "query": [
+                {
+                  "key": "lat",
+                  "value": "-7.766"
+                },
+                {
+                  "key": "lng",
+                  "value": "110.374"
+                },
+                {
+                  "key": "radius",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Pencarian Radius Berhasil (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Detail Lengkap Kos & Kontak Pemilik",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kos/{{kosId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kos",
+                "{{kosId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Detail Kos Berhasil Diambil (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Tambah Kos ke Daftar Favorit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pencariToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kosId\": \"{{kosId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/favorites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "favorites"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Tambah Favorit Berhasil (200/201)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Lihat Daftar Favorit Saya",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pencariToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/favorites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "favorites"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Daftar Favorit Berhasil Diambil (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Hapus Kos dari Favorit",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pencariToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/favorites/{{kosId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "favorites",
+                "{{kosId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Hapus Favorit Berhasil (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Skenario 5 - Transaksi Booking Sewa, Rating Review & Notifikasi Real-Time",
+      "item": [
+        {
+          "name": "5.1 Pencari Mengajukan Sewa Kamar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pencariToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kosId\": \"{{kosId}}\",\n  \"tanggalMulai\": \"2026-10-01\",\n  \"durasiSewa\": 6,\n  \"catatan\": \"Kamar lantai 1 dekat jendela luar\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Pengajuan Booking Berhasil (201 Created)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data._id) {",
+                  "        pm.collectionVariables.set('bookingId', json.data._id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.2 Pemilik Memeriksa Booking Masuk",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pemilikToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/owner",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "owner"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Daftar Booking Masuk Diambil (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.3 Pemilik Menyetujui Booking & Kamar Berkurang [SS SKENARIO 5]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pemilikToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Approved\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{bookingId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{bookingId}}",
+                "status"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Konfirmasi Booking Berhasil (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.4 Pencari Melihat Riwayat Booking Disetujui",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pencariToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/my",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "my"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Riwayat Booking Disetujui (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.5 Pencari Memberi Ulasan & Rating Bintang 5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pencariToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Kos sangat nyaman, bersih, fasilitas sesuai deskripsi, dan pemilik sangat ramah!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kos/{{kosId}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kos",
+                "{{kosId}}",
+                "reviews"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Ulasan & Rating Berhasil Dikirim (201 Created)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.6 Publik Melihat Ulasan & Rata-rata Rating",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kos/{{kosId}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kos",
+                "{{kosId}}",
+                "reviews"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Ulasan Kos Berhasil Diambil (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.7 Cek Notifikasi Real-Time Terkirim",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pencariToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Notifikasi Real-Time Masuk (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.8 Tandai Seluruh Notifikasi Dibaca",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pencariToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "read-all"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Notifikasi Ditandai Dibaca (200 OK)', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});"
                 ],
                 "type": "text/javascript"
