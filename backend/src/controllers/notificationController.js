@@ -36,3 +36,20 @@ export const markNotificationAsRead = async (req, res) => {
     });
   }
 };
+
+export const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await notificationService.markAllNotificationsAsReadService(userId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Semua notifikasi ditandai sebagai telah dibaca',
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Gagal memperbarui notifikasi',
+    });
+  }
+};

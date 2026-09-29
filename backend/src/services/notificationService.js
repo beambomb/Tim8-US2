@@ -46,3 +46,10 @@ export const markNotificationAsReadService = async (userId, notificationId) => {
 
   return notification;
 };
+
+export const markAllNotificationsAsReadService = async (userId) => {
+  return await Notification.updateMany(
+    { userId, isRead: false },
+    { isRead: true }
+  );
+};
