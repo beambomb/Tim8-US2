@@ -14,6 +14,7 @@ import favoriteRoutes from "./routes/favoriteRoutes.js";
 import kosRoutes from "./routes/kosRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 // Service
 import { saveMessageService } from "./services/chatService.js";
@@ -50,6 +51,7 @@ app.use("/api/favorite", favoriteRoutes);
 app.use("/api/kos", kosRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Health Check
 app.get("/", (req, res) => {

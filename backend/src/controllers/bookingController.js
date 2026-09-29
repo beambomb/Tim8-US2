@@ -1,9 +1,21 @@
 import * as bookingService from '../services/bookingService.js';
+import { createNotificationService } from '../services/notificationService.js';
 
 export const createBooking = async (req, res) => {
   try {
     const userId = req.user.id;
     const data = await bookingService.createBookingService(userId, req.body);
+
+    const io = req.app.get('io');
+    if (data.kosId && data.kosId.ownerId) {
+      await createNotificationService(io, {
+        userId: data.kosId.ownerId,
+        judul: 'Pengajuan Sewa Baru',
+        pesan: `Ada mahasiswa yang mengajukan sewa untuk kos '${data.kosId.nama}'.`,
+        tipe: 'BOOKING_BARU',
+        metadata: { bookingId: data._id, kosId: data.kosId._id },
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -79,6 +91,17 @@ export const approveBooking = async (req, res) => {
     const bookingId = req.params.id;
     const data = await bookingService.approveBookingService(ownerId, bookingId);
 
+    const io = req.app.get('io');
+    if (data.userId) {
+      await createNotificationService(io, {
+        userId: data.userId._id || data.userId,
+        judul: 'Pengajuan Sewa Disetujui',
+        pesan: `Pengajuan sewa kamar Anda di '${data.kosId?.nama || 'kos'}' telah disetujui pemilik.`,
+        tipe: 'BOOKING_STATUS',
+        metadata: { bookingId: data._id, kosId: data.kosId?._id || data.kosId },
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: 'Pengajuan sewa disetujui, jumlah kamar tersedia telah diperbarui',
@@ -97,6 +120,17 @@ export const rejectBooking = async (req, res) => {
     const ownerId = req.user.id;
     const bookingId = req.params.id;
     const data = await bookingService.rejectBookingService(ownerId, bookingId);
+
+    const io = req.app.get('io');
+    if (data.userId) {
+      await createNotificationService(io, {
+        userId: data.userId._id || data.userId,
+        judul: 'Pengajuan Sewa Ditolak',
+        pesan: `Pengajuan sewa kamar Anda di '${data.kosId?.nama || 'kos'}' ditolak oleh pemilik kos.`,
+        tipe: 'BOOKING_STATUS',
+        metadata: { bookingId: data._id, kosId: data.kosId?._id || data.kosId },
+      });
+    }
 
     res.status(200).json({
       success: true,

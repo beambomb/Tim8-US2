@@ -1,4 +1,5 @@
 import * as adminService from '../services/adminService.js';
+import { createNotificationService } from '../services/notificationService.js';
 
 export const getPendingSubmissions = async (req, res) => {
     try {
@@ -23,6 +24,18 @@ export const approveSubmission = async (req, res) => {
     try {
         const kos = await adminService.approveKosSubmission(req.params.id);
         if (!kos) return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });
+
+        const io = req.app.get('io');
+        if (kos.ownerId) {
+            await createNotificationService(io, {
+                userId: kos.ownerId,
+                judul: 'Pengajuan Kos Disetujui',
+                pesan: `Pengajuan kos '${kos.nama}' telah disetujui oleh Administrator dan kini tampil publik.`,
+                tipe: 'KOS_VERIFIKASI',
+                metadata: { kosId: kos._id },
+            });
+        }
+
         res.status(200).json({ success: true, message: 'Pengajuan kos disetujui', data: kos });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -37,6 +50,18 @@ export const rejectSubmission = async (req, res) => {
         }
         const kos = await adminService.rejectKosSubmission(req.params.id, alasanPenolakan);
         if (!kos) return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });
+
+        const io = req.app.get('io');
+        if (kos.ownerId) {
+            await createNotificationService(io, {
+                userId: kos.ownerId,
+                judul: 'Pengajuan Kos Ditolak',
+                pesan: `Pengajuan kos '${kos.nama}' ditolak. Alasan: ${alasanPenolakan}`,
+                tipe: 'KOS_VERIFIKASI',
+                metadata: { kosId: kos._id },
+            });
+        }
+
         res.status(200).json({ success: true, message: 'Pengajuan kos ditolak', data: kos });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
