@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        noHp: {
+            type: String,
+            default: null,
+        },
         role: {
             type: String,
             enum: ['PENCARI_KOS', 'PEMILIK_KOS', 'ADMIN'],

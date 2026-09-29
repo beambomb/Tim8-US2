@@ -57,14 +57,14 @@ export const addFavoriteService = async (userId, kosId) => {
 // Menghapus favorit
 export const deleteFavoriteService = async (userId, id) => {
   if (!mongoose.isValidObjectId(id)) {
-    const error = new Error('ID favorit tidak valid');
+    const error = new Error('ID tidak valid');
     error.statusCode = 400;
     throw error;
   }
 
   const favorite = await Favorite.findOneAndDelete({
-    _id: id,
-    userId
+    userId,
+    $or: [{ _id: id }, { kosId: id }]
   });
 
   if (!favorite) {

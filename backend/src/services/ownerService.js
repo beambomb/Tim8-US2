@@ -45,3 +45,19 @@ export const submitKosForVerificationService = async (ownerId, kosId) => {
 export const getKosStatusService = async (ownerId, kosId) => {
     return await Kos.findOne({ _id: kosId, ownerId }).select('nama statusVerifikasi alasanPenolakan');
 };
+
+export const addKosImagesService = async (ownerId, kosId, imageUrls) => {
+    return await Kos.findOneAndUpdate(
+        { _id: kosId, ownerId },
+        { $push: { fotoUrls: { $each: imageUrls } } },
+        { new: true }
+    );
+};
+
+export const removeKosImageService = async (ownerId, kosId, imageUrl) => {
+    return await Kos.findOneAndUpdate(
+        { _id: kosId, ownerId },
+        { $pull: { fotoUrls: imageUrl } },
+        { new: true }
+    );
+};
