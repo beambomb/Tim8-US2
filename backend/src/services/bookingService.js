@@ -2,7 +2,9 @@ import mongoose from 'mongoose';
 import Booking from '../models/Booking.js';
 import Kos from '../models/Kos.js';
 
-export const createBookingService = async (userId, { kosId, tanggalMulai, durasiBulan, catatan }) => {
+export const createBookingService = async (userId, body) => {
+  const { kosId, tanggalMulai, catatan } = body;
+  const durasiBulan = body.durasiBulan || body.durasiSewa;
   if (!kosId || !tanggalMulai || !durasiBulan) {
     const error = new Error('Field kosId, tanggalMulai, dan durasiBulan wajib diisi');
     error.statusCode = 400;
