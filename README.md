@@ -89,4 +89,4 @@ Tim8-US2/
 
 ## Laporan Milestone 1
 
-URL Google Drive laporan: MASUKKAN LINK GOOGLE DRIVE DI SINI
+URL Google Drive laporan: https://drive.google.com/file/d/1BSTLPsp-7W-tnikiPJc8-RwNzqkbFWUf/view?usp=sharing
