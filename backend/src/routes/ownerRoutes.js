@@ -6,15 +6,16 @@ import {
   deleteKos,
   updateAvailability,
   submitKosForVerification,
-  getKosStatus
+  getKosStatus,
+  uploadImages,
+  uploadKosImages,
+  deleteKosImage
 } from '../controllers/ownerController.js';
-
-// Import middleware pengamanan
 import { verifyToken, authorizeRoles } from '../middleware/authMiddleware.js';
+import upload from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
-// Terapkan perlindungan autentikasi dan otorisasi
 router.use(verifyToken);
 router.use(authorizeRoles('PEMILIK_KOS'));
 
@@ -26,5 +27,9 @@ router.delete('/kos/:id', deleteKos);
 router.patch('/kos/:id/availability', updateAvailability);
 router.post('/kos/:id/submit', submitKosForVerification);
 router.get('/kos/:id/status', getKosStatus);
+
+router.post('/upload', upload.array('images', 5), uploadImages);
+router.post('/kos/:id/images', upload.array('images', 5), uploadKosImages);
+router.delete('/kos/:id/images', deleteKosImage);
 
 export default router;

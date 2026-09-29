@@ -1,4 +1,5 @@
 import * as ownerService from '../services/ownerService.js';
+import { uploadMultipleFiles } from '../services/uploadService.js';
 
 export const getOwnerKos = async (req, res) => {
   try {
@@ -106,6 +107,77 @@ export const getKosStatus = async (req, res) => {
     }
 
     res.status(200).json({ success: true, data: kosStatus });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const uploadImages = async (req, res) => {
+  try {
+    const files = req.files || (req.file ? [req.file] : []);
+    if (!files || files.length === 0) {
+      return res.status(400).json({ success: false, message: 'Tidak ada file gambar yang diunggah' });
+    }
+
+    const urls = await uploadMultipleFiles(files, 'carikos');
+    res.status(200).json({
+      success: true,
+      message: 'Gambar berhasil diunggah',
+      data: { urls }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const uploadKosImages = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    const { id } = req.params;
+    const files = req.files || (req.file ? [req.file] : []);
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ success: false, message: 'Tidak ada file gambar yang diunggah' });
+    }
+
+    const urls = await uploadMultipleFiles(files, 'carikos');
+    const updatedKos = await ownerService.addKosImagesService(ownerId, id, urls);
+
+    if (!updatedKos) {
+      return res.status(404).json({ success: false, message: 'Kos tidak ditemukan atau tidak memiliki akses' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Foto kos berhasil diunggah dan disimpan',
+      data: updatedKos
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteKosImage = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    const { id } = req.params;
+    const { imageUrl } = req.body;
+
+    if (!imageUrl) {
+      return res.status(400).json({ success: false, message: 'Harap sertakan imageUrl yang ingin dihapus' });
+    }
+
+    const updatedKos = await ownerService.removeKosImageService(ownerId, id, imageUrl);
+
+    if (!updatedKos) {
+      return res.status(404).json({ success: false, message: 'Kos tidak ditemukan atau tidak memiliki akses' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Foto kos berhasil dihapus',
+      data: updatedKos
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
