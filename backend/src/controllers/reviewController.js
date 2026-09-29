@@ -4,7 +4,8 @@ export const createReview = async (req, res) => {
   try {
     const userId = req.user.id;
     const kosId = req.params.id;
-    const { rating, komentar } = req.body;
+    const rating = req.body.rating;
+    const komentar = req.body.komentar || req.body.comment;
 
     const data = await reviewService.createReviewService(userId, kosId, {
       rating,

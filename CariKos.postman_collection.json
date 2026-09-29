@@ -284,52 +284,6 @@
       "name": "Skenario 2 - Pendaftaran Kos, Upload Foto & Pengajuan Verifikasi (Pemilik)",
       "item": [
         {
-          "name": "2.0 Upload File Foto ke Cloudinary",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{pemilikToken}}"
-              }
-            ],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "images",
-                  "type": "file",
-                  "src": []
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/owner/upload",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "owner",
-                "upload"
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Upload Cloudinary Berhasil (200 OK)', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
           "name": "2.1 Mendaftarkan Kos Baru [SS SKENARIO 2]",
           "request": {
             "method": "POST",
