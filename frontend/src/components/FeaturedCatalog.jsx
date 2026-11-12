@@ -15,7 +15,7 @@ export default function FeaturedCatalog({ favorites, toggleFavorite }) {
     <section id="katalog" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-widest text-amber-400">
+          <span className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
             Katalog Pilihan
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
@@ -35,7 +35,7 @@ export default function FeaturedCatalog({ favorites, toggleFavorite }) {
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                 selectedCategory === cat
-                  ? "bg-amber-400 text-neutral-950 shadow-md shadow-amber-400/20"
+                  ? "bg-emerald-500 text-[#0A0F1D] shadow-md shadow-emerald-500/20"
                   : "bg-neutral-900 text-neutral-300 hover:bg-neutral-800 border border-neutral-800"
               }`}
             >

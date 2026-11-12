@@ -24,17 +24,17 @@ export default function HeroSection({ searchQuery, setSearchQuery, onSearchSubmi
           className="object-cover object-center transform scale-100 filter brightness-105 contrast-100"
         />
         {/* Soft scrim: lets photo brightness shine through while preserving text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/15 to-neutral-950/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1D] via-black/15 to-[#0A0F1D]/50" />
       </div>
 
       {/* Hero Content (Centered Stage) */}
       <div className="relative z-10 max-w-4xl mx-auto w-full text-center flex flex-col items-center gap-6 sm:gap-7">
         {/* Headline */}
         <div className="flex flex-col gap-3">
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-[1.15] drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-[#F1F5F9] tracking-tight leading-[1.15] drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
             Hunian Nyaman Dekat Kampus
           </h1>
-          <p className="max-w-xl mx-auto text-sm sm:text-base text-neutral-100 font-medium leading-relaxed drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">
+          <p className="max-w-xl mx-auto text-sm sm:text-base text-[#F1F5F9] font-medium leading-relaxed drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">
             Pilihan kos terverifikasi dengan fasilitas lengkap, lokasi strategis, dan harga ramah mahasiswa
           </p>
         </div>
@@ -43,17 +43,17 @@ export default function HeroSection({ searchQuery, setSearchQuery, onSearchSubmi
         <div className="w-full max-w-3xl mt-2">
           <form
             onSubmit={handleSubmit}
-            className="relative flex items-center bg-white rounded-full p-1.5 sm:p-2 shadow-2xl shadow-black/60 transition-all duration-300 focus-within:ring-4 focus-within:ring-amber-400/40"
+            className="relative flex items-center bg-[#141D30] border border-slate-700/60 rounded-full p-1.5 sm:p-2 shadow-2xl shadow-black/60 transition-all duration-300 focus-within:ring-4 focus-within:ring-[#10B981]/40 focus-within:border-[#10B981]/50"
           >
             {/* Map Pin / Location Icon */}
-            <div className="pl-4 sm:pl-5 text-neutral-400 flex items-center pointer-events-none">
+            <div className="pl-4 sm:pl-5 text-[#10B981] flex items-center pointer-events-none">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={2}
                 stroke="currentColor"
-                className="w-5 h-5 sm:w-6 sm:h-6 text-neutral-400"
+                className="w-5 h-5 sm:w-6 sm:h-6 text-[#10B981]"
               >
                 <path
                   strokeLinecap="round"
@@ -74,7 +74,7 @@ export default function HeroSection({ searchQuery, setSearchQuery, onSearchSubmi
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama properti / alamat / daerah"
-              className="w-full bg-transparent px-3 sm:px-4 py-2 sm:py-3 text-neutral-900 placeholder-neutral-400 text-sm sm:text-base font-medium focus:outline-none"
+              className="w-full bg-transparent px-3 sm:px-4 py-2 sm:py-3 text-[#F1F5F9] placeholder-[#94A3B8] text-sm sm:text-base font-medium focus:outline-none"
             />
 
             {/* Clear button if text entered */}
@@ -82,7 +82,7 @@ export default function HeroSection({ searchQuery, setSearchQuery, onSearchSubmi
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="p-1 mr-1 text-neutral-400 hover:text-neutral-700 rounded-full cursor-pointer"
+                className="p-1 mr-1 text-[#94A3B8] hover:text-[#F1F5F9] rounded-full cursor-pointer"
                 aria-label="Hapus kata kunci"
               >
                 <svg
@@ -101,10 +101,10 @@ export default function HeroSection({ searchQuery, setSearchQuery, onSearchSubmi
               </button>
             )}
 
-            {/* Bright Yellow Circular Search Button */}
+            {/* Emerald Circular Search Button */}
             <button
               type="submit"
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-400 hover:bg-amber-300 active:scale-95 text-neutral-950 flex items-center justify-center shrink-0 shadow-md transition-all cursor-pointer"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#10B981] hover:bg-[#059669] active:scale-95 text-[#0A0F1D] flex items-center justify-center shrink-0 shadow-md transition-all cursor-pointer"
               aria-label="Cari Kos Sekarang"
             >
               <svg
@@ -126,7 +126,7 @@ export default function HeroSection({ searchQuery, setSearchQuery, onSearchSubmi
 
           {/* Quick Filter Search Chips */}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <span className="text-xs text-neutral-400 font-medium mr-1">
+            <span className="text-xs text-[#94A3B8] font-medium mr-1">
               Pencarian Populer:
             </span>
             {quickTags.map((tag) => (
@@ -134,7 +134,7 @@ export default function HeroSection({ searchQuery, setSearchQuery, onSearchSubmi
                 key={tag}
                 type="button"
                 onClick={() => setSearchQuery(tag)}
-                className="px-3 py-1 rounded-full text-xs font-medium bg-neutral-900/70 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-white/10 hover:border-amber-400/40 backdrop-blur-sm transition-all cursor-pointer"
+                className="px-3 py-1 rounded-full text-xs font-medium bg-[#141D30]/80 hover:bg-[#141D30] text-[#94A3B8] hover:text-[#10B981] border border-slate-700/60 hover:border-[#10B981]/40 backdrop-blur-sm transition-all cursor-pointer"
               >
                 {tag}
               </button>
