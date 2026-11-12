@@ -13,6 +13,7 @@ Dokumen ini mencatat status implementasi, pengujian, dan integrasi seluruh modul
 | **Autentikasi & RBAC** | Selesai (100%) | JWT stateless authentication, bcrypt hashing, role middleware (`PENCARI_KOS`, `PEMILIK_KOS`, `ADMIN`) |
 | **Penyimpanan Media** | Selesai (100%) | Multer (Memory Storage) terintegrasi ke CDN Cloudinary SDK |
 | **Komunikasi Real-Time** | Selesai (100%) | Socket.IO 4.8.3 server dengan room terisolasi per `userId` untuk chat & push notifikasi |
+| **Pipeline CI/CD** | Selesai (100%) | GitHub Actions `.github/workflows/ci.yml` (validasi sintaksis ES Modules `node --check`) |
 | **Dokumentasi Pengujian**| Selesai (100%) | Tersedia koleksi pengujian Postman (`CariKos.postman_collection.json`) |
 
 ---

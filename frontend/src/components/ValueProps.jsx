@@ -6,7 +6,7 @@ export default function ValueProps() {
     >
       <div className="max-w-7xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-semibold uppercase tracking-widest text-amber-400">
+          <span className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
             Standar Kualitas
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
@@ -19,7 +19,7 @@ export default function ValueProps() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex flex-col gap-3">
-            <div className="w-12 h-12 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-400 flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
               <svg
                 className="w-6 h-6"
                 fill="none"

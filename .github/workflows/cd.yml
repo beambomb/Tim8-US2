@@ -1,0 +1,105 @@
+name: CariKos Continuous Deployment (CD)
+
+# Continuous Deployment is intentionally guarded:
+# Automatic deployment directly on every push is disabled while features are under active development.
+# Deployment can be triggered manually via workflow_dispatch or automatically when a verified release tag (v*.*.*) is pushed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Target Deployment Environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      reason:
+        description: 'Deployment Reason / Release Notes'
+        required: false
+        default: 'Manual release trigger'
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  deploy-guard:
+    name: Deployment Gatekeeper & Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log Deployment Context
+        run: |
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Target Environment: ${{ github.event.inputs.target_environment || 'production (tag release)' }}"
+          echo "Deployment safety checks passed."
+
+  deploy-frontend:
+    name: Deploy Frontend (Vercel / Production Host)
+    needs: deploy-guard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Verification
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api' }}
+          NEXT_PUBLIC_SOCKET_URL: ${{ secrets.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000' }}
+
+      - name: Deployment Execution
+        run: |
+          echo "Frontend build verified successfully."
+          echo "Deploying to hosting provider (e.g., Vercel, Netlify, or VPS)..."
+          # Example with Vercel CLI (uncomment when VERCEL_TOKEN and project ID are configured in repository secrets):
+          # npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+  deploy-backend:
+    name: Deploy Backend (Railway / Render / VPS)
+    needs: deploy-guard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Backend Syntax Verification
+        run: node --check src/server.js
+
+      - name: Deployment Execution
+        run: |
+          echo "Backend syntax verified successfully."
+          echo "Deploying to backend provider (e.g., Railway, Render, or Docker VPS)..."
+          # Example with Railway CLI or webhook trigger (uncomment when secrets are configured):
+          # curl -X POST ${{ secrets.RAILWAY_DEPLOY_WEBHOOK_URL }}

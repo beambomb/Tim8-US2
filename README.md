@@ -53,72 +53,82 @@ Informasi kos di sekitar kampus sering tersebar di grup WhatsApp, media sosial, 
 ## Struktur Folder dan File
 
 ```text
-Tim8-US2/
+carikos/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                 # Automated Continuous Integration (Lint, Build, Syntax Check)
+│       └── cd.yml                 # Guarded Continuous Deployment (Manual Dispatch / Release Tag)
 ├── CariKos.postman_collection.json
+├── docs/
+│   ├── progress-be.md             # Status kelengkapan backend & endpoints
+│   └── progress-fe.md             # Status implementasi frontend per rute
+├── pembagian-tugas.md             # Matriks distribusi tugas 4 anggota tim
 ├── backend/
 │   ├── config/
 │   │   ├── cloudinary.js
 │   │   └── db.js
 │   ├── src/
 │   │   ├── controllers/
-│   │   │   ├── adminController.js
-│   │   │   ├── authController.js
-│   │   │   ├── bookingController.js
-│   │   │   ├── chatController.js
-│   │   │   ├── favoriteController.js
-│   │   │   ├── kosController.js
-│   │   │   ├── notificationController.js
-│   │   │   ├── ownerController.js
-│   │   │   └── reviewController.js
 │   │   ├── middleware/
-│   │   │   ├── authMiddleware.js
-│   │   │   └── uploadMiddleware.js
 │   │   ├── models/
-│   │   │   ├── Booking.js
-│   │   │   ├── Favorite.js
-│   │   │   ├── Kos.js
-│   │   │   ├── Message.js
-│   │   │   ├── Notification.js
-│   │   │   ├── Review.js
-│   │   │   └── User.js
 │   │   ├── routes/
-│   │   │   ├── adminRoutes.js
-│   │   │   ├── authRoutes.js
-│   │   │   ├── bookingRoutes.js
-│   │   │   ├── chatRoutes.js
-│   │   │   ├── favoriteRoutes.js
-│   │   │   ├── kosRoutes.js
-│   │   │   ├── notificationRoutes.js
-│   │   │   └── ownerRoutes.js
 │   │   ├── services/
-│   │   │   ├── adminService.js
-│   │   │   ├── bookingService.js
-│   │   │   ├── chatService.js
-│   │   │   ├── favoriteService.js
-│   │   │   ├── kosService.js
-│   │   │   ├── notificationService.js
-│   │   │   ├── ownerService.js
-│   │   │   ├── reviewService.js
-│   │   │   └── uploadService.js
 │   │   ├── resetDatabase.js
 │   │   ├── seedAdmin.js
 │   │   └── server.js
 │   ├── .env.example
 │   ├── package.json
 │   └── package-lock.json
+├── frontend/
+│   ├── src/
+│   │   ├── app/                   # Next.js App Router (21 route pages)
+│   │   │   ├── admin/             # Rute Admin (dashboard, submissions, users)
+│   │   │   ├── auth/              # Rute Login & Register
+│   │   │   ├── bookings/          # Rute Riwayat Booking Pencari
+│   │   │   ├── chat/              # Rute Percakapan Real-time
+│   │   │   ├── favorites/         # Rute Kos Favorit
+│   │   │   ├── kos/               # Rute Katalog, Detail, & Nearby
+│   │   │   ├── owner/             # Rute Dashboard & Kelola Kos Pemilik
+│   │   │   ├── layout.jsx
+│   │   │   └── page.jsx           # Landing page
+│   │   ├── components/            # Presentational UI Components
+│   │   │   ├── providers/         # AppProviders (Auth & Socket context)
+│   │   │   ├── ui/                # Reusable UI components
+│   │   │   ├── Footer.jsx
+│   │   │   ├── HeroSection.jsx
+│   │   │   └── Navbar.jsx
+│   │   ├── context/               # Global state contexts
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── SocketContext.jsx
+│   │   ├── features/              # Separation of Concerns (Logic & Services)
+│   │   │   ├── admin/             # hooks/useAdminSubmissions.js & services/adminService.js
+│   │   │   ├── auth/              # hooks/useAuthForm.js & services/authService.js
+│   │   │   ├── booking/           # hooks/useBookings.js & services/bookingService.js
+│   │   │   ├── chat/              # hooks/useChat.js & services/chatService.js
+│   │   │   ├── kos/               # hooks/useKosList.js, useKosDetail.js & services/kosService.js
+│   │   │   └── owner/             # hooks/useOwnerKos.js, useOwnerBookings.js & services/ownerService.js
+│   │   └── lib/                   # Shared client utilities
+│   │       ├── api.js             # Axios client dengan Bearer Token interceptor
+│   │       ├── socket.js          # Singleton WebSocket Socket.IO client
+│   │       └── utils.js           # Currency formatter, date helpers, cn utility
+│   ├── .env.local.example
+│   ├── next.config.mjs
+│   ├── package.json
+│   └── package-lock.json
 ├── .gitignore
-├── Projek Pengembangan Aplikasi Web_TIM8.pdf
 └── README.md
 ```
 
 ## Teknologi yang Digunakan
 
-- **Runtime & Framework:** Node.js, Express.js
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS v4, Axios, Socket.IO Client
+- **Backend:** Node.js, Express.js (ES Modules)
 - **Database:** MongoDB, Mongoose
 - **Autentikasi & Keamanan:** JSON Web Token (JWT), bcrypt, Helmet, CORS
-- **Real-time:** Socket.IO
-- **Upload Gambar:** Multer, Cloudinary
-- **Tools Pengembangan:** Git, GitHub, Visual Studio Code, Postman
+- **Komunikasi Real-time:** Socket.IO (WebSocket)
+- **Media & Penyimpanan Berkas:** Cloudinary API, Multer
+- **DevOps & CI/CD:** GitHub Actions (Automated CI Pipeline & Guarded CD Release)
+- **Tools Pengembangan:** Git, Visual Studio Code, Postman Collection Runner
 
 ## Daftar Endpoint API
 
@@ -257,6 +267,81 @@ Repositori ini menyertakan koleksi pengujian otomatis lengkap pada berkas `CariK
    npm run db:reset
    ```
 5. Buka fitur **Collection Runner** di Postman dan pilih folder Skenario 1 hingga 5 secara berurutan untuk menjalankan seluruh rangkaian pengujian otomatis.
+
+## Pemisahan Logic dan UI (Separation of Concerns)
+
+Untuk memfasilitasi kolaborasi 4 anggota tim tanpa saling tumpang tindih (*merge conflicts*) dan menjaga skalabilitas kode, frontend menerapkan prinsip pemisahan ketat antara logika bisnis (*business logic*) dan tampilan visual (*presentational UI*).
+
+### Arsitektur 3 Layer
+
+```text
+[Layer 1: Service / API]
+  Lokasi: src/features/<domain>/services/*
+  Tanggung Jawab: HTTP requests murni via Axios client (@/lib/api), manipulasi query params, payload form data.
+
+        ↓ (dipanggil oleh)
+
+[Layer 2: Custom Hook (Logic)]
+  Lokasi: src/features/<domain>/hooks/*
+  Tanggung Jawab: State management (useState/useReducer), lifecycle (useEffect), error handling, validasi input, kalkulasi bisnis, dan integrasi WebSocket.
+
+        ↓ (dikonsumsi oleh)
+
+[Layer 3: UI Component (Presentational)]
+  Lokasi: src/app/**/page.jsx & src/components/*
+  Tanggung Jawab: Markup Tailwind CSS visual murni, render data hasil hook, binding onClick/onSubmit ke handler hook, dan responsivitas layout.
+```
+
+### Panduan Implementasi per Anggota Tim
+
+| Domain Modul | Folder Modul | Service File | Custom Hook File | Penanggung Jawab |
+|---|---|---|---|---|
+| **Autentikasi & Akun** | `src/features/auth/` | `authService.js` | `useAuthForm.js` | Anggota 1 |
+| **Administrasi Platform** | `src/features/admin/` | `adminService.js` | `useAdminSubmissions.js` | Anggota 1 |
+| **Katalog Kos & Geospasial** | `src/features/kos/` | `kosService.js` | `useKosList.js`, `useKosDetail.js` | Anggota 2 |
+| **Pemilik Kos (CRUD)** | `src/features/owner/` | `ownerService.js` | `useOwnerKos.js` | Anggota 2 |
+| **Detail Kos, Booking & Favorit** | `src/features/booking/` | `bookingService.js` | `useBookings.js`, `useOwnerBookings.js` | Anggota 3 |
+| **Chat Real-time & Notifikasi** | `src/features/chat/` | `chatService.js` | `useChat.js` | Anggota 4 |
+| **Ulasan & Rating Bintang** | `src/features/review/` | `kosService.js` | `useKosDetail.js` | Anggota 4 |
+
+### Aturan Baku Pengembangan
+1. **Dilarang melakukan panggilan `api.get()` / `api.post()` langsung di dalam file `page.jsx`**. Panggilan API wajib melalui `features/<domain>/services/<domain>Service.js`.
+2. **State data dan lifecycle data fetching wajib diisolasi di Custom Hook**. Halaman `page.jsx` hanya memanggil hook dan mengekstraksi data serta handlers (`const { data, isLoading, error, handleSubmit } = use...()`).
+3. **State visual lokal diperbolehkan langsung di komponen UI**, seperti toggle dropdown, modal buka/tutup sederhana, atau tab switching murni tanpa manipulasi data backend.
+
+---
+
+## Continuous Integration (CI) dan Continuous Deployment (CD)
+
+### 1. Continuous Integration (CI Pipeline)
+Repositori ini telah dilengkapi dengan pipeline otomatis GitHub Actions pada berkas `.github/workflows/ci.yml`.
+
+- **Pemicu (Triggers):**
+  - Setiap `push` ke branch `main`, `develop`, atau branch fitur `feature/**`.
+  - Setiap pembukaan dan pembaruan `pull_request` menuju branch `main` atau `develop`.
+- **Pemeriksaan yang Dijalankan (Automated Checks):**
+  1. **Frontend Check:** Memasang dependensi dengan `npm ci`, memeriksa konfigurasi, dan menjalankan `npm run build` Next.js 16 (kompilasi Turbopack, typecheck, dan prerendering 21 halaman rute).
+  2. **Backend Check:** Memasang dependensi backend dengan `npm ci` dan memvalidasi keabsahan sintaks seluruh modul Node.js ES Modules (`node --check`).
+- **Tujuan CI:** Melindungi repositori dari kode yang merusak (*build breakers*) sebelum sebuah branch disetujui untuk di-merge.
+
+### 2. Continuous Deployment (CD) dan Analisis Keamanan Produksi
+Pertanyaan krusial dalam pengembangan web berskala tim: **"Apakah kita harus langsung mengaktifkan auto-deploy setiap kali ada push/merge?"**
+
+> **Keputusan Arsitektur: Auto-deploy langsung ke lingkungan produksi (Production CD) TIDAK diaktifkan saat ini demi menjaga keamanan sistem.**
+
+#### Alasan Teknis Mengapa Auto-Deploy ke Produksi Belum Aman Saat Ini:
+1. **Fitur Frontend Masih Bertahap**: Sebanyak 21 rute frontend saat ini baru memiliki halaman placeholder interaktif yang sedang diimplementasikan secara paralel oleh 4 anggota. Auto-deploy ke domain produksi akan menampilkan halaman setengah jadi ke pengguna publik.
+2. **Dinamika Skema & Basis Data**: Perubahan relasi data MongoDB atau seeder yang belum tervalidasi dapat merusak konsistensi data di database produksi.
+3. **Kerahasiaan Kredensial Produksi**: Akses ke layanan produksi pihak ketiga (Cloudinary credentials, MongoDB Atlas cluster produksi, JWT production secret) harus dijaga ketat agar tidak terpapar selama masa pengujian.
+
+#### Solusi Strategi CD yang Aman (Guarded Deployment)
+Alur rilis pada `.github/workflows/cd.yml` dirancang dengan 2 mekanisme pengaman:
+1. **Preview Deployment (Staging / PR Previews)**:
+   Setiap Pull Request dapat memanfaatkan deployment preview sementara (misalnya via Vercel Preview) untuk pengujian fungsionalitas dan tampilan UI tanpa memengaruhi database atau domain produksi.
+2. **Manual Approval Gate & Release Tagging**:
+   Deployment ke server produksi hanya akan dieksekusi melalui:
+   - Tombol **Run workflow** manual pada GitHub Actions (`workflow_dispatch`), dengan memilih target environment dan menyertakan catatan rilis; ATAU
+   - Pembuatan Git Release Tag resmi (format `v*.*.*`, misalnya `v1.0.0`) setelah seluruh pengujian lulus dan disetujui bersama oleh seluruh anggota tim.
 
 ## Laporan Milestone 1
 
