@@ -125,20 +125,33 @@ export const approveBookingService = async (ownerId, bookingId) => {
     throw error;
   }
 
-  const kos = await Kos.findById(booking.kosId._id);
-  if (kos.jumlahKamarTersedia <= 0) {
+  const updatedKos = await Kos.findOneAndUpdate(
+    { _id: booking.kosId._id, jumlahKamarTersedia: { $gt: 0 } },
+    { $inc: { jumlahKamarTersedia: -1 } },
+    { new: true }
+  );
+
+  if (!updatedKos) {
     const error = new Error('Tidak dapat menyetujui booking, kamar kos sudah penuh');
     error.statusCode = 400;
     throw error;
   }
 
-  kos.jumlahKamarTersedia -= 1;
-  await kos.save();
+  const updatedBooking = await Booking.findOneAndUpdate(
+    { _id: bookingId, status: 'PENDING' },
+    { $set: { status: 'DISETUJUI' } },
+    { new: true }
+  ).populate('kosId');
 
-  booking.status = 'DISETUJUI';
-  await booking.save();
+  if (!updatedBooking) {
+    await Kos.findByIdAndUpdate(booking.kosId._id, { $inc: { jumlahKamarTersedia: 1 } });
+    const currentBooking = await Booking.findById(bookingId);
+    const error = new Error(`Booking sudah berstatus '${currentBooking ? currentBooking.status : 'DISETUJUI'}'`);
+    error.statusCode = 400;
+    throw error;
+  }
 
-  return booking;
+  return updatedBooking;
 };
 
 export const rejectBookingService = async (ownerId, bookingId) => {
@@ -167,8 +180,18 @@ export const rejectBookingService = async (ownerId, bookingId) => {
     throw error;
   }
 
-  booking.status = 'DITOLAK';
-  await booking.save();
+  const updatedBooking = await Booking.findOneAndUpdate(
+    { _id: bookingId, status: 'PENDING' },
+    { $set: { status: 'DITOLAK' } },
+    { new: true }
+  ).populate('kosId');
 
-  return booking;
+  if (!updatedBooking) {
+    const currentBooking = await Booking.findById(bookingId);
+    const error = new Error(`Booking sudah berstatus '${currentBooking ? currentBooking.status : 'DITOLAK'}'`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return updatedBooking;
 };
