@@ -12,7 +12,9 @@ Dokumen ini mencatat status implementasi, struktur direktori, antarmuka halaman,
 | **Fondasi Arsitektur** | Selesai (100%) | Klien API Axios terpusat dengan Bearer Token interceptor, Singleton Socket.IO |
 | **State Global & Sesi** | Selesai (100%) | `AuthContext` (manajemen login/token) dan `SocketContext` (real-time listener) |
 | **Halaman Beranda** | Selesai (100%) | Desain modular, Hero section Full HD tajam (`kamarKos2.webp`), search bar, footer |
+| **Pemisahan Logic & UI**| Selesai (100%) | Modul `src/features/*` (services & custom hooks per domain tugas) |
 | **Struktur Rute Aplikasi**| Selesai (100%) | 21 rute telah dibuatkan placeholder interaktif dan file `README.md` panduan teknis |
+| **Pipeline CI/CD** | Selesai (100%) | GitHub Actions `.github/workflows/ci.yml` & `.github/workflows/cd.yml` |
 | **Kompilasi Build** | Lolos (100%) | Pengujian `npm run build` sukses merender seluruh 21 rute tanpa galat |
 
 ---

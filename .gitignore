@@ -1,2 +1,12 @@
 node_modules/
 .env
+.env.local
+.env.*.local
+.agent/
+.agents/
+.next/
+dist/
+out/
+build/
+.DS_Store
+Thumbs.db
