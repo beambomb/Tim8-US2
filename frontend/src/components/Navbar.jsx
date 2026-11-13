@@ -5,24 +5,68 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
+const PUBLIC_NAV_LINKS = [
+  { label: "Katalog Kos", href: "/kos" },
+  { label: "Kos Terdekat", href: "/kos/nearby" },
+  { label: "Keunggulan", href: "/#keunggulan" },
+];
+
+function getRoleAccountLinks(role) {
+  if (role === "PEMILIK_KOS") {
+    return [
+      { label: "Dashboard Pemilik", href: "/owner/dashboard" },
+      { label: "Inventaris Kos Saya", href: "/owner/kos" },
+      { label: "Tambah Kos Baru", href: "/owner/kos/tambah" },
+      { label: "Kotak Pesan", href: "/chat" },
+    ];
+  }
+
+  if (role === "ADMIN") {
+    return [
+      { label: "Dashboard Admin", href: "/admin/dashboard" },
+      { label: "Verifikasi Pengajuan", href: "/admin/submissions" },
+      { label: "Kotak Pesan", href: "/chat" },
+    ];
+  }
+
+  return [
+    { label: "Kos Favorit Saya", href: "/favorites" },
+    { label: "Riwayat Booking", href: "/bookings" },
+    { label: "Kotak Pesan", href: "/chat" },
+  ];
+}
+
+const FOCUS_OUTLINE_CLASS =
+  "focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2";
+
 export default function Navbar() {
   const pathname = usePathname();
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef(null);
+  const accountButtonRef = useRef(null);
+  const mobileButtonRef = useRef(null);
 
   useEffect(() => {
-    if (!accountMenuOpen) return;
+    if (!accountMenuOpen && !mobileMenuOpen) return;
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        setAccountMenuOpen(false);
+        if (accountMenuOpen) {
+          setAccountMenuOpen(false);
+          accountButtonRef.current?.focus();
+        }
+        if (mobileMenuOpen) {
+          setMobileMenuOpen(false);
+          mobileButtonRef.current?.focus();
+        }
       }
     };
 
     const handlePointerDown = (event) => {
       if (
+        accountMenuOpen &&
         accountMenuRef.current &&
         !accountMenuRef.current.contains(event.target)
       ) {
@@ -36,32 +80,42 @@ export default function Navbar() {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [accountMenuOpen]);
+  }, [accountMenuOpen, mobileMenuOpen]);
 
-  const navLinks = [
-    { label: "Katalog Kos", href: "/kos" },
-    { label: "Kos Terdekat", href: "/kos/nearby" },
-    { label: "Pusat Pemilik", href: "/owner/dashboard" },
-  ];
+  const showAuthenticatedUI = !loading && isAuthenticated && Boolean(user);
+
+  const centerNavLinks = [...PUBLIC_NAV_LINKS];
+  if (showAuthenticatedUI && user.role === "PEMILIK_KOS") {
+    centerNavLinks.push({ label: "Portal Pemilik", href: "/owner/dashboard" });
+  } else if (showAuthenticatedUI && user.role === "ADMIN") {
+    centerNavLinks.push({ label: "Panel Admin", href: "/admin/dashboard" });
+  }
+
+  const accountLinks = showAuthenticatedUI
+    ? getRoleAccountLinks(user.role)
+    : [];
 
   const isActiveRoute = (href) => {
-    if (href === "/kos") {
-      return pathname === "/kos";
+    if (!pathname || href.startsWith("/#")) {
+      return false;
     }
-    return pathname === href || pathname?.startsWith(`${href}/`);
+    if (href === "/kos" || href === "/owner/kos") {
+      return pathname === href;
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   const userInitial = user?.nama ? user.nama.charAt(0).toUpperCase() : "U";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#0A0F1D]/85 backdrop-blur-md border-b border-[#141D30]">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#E2E8F0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
         {/* Brand Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#10B981] rounded-lg p-1 shrink-0"
+          className={`flex items-center gap-2.5 group rounded-lg p-1 shrink-0 ${FOCUS_OUTLINE_CLASS}`}
         >
-          <div className="w-10 h-10 rounded-xl bg-[#10B981] text-[#0A0F1D] flex items-center justify-center font-black text-xl shadow-lg shadow-[#10B981]/20 group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-[#1D4ED8] text-white flex items-center justify-center font-black text-xl group-hover:bg-[#1E40AF] transition-colors">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -73,138 +127,117 @@ export default function Navbar() {
               <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
             </svg>
           </div>
-          <span className="text-xl font-bold tracking-tight text-[#F1F5F9] flex items-center gap-1">
-            Cari<span className="text-[#10B981]">Kos</span>
+          <span className="text-xl font-bold tracking-tight text-[#0F172A]">
+            Cari<span className="text-[#1D4ED8]">Kos</span>
           </span>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav aria-label="Navigasi Utama" className="hidden md:flex items-center gap-7 text-sm font-medium">
-          {navLinks.map((item) => {
-            const active = isActiveRoute(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className={`py-1.5 border-b-2 transition-colors ${
-                  active
-                    ? "text-[#10B981] border-[#10B981] font-semibold"
-                    : "text-[#94A3B8] border-transparent hover:text-[#F1F5F9]"
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav aria-label="Utama" className="hidden sm:block">
+          <ul className="flex items-center gap-4 md:gap-7 text-xs md:text-sm font-medium">
+            {centerNavLinks.map((item) => {
+              const active = isActiveRoute(item.href);
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`inline-flex items-center min-h-[28px] py-1.5 border-b-2 whitespace-nowrap transition-colors ${FOCUS_OUTLINE_CLASS} ${
+                      active
+                        ? "text-[#1D4ED8] border-[#1D4ED8] font-semibold"
+                        : "text-[#475569] border-transparent hover:text-[#0F172A]"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </nav>
 
-        {/* Top Right Auth & Account Actions (Desktop, tanpa ikon strip 3) */}
-        <div className="hidden sm:flex items-center gap-2.5 shrink-0">
-          {!loading && isAuthenticated && user ? (
+        {/* Desktop Right Actions */}
+        <div className="hidden sm:flex items-center gap-4 shrink-0">
+          {showAuthenticatedUI ? (
             <div className="relative" ref={accountMenuRef}>
               <button
+                ref={accountButtonRef}
                 type="button"
                 aria-expanded={accountMenuOpen}
                 aria-controls="desktop-account-popover"
                 onClick={() => setAccountMenuOpen((prev) => !prev)}
-                className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-full bg-[#141D30] text-[#F1F5F9] hover:border-[#10B981]/50 transition-all cursor-pointer border border-slate-700/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#10B981]"
+                className={`flex items-center gap-2.5 min-h-[36px] px-2.5 py-1.5 rounded-full bg-[#EEF2F7] text-[#0F172A] hover:bg-[#E2E8F0] border border-[#CBD5E1] transition-colors cursor-pointer ${FOCUS_OUTLINE_CLASS}`}
               >
-                <span className="w-7 h-7 rounded-full bg-[#10B981]/15 text-[#10B981] flex items-center justify-center font-bold text-xs border border-[#10B981]/30">
+                <span className="w-7 h-7 rounded-full bg-[#1D4ED8] text-white flex items-center justify-center font-bold text-xs">
                   {userInitial}
                 </span>
                 <span className="text-xs font-medium max-w-[120px] truncate pr-1">
                   {user.nama || "Akun Saya"}
                 </span>
+                <svg
+                  className={`w-3.5 h-3.5 text-[#475569] transition-transform ${
+                    accountMenuOpen ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </button>
 
               {accountMenuOpen && (
                 <div
                   id="desktop-account-popover"
-                  className="absolute right-0 mt-2 w-56 rounded-xl bg-[#141D30] border border-slate-700/80 shadow-2xl shadow-black/60 py-2 text-xs z-50"
+                  className="absolute right-0 mt-2 w-56 rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-xl shadow-slate-900/10 py-2 text-xs z-50" // taste-skill-ignore: floating menu overlay
                 >
-                  <div className="px-3.5 py-2 border-b border-slate-800">
-                    <p className="font-semibold text-[#F1F5F9] truncate">
+                  <div className="px-3 py-2 mx-1.5 mb-1 rounded-lg bg-[#F5F7FA]">
+                    <p className="font-semibold text-[#0F172A] truncate">
                       {user.nama || "Pengguna CariKos"}
                     </p>
-                    <p className="text-[11px] text-[#94A3B8] truncate">
+                    <p className="text-[11px] text-[#475569] truncate">
                       {user.email}
                     </p>
                   </div>
 
-                  <div className="py-1 flex flex-col">
-                    {user.role === "PEMILIK_KOS" && (
-                      <>
-                        <Link
-                          href="/owner/dashboard"
-                          onClick={() => setAccountMenuOpen(false)}
-                          className="px-3.5 py-2 text-[#F1F5F9] hover:bg-slate-800/70 hover:text-[#10B981] transition-colors"
-                        >
-                          Dashboard Pemilik
-                        </Link>
-                        <Link
-                          href="/owner/kos"
-                          onClick={() => setAccountMenuOpen(false)}
-                          className="px-3.5 py-2 text-[#94A3B8] hover:bg-slate-800/70 hover:text-[#F1F5F9] transition-colors"
-                        >
-                          Inventaris Kos Saya
-                        </Link>
-                        <Link
-                          href="/owner/kos/tambah"
-                          onClick={() => setAccountMenuOpen(false)}
-                          className="px-3.5 py-2 text-[#94A3B8] hover:bg-slate-800/70 hover:text-[#F1F5F9] transition-colors"
-                        >
-                          Tambah Kos Baru
-                        </Link>
-                      </>
-                    )}
+                  <nav aria-label="Akun" className="py-1">
+                    <ul className="flex flex-col">
+                      {accountLinks.map((item) => {
+                        const active = isActiveRoute(item.href);
+                        return (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              aria-current={active ? "page" : undefined}
+                              onClick={() => setAccountMenuOpen(false)}
+                              className={`block px-3.5 py-2 border-l-2 transition-colors ${FOCUS_OUTLINE_CLASS} ${
+                                active
+                                  ? "text-[#1D4ED8] border-[#1D4ED8] bg-[#EFF6FF] font-semibold"
+                                  : "text-[#475569] border-transparent hover:bg-[#F5F7FA] hover:text-[#0F172A]"
+                              }`}
+                            >
+                              {item.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </nav>
 
-                    {user.role === "ADMIN" && (
-                      <Link
-                        href="/admin/dashboard"
-                        onClick={() => setAccountMenuOpen(false)}
-                        className="px-3.5 py-2 text-[#F1F5F9] hover:bg-slate-800/70 hover:text-[#10B981] transition-colors"
-                      >
-                        Dashboard Admin
-                      </Link>
-                    )}
-
-                    {user.role === "PENCARI_KOS" && (
-                      <>
-                        <Link
-                          href="/favorites"
-                          onClick={() => setAccountMenuOpen(false)}
-                          className="px-3.5 py-2 text-[#94A3B8] hover:bg-slate-800/70 hover:text-[#F1F5F9] transition-colors"
-                        >
-                          Kos Favorit Saya
-                        </Link>
-                        <Link
-                          href="/bookings"
-                          onClick={() => setAccountMenuOpen(false)}
-                          className="px-3.5 py-2 text-[#94A3B8] hover:bg-slate-800/70 hover:text-[#F1F5F9] transition-colors"
-                        >
-                          Riwayat Booking
-                        </Link>
-                      </>
-                    )}
-
-                    <Link
-                      href="/chat"
-                      onClick={() => setAccountMenuOpen(false)}
-                      className="px-3.5 py-2 text-[#94A3B8] hover:bg-slate-800/70 hover:text-[#F1F5F9] transition-colors"
-                    >
-                      Kotak Pesan
-                    </Link>
-                  </div>
-
-                  <div className="pt-1 border-t border-slate-800">
+                  <div className="mt-1 pt-1 px-1.5 border-t border-[#E2E8F0]">
                     <button
                       type="button"
                       onClick={() => {
                         setAccountMenuOpen(false);
                         logout();
                       }}
-                      className="w-full text-left px-3.5 py-2 text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer font-medium"
+                      className={`w-full text-left px-2.5 py-2 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer font-medium ${FOCUS_OUTLINE_CLASS}`}
                     >
                       Keluar Akun
                     </button>
@@ -213,18 +246,18 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-4">
               <Link
-                href="/auth/login"
-                className="px-4 py-2 rounded-full text-xs font-semibold text-[#F1F5F9] hover:text-[#10B981] border border-slate-700/80 hover:border-[#10B981]/50 bg-[#141D30]/70 transition-all"
+                href="/#pemilik"
+                className={`inline-flex items-center min-h-[28px] text-xs md:text-sm font-medium text-[#475569] hover:text-[#0F172A] whitespace-nowrap transition-colors rounded-sm py-1 ${FOCUS_OUTLINE_CLASS}`}
               >
-                Masuk
+                Untuk Pemilik
               </Link>
               <Link
-                href="/auth/register"
-                className="px-4 py-2 rounded-full text-xs font-semibold bg-[#10B981] text-[#0A0F1D] hover:bg-[#059669] transition-colors shadow-sm"
+                href="/auth/login"
+                className={`inline-flex items-center min-h-[36px] px-4 py-2 rounded-full text-xs font-semibold bg-[#1D4ED8] text-white hover:bg-[#1E40AF] whitespace-nowrap transition-colors ${FOCUS_OUTLINE_CLASS}`}
               >
-                Daftar Akun
+                Masuk
               </Link>
             </div>
           )}
@@ -233,12 +266,13 @@ export default function Navbar() {
         {/* Mobile Menu Toggle Button (< sm only) */}
         <div className="flex sm:hidden">
           <button
+            ref={mobileButtonRef}
             type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-nav-menu"
-            className="p-2 rounded-lg text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#141D30] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#10B981]"
-            aria-label="Toggle Menu"
+            className={`p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg text-[#475569] hover:text-[#0F172A] hover:bg-[#EEF2F7] ${FOCUS_OUTLINE_CLASS}`}
+            aria-label={mobileMenuOpen ? "Tutup Menu" : "Buka Menu"}
           >
             {mobileMenuOpen ? (
               <svg
@@ -275,44 +309,84 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
+      {/* Mobile Dropdown Drawer (< sm only) */}
       {mobileMenuOpen && (
-        <div
+        <nav
           id="mobile-nav-menu"
-          className="sm:hidden bg-[#0A0F1D]/95 backdrop-blur-xl border-b border-[#141D30] px-6 py-5 flex flex-col gap-3 text-base font-medium"
+          aria-label="Seluler"
+          className="sm:hidden bg-[#FFFFFF] border-b border-[#E2E8F0] px-6 py-5 flex flex-col gap-4 text-base font-medium shadow-lg"
         >
-          {navLinks.map((item) => {
-            const active = isActiveRoute(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`py-1.5 border-l-2 pl-3 transition-colors ${
-                  active
-                    ? "text-[#10B981] border-[#10B981] font-semibold"
-                    : "text-[#94A3B8] border-transparent hover:text-[#F1F5F9]"
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+          <ul className="flex flex-col gap-2">
+            {centerNavLinks.map((item) => {
+              const active = isActiveRoute(item.href);
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block py-1.5 border-l-2 pl-3 transition-colors ${FOCUS_OUTLINE_CLASS} ${
+                      active
+                        ? "text-[#1D4ED8] border-[#1D4ED8] font-semibold"
+                        : "text-[#475569] border-transparent hover:text-[#0F172A]"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
 
-          <div className="pt-3 border-t border-[#141D30] flex flex-col gap-2.5">
-            {isAuthenticated && user ? (
+            {!showAuthenticatedUI && (
+              <li>
+                <Link
+                  href="/#pemilik"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block py-1.5 border-l-2 border-transparent pl-3 text-[#475569] hover:text-[#0F172A] transition-colors ${FOCUS_OUTLINE_CLASS}`}
+                >
+                  Untuk Pemilik
+                </Link>
+              </li>
+            )}
+          </ul>
+
+          <div className="pt-2 flex flex-col gap-2.5">
+            {showAuthenticatedUI ? (
               <>
-                <div className="px-2 py-1 text-xs text-[#94A3B8]">
-                  Masuk sebagai <strong className="text-[#F1F5F9]">{user.nama || user.email}</strong>
+                <div className="px-3 py-2 rounded-lg bg-[#F5F7FA] text-xs text-[#475569]">
+                  Masuk sebagai{" "}
+                  <strong className="text-[#0F172A]">
+                    {user.nama || user.email}
+                  </strong>
                 </div>
+                <ul className="flex flex-col gap-1.5">
+                  {accountLinks.map((item) => {
+                    const active = isActiveRoute(item.href);
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          aria-current={active ? "page" : undefined}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`block py-1.5 border-l-2 pl-3 text-sm transition-colors ${FOCUS_OUTLINE_CLASS} ${
+                            active
+                              ? "text-[#1D4ED8] border-[#1D4ED8] font-semibold"
+                              : "text-[#475569] border-transparent hover:text-[#0F172A]"
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
                 <button
                   type="button"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     logout();
                   }}
-                  className="w-full py-2.5 rounded-full border border-rose-500/40 text-rose-400 font-semibold text-center hover:bg-rose-500/10 transition-colors text-sm"
+                  className={`mt-1 w-full py-2.5 rounded-full bg-rose-50 text-rose-600 font-semibold text-center hover:bg-rose-100 transition-colors text-sm ${FOCUS_OUTLINE_CLASS}`}
                 >
                   Keluar Akun
                 </button>
@@ -322,21 +396,21 @@ export default function Navbar() {
                 <Link
                   href="/auth/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2.5 rounded-full border border-slate-700/80 text-[#F1F5F9] font-medium text-center hover:bg-[#141D30] transition-colors text-sm"
+                  className={`w-full py-2.5 rounded-full bg-[#EEF2F7] border border-[#CBD5E1] text-[#0F172A] font-medium text-center hover:bg-[#E2E8F0] transition-colors text-sm ${FOCUS_OUTLINE_CLASS}`}
                 >
                   Masuk
                 </Link>
                 <Link
                   href="/auth/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2.5 rounded-full bg-[#10B981] text-[#0A0F1D] font-semibold text-center hover:bg-[#059669] transition-colors text-sm"
+                  className={`w-full py-2.5 rounded-full bg-[#1D4ED8] text-white font-semibold text-center hover:bg-[#1E40AF] transition-colors text-sm ${FOCUS_OUTLINE_CLASS}`}
                 >
                   Daftar Akun
                 </Link>
               </>
             )}
           </div>
-        </div>
+        </nav>
       )}
     </header>
   );

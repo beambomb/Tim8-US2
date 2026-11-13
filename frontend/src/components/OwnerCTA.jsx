@@ -4,41 +4,42 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
 export default function OwnerCTA() {
-  const { user, isAuthenticated } = useAuth();
-  const registerOrAddHref =
-    isAuthenticated && user?.role === "PEMILIK_KOS"
-      ? "/owner/kos/tambah"
-      : "/auth/register";
+  const { user, isAuthenticated, loading } = useAuth();
+  const isOwner =
+    !loading && isAuthenticated && user?.role === "PEMILIK_KOS";
+
+  const registerOrAddHref = isOwner
+    ? "/owner/kos/tambah"
+    : "/auth/register?role=PEMILIK_KOS";
+  const portalHref = isOwner ? "/owner/dashboard" : "/auth/login";
 
   return (
     <section
       id="pemilik"
       className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full"
     >
-      <div className="rounded-3xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl shadow-emerald-950/40">
+      <div className="rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-sm p-8 sm:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
         <div className="max-w-2xl">
-          <span className="text-xs uppercase tracking-widest font-black text-emerald-200">
-            Mitra Pemilik Properti
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold mt-1 tracking-tight text-white">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A]">
             Punya Kos di Sekitar Kampus?
           </h2>
-          <p className="mt-2 text-sm sm:text-base font-medium text-emerald-100/90 leading-relaxed">
-            Daftarkan kos Anda secara gratis. Kelola kamar kosong, permohonan sewa, dan terima pesan langsung dari mahasiswa setiap awal semester.
+          <p className="mt-3 text-sm sm:text-base text-[#475569] leading-relaxed">
+            Daftarkan properti kos Anda di CariKos secara gratis. Kelola kamar kosong, permohonan sewa, dan terima pesan langsung dari mahasiswa setiap awal semester.
           </p>
         </div>
+
         <div className="shrink-0 flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <Link
             href={registerOrAddHref}
-            className="px-6 py-3.5 rounded-full font-bold bg-[#0A0F1D] text-white hover:bg-[#141D30] transition-transform active:scale-95 text-center text-sm shadow-lg"
+            className="px-6 py-3 rounded-full font-semibold bg-[#1D4ED8] text-white hover:bg-[#1E40AF] transition-colors text-center text-sm shadow-sm focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2"
           >
             Daftar Sebagai Pemilik Kos
           </Link>
           <Link
-            href="/owner/dashboard"
-            className="px-5 py-3.5 rounded-full font-bold bg-white/20 hover:bg-white/30 text-white transition-colors text-center text-sm border border-white/20"
+            href={portalHref}
+            className="px-5 py-3 rounded-full font-semibold bg-[#EEF2F7] text-[#0F172A] hover:text-[#1D4ED8] hover:bg-[#E2E8F0] border border-[#CBD5E1] transition-colors text-center text-sm focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2"
           >
-            Portal Pemilik
+            Masuk Portal Pemilik
           </Link>
         </div>
       </div>

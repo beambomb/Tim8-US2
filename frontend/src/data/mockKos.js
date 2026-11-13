@@ -58,20 +58,20 @@ export const valueProps = [
     title: "Verifikasi Data Resmi Admin",
     description:
       "Setiap foto, koordinat, dan legalitas kos diperiksa langsung oleh Administrator untuk membasmi kos fiktif dan penipuan sewa.",
-    color: "amber",
+    color: "cobalt",
   },
   {
     id: "val-2",
     title: "Pencarian Radius Geospasial Akurat",
     description:
       "Menggunakan formula Haversine untuk menghitung jarak nyata dari gerbang fakultas atau titik Anda tanpa bergantung data perkiraan.",
-    color: "blue",
+    color: "sky",
   },
   {
     id: "val-3",
     title: "Manajemen Kamar Real-Time",
     description:
       "Ketersediaan kamar terupdate otomatis saat booking disetujui. Tidak ada lagi drama kamar sudah penuh saat datang ke lokasi.",
-    color: "emerald",
+    color: "slate",
   },
 ];

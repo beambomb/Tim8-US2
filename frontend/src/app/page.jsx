@@ -28,9 +28,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1D] text-[#F1F5F9] flex flex-col font-sans relative selection:bg-[#10B981] selection:text-[#0A0F1D]">
+    <div className="min-h-dvh bg-[#F5F7FA] text-[#0F172A] flex flex-col font-sans relative selection:bg-[#1D4ED8] selection:text-white">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 overflow-x-clip">
         <HeroSection
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}

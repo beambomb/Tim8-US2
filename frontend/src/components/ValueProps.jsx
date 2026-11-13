@@ -2,24 +2,24 @@ export default function ValueProps() {
   return (
     <section
       id="keunggulan"
-      className="py-20 px-4 sm:px-6 lg:px-8 border-t border-neutral-800 bg-neutral-900/40"
+      className="py-20 px-4 sm:px-6 lg:px-8 border-t border-[#E2E8F0] bg-[#EEF2F7]"
     >
       <div className="max-w-7xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
+          <span className="text-xs font-semibold uppercase tracking-widest text-[#1D4ED8]">
             Standar Kualitas
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#0F172A] mt-1">
             Mengapa Memilih CariKos?
           </h2>
-          <p className="text-sm text-neutral-400 mt-2">
+          <p className="text-sm text-[#475569] mt-2">
             Kami menyelesaikan masalah info kos yang terpecah-pecah di media sosial dengan sistem terpusat dan terverifikasi.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex flex-col gap-3">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+          <div className="p-6 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-xs flex flex-col gap-3">
+            <div className="w-12 h-12 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8] flex items-center justify-center font-bold">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -34,16 +34,16 @@ export default function ValueProps() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-white">
+            <h3 className="text-lg font-bold text-[#0F172A]">
               Verifikasi Data Resmi Admin
             </h3>
-            <p className="text-sm text-neutral-400 leading-relaxed">
+            <p className="text-sm text-[#475569] leading-relaxed">
               Setiap foto, koordinat, dan legalitas kos diperiksa langsung oleh Administrator untuk membasmi kos fiktif dan penipuan sewa.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex flex-col gap-3">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+          <div className="p-6 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-xs flex flex-col gap-3">
+            <div className="w-12 h-12 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 flex items-center justify-center font-bold">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -64,16 +64,16 @@ export default function ValueProps() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-white">
+            <h3 className="text-lg font-bold text-[#0F172A]">
               Pencarian Radius Geospasial Akurat
             </h3>
-            <p className="text-sm text-neutral-400 leading-relaxed">
+            <p className="text-sm text-[#475569] leading-relaxed">
               Menggunakan formula Haversine untuk menghitung jarak nyata dari gerbang fakultas atau titik Anda tanpa bergantung data perkiraan.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex flex-col gap-3">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+          <div className="p-6 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-xs flex flex-col gap-3">
+            <div className="w-12 h-12 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8] flex items-center justify-center font-bold">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -88,10 +88,10 @@ export default function ValueProps() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-white">
+            <h3 className="text-lg font-bold text-[#0F172A]">
               Manajemen Kamar Real-Time
             </h3>
-            <p className="text-sm text-neutral-400 leading-relaxed">
+            <p className="text-sm text-[#475569] leading-relaxed">
               Ketersediaan kamar terupdate otomatis saat booking disetujui. Tidak ada lagi drama kamar sudah penuh saat datang ke lokasi.
             </p>
           </div>
