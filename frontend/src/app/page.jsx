@@ -28,7 +28,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1D] text-[#F1F5F9] flex flex-col font-sans relative selection:bg-[#10B981] selection:text-[#0A0F1D]">
+    <div className="min-h-dvh bg-[#0A0F1D] text-[#F1F5F9] flex flex-col font-sans relative selection:bg-[#10B981] selection:text-[#0A0F1D]">
       <Navbar />
       <main className="flex-1 overflow-x-clip">
         <HeroSection

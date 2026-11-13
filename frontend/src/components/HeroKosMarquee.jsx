@@ -33,9 +33,10 @@ function MarqueeKosCard({ kos, isDuplicate = false }) {
           unoptimized
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
+        {/* Neutral scrim over kos photo for top badge contrast */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#141D30] via-[#141D30]/15 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-[#141D30] via-[#141D30]/15 to-transparent" /* taste-skill-ignore */
         />
 
         <span
@@ -95,7 +96,7 @@ function MarqueeKosCard({ kos, isDuplicate = false }) {
           </div>
         </div>
 
-        <div className="pt-3 border-t border-slate-800 flex items-baseline justify-between gap-2">
+        <div className="pt-2 flex items-baseline justify-between gap-2">
           <div className="flex items-baseline gap-1">
             <span className="text-base font-extrabold text-[#F1F5F9] tabular-nums">
               {kos.harga}
@@ -187,13 +188,14 @@ export default function HeroKosMarquee({ items = featuredKos }) {
         className="hero-marquee-viewport relative rounded-2xl p-1 -m-1"
         aria-label="Etalase kos pilihan sekitar kampus"
       >
+        {/* Left and right marquee edge fade masks matching #0A0F1D ground */}
         <div
           aria-hidden="true"
-          className="hero-marquee-fade pointer-events-none absolute inset-y-0 left-0 z-10 w-8 sm:w-12 bg-gradient-to-r from-[#0A0F1D] to-transparent"
+          className="hero-marquee-fade pointer-events-none absolute inset-y-0 left-0 z-10 w-8 sm:w-12 bg-gradient-to-r from-[#0A0F1D] to-transparent" /* taste-skill-ignore */
         />
         <div
           aria-hidden="true"
-          className="hero-marquee-fade pointer-events-none absolute inset-y-0 right-0 z-10 w-8 sm:w-12 bg-gradient-to-l from-[#0A0F1D] to-transparent"
+          className="hero-marquee-fade pointer-events-none absolute inset-y-0 right-0 z-10 w-8 sm:w-12 bg-gradient-to-l from-[#0A0F1D] to-transparent" /* taste-skill-ignore */
         />
 
         <div

@@ -36,7 +36,7 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <Link
             href="/owner/dashboard"
-            className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-all touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+            className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-[background-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
           >
             <span>Buka Dashboard Pemilik</span>
             <svg
@@ -63,7 +63,7 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <Link
             href="/admin/dashboard"
-            className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-all touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+            className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-[background-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
           >
             <span>Buka Panel Admin</span>
             <svg
@@ -89,7 +89,7 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
       <div className="flex flex-wrap items-center gap-3 pt-1">
         <Link
           href="/kos"
-          className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-all touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+          className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-[background-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
         >
           <span>Jelajahi Katalog</span>
           <svg
@@ -109,7 +109,7 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
         </Link>
         <Link
           href="/bookings"
-          className="inline-flex items-center justify-center min-h-[48px] px-5 py-3 rounded-xl text-sm font-semibold bg-[#141D30] hover:bg-slate-800 active:scale-[0.97] text-[#F1F5F9] border border-slate-700/80 hover:border-slate-600 transition-all touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+          className="inline-flex items-center justify-center min-h-[48px] px-5 py-3 rounded-xl text-sm font-semibold bg-[#141D30] hover:bg-slate-800 active:scale-[0.97] text-[#F1F5F9] border border-slate-700/80 hover:border-slate-600 transition-[background-color,border-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
         >
           Booking Saya
         </Link>
@@ -122,13 +122,13 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
       <div className="flex flex-wrap items-center gap-3">
         <Link
           href="/auth/register"
-          className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-all touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+          className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-[background-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
         >
           Daftar Akun
         </Link>
         <Link
           href="/auth/login"
-          className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 rounded-xl text-sm font-semibold bg-[#141D30] hover:bg-slate-800 active:scale-[0.97] text-[#F1F5F9] border border-slate-700/80 hover:border-slate-600 transition-all touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+          className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 rounded-xl text-sm font-semibold bg-[#141D30] hover:bg-slate-800 active:scale-[0.97] text-[#F1F5F9] border border-slate-700/80 hover:border-slate-600 transition-[background-color,border-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
         >
           Masuk
         </Link>
@@ -222,11 +222,6 @@ export default function HeroSection({
 
   return (
     <section className="relative bg-[#0A0F1D] pt-28 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-x-clip">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_18%_22%,rgba(16,185,129,0.11),transparent_70%)]"
-      />
-
       <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
         {/* Left Column: Copy, Typewriter Search, Quick Tags, Role-Adaptive CTA */}
         <div className="lg:col-span-7 flex flex-col items-start gap-6">
@@ -254,7 +249,7 @@ export default function HeroSection({
                 action="/kos"
                 method="GET"
                 onSubmit={handleSubmit}
-                className="relative flex items-center bg-[#141D30] border border-slate-700/80 rounded-2xl p-1.5 sm:p-2 transition-colors focus-within:border-[#10B981] focus-within:ring-2 focus-within:ring-[#10B981]/30"
+                className="relative flex items-center bg-[#141D30] ring-1 ring-slate-700/70 rounded-2xl p-1.5 sm:p-2 transition-colors focus-within:ring-2 focus-within:ring-[#10B981]"
               >
                 <div className="pl-3 sm:pl-4 text-[#10B981] flex items-center pointer-events-none">
                   <svg
@@ -325,7 +320,7 @@ export default function HeroSection({
 
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 min-h-[48px] px-4 sm:px-5 rounded-xl bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] font-bold text-sm shrink-0 transition-all cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+                  className="inline-flex items-center justify-center gap-2 min-h-[48px] px-4 sm:px-5 rounded-xl bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] font-bold text-sm shrink-0 transition-[background-color,transform] cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
                   aria-label="Cari Kos Sekarang"
                 >
                   <svg
