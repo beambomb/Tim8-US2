@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import HeroSection from "../components/HeroSection";
 import FeaturedCatalog from "../components/FeaturedCatalog";
@@ -10,6 +11,7 @@ import Footer from "../components/Footer";
 import SupportButton from "../components/SupportButton";
 
 export default function HomePage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [favorites, setFavorites] = useState({});
 
@@ -21,10 +23,8 @@ export default function HomePage() {
   };
 
   const handleSearchSubmit = (query) => {
-    const catalogElement = document.getElementById("katalog");
-    if (catalogElement) {
-      catalogElement.scrollIntoView({ behavior: "smooth" });
-    }
+    const trimmed = (query || "").trim();
+    router.push(trimmed ? `/kos?lokasi=${encodeURIComponent(trimmed)}` : "/kos");
   };
 
   return (

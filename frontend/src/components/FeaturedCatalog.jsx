@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import KosCard from "./KosCard";
 import { featuredKos } from "../data/mockKos";
 
@@ -55,6 +56,22 @@ export default function FeaturedCatalog({ favorites, toggleFavorite }) {
             onToggleFavorite={toggleFavorite}
           />
         ))}
+      </div>
+
+      {/* Browse Full Catalog & Nearby CTAs */}
+      <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <Link
+          href="/kos"
+          className="px-6 py-3 rounded-full text-sm font-semibold bg-[#10B981] text-[#0A0F1D] hover:bg-[#059669] transition-colors shadow-md shadow-emerald-500/20"
+        >
+          Lihat Semua Katalog Kos
+        </Link>
+        <Link
+          href="/kos/nearby"
+          className="px-6 py-3 rounded-full text-sm font-semibold bg-[#141D30] text-[#F1F5F9] hover:text-[#10B981] border border-slate-700/80 hover:border-[#10B981]/50 transition-colors"
+        >
+          Cari Kos Terdekat Kampus
+        </Link>
       </div>
     </section>
   );

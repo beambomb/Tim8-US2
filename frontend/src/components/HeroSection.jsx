@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { quickTags } from "../data/mockKos";
 
 export default function HeroSection({ searchQuery, setSearchQuery, onSearchSubmit }) {
@@ -133,12 +134,21 @@ export default function HeroSection({ searchQuery, setSearchQuery, onSearchSubmi
               <button
                 key={tag}
                 type="button"
-                onClick={() => setSearchQuery(tag)}
+                onClick={() => {
+                  setSearchQuery(tag);
+                  if (onSearchSubmit) onSearchSubmit(tag);
+                }}
                 className="px-3 py-1 rounded-full text-xs font-medium bg-[#141D30]/80 hover:bg-[#141D30] text-[#94A3B8] hover:text-[#10B981] border border-slate-700/60 hover:border-[#10B981]/40 backdrop-blur-sm transition-all cursor-pointer"
               >
                 {tag}
               </button>
             ))}
+            <Link
+              href="/kos/nearby"
+              className="px-3.5 py-1 rounded-full text-xs font-semibold bg-[#10B981]/15 hover:bg-[#10B981] text-[#10B981] hover:text-[#0A0F1D] border border-[#10B981]/40 backdrop-blur-sm transition-all"
+            >
+              Cari Terdekat Kampus
+            </Link>
           </div>
         </div>
       </div>
