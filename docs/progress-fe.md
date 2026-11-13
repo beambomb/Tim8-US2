@@ -9,13 +9,14 @@ Dokumen ini mencatat status implementasi, struktur direktori, antarmuka halaman,
 | Kategori | Status | Keterangan |
 | :--- | :--- | :--- |
 | **Framework & Compiler** | Selesai (100%) | Next.js 16.4.5 (App Router), React 19, Turbopack, Tailwind CSS v4 |
+| **Sistem Desain & Tema** | Selesai (100%) | Palet **Architectural Limestone & Royal Cobalt** (`#F5F7FA`, `#FFFFFF`, `#0F172A`, `#1D4ED8`) untuk seluruh halaman publik |
 | **Fondasi Arsitektur** | Selesai (100%) | Klien API Axios terpusat dengan Bearer Token interceptor, Singleton Socket.IO |
 | **State Global & Sesi** | Selesai (100%) | `AuthContext` (manajemen login/token) dan `SocketContext` (real-time listener) |
-| **Halaman Beranda** | Selesai (100%) | Desain modular, Hero section Full HD tajam (`kamarKos2.webp`), search bar, footer |
-| **Pemisahan Logic & UI**| Selesai (100%) | Modul `src/features/*` (services & custom hooks per domain tugas) |
-| **Struktur Rute Aplikasi**| Selesai (100%) | 21 rute telah dibuatkan placeholder interaktif dan file `README.md` panduan teknis |
+| **Halaman Beranda & Navigasi** | Selesai (100%) | Split-hero asimetris dengan typewriter search, `HeroKosMarquee` interaktif (hover-pause, drag, scroll horizontal, tombol `<` / `>`), dan `Navbar` adaptif berbasis role |
+| **Pemisahan Logic & UI** | Selesai (100%) | Modul `src/features/*` (services, custom hooks, dan komponen fitur per domain tugas) |
+| **Struktur Rute Aplikasi** | Berjalan (7/18 Rute Utama) | 7 rute terimplementasi penuh (`/`, `/kos`, `/kos/nearby`, `/owner/dashboard`, `/owner/kos`, `/owner/kos/tambah`, `/owner/kos/[id]/edit`); 11 rute lainnya siap sebagai `PlaceholderPage` |
 | **Pipeline CI/CD** | Selesai (100%) | GitHub Actions `.github/workflows/ci.yml` & `.github/workflows/cd.yml` |
-| **Kompilasi Build** | Lolos (100%) | Pengujian `npm run build` sukses merender seluruh 21 rute tanpa galat |
+| **Kompilasi Build** | Lolos (100%) | Pengujian `npm run build` dan `npx eslint` sukses tanpa galat |
 
 ---
 
@@ -27,8 +28,13 @@ Dokumen ini mencatat status implementasi, struktur direktori, antarmuka halaman,
 - [x] **`src/context/AuthContext.jsx`**: Global Provider untuk mengelola login, register, logout, penyimpanan token, dan pengecekan sesi aktif via `GET /api/auth/me`.
 - [x] **`src/context/SocketContext.jsx`**: Global Provider untuk menangani koneksi WebSocket, registrasi ke room pribadi user (`joinRoom`), dan listener notifikasi real-time.
 - [x] **`src/components/providers/AppProviders.jsx`**: Komponen wrapper penyatu context di `src/app/layout.jsx` agar root layout tetap berupa Server Component.
+- [x] **Antarmuka Beranda & Navigasi Publik (`src/app/page.jsx`, `src/app/globals.css`, `src/components/*`)**:
+  - `Navbar.jsx` adaptif berbasis status login & role (`Guest`, `Mahasiswa`, `Pemilik Kos`, `Admin`) dengan menu terpusat.
+  - `HeroSection.jsx` dengan tata letak split-hero asimetris, pencarian *typewriter* interaktif menuju `/kos`, dan CTA adaptif per role (`RoleAdaptiveCTA`).
+  - `HeroKosMarquee.jsx` interaktif berbasis *native horizontal scroll* yang jeda otomatis saat *hover/focus*, mendukung klik-geser (*drag*), gulir horizontal, serta tombol navigasi `<` / `>` dengan efek pudar tepi (`mask-image`).
+  - `FeaturedCatalog.jsx`, `ValueProps.jsx`, `OwnerCTA.jsx`, dan `Footer.jsx` menggunakan palet Architectural Limestone & Royal Cobalt.
 - [x] **`src/components/ui/PlaceholderPage.jsx`**: Komponen visual interaktif untuk rute-rute dalam tahap pengembangan, lengkap dengan badge penanggung jawab dan rute endpoint terkait.
-- [x] **`src/features/*`**: Kerangka arsitektur pemisahan logic dan UI (Services & Custom Hooks) untuk domain Auth, Admin, Kos, Owner, Booking, dan Chat.
+- [x] **`src/features/*`**: Kerangka arsitektur pemisahan logic dan UI (Services, Custom Hooks, dan Feature Components) untuk domain Auth, Admin, Kos, Owner, Booking, dan Chat.
 - [x] **`.github/workflows/ci.yml`**: Pipeline otomatis GitHub Actions untuk memvalidasi Next.js build dan integritas sintaks Node.js pada setiap PR/push.
 - [x] **`.github/workflows/cd.yml`**: Alur rilis deployment terkontrol (*guarded CD*) berbasis staging preview dan release gate.
 
@@ -69,28 +75,28 @@ Keterangan status:
 ---
 
 ### 3.2 Anggota 2: Katalog Eksplorasi, Geospasial & Manajemen Kos Pemilik
-- [x] **Modul Logic & Service Katalog Kos**: `src/features/kos/services/kosService.js` dan `src/features/kos/hooks/useKosList.js`.
-- [x] **Modul Logic & Service Kos Pemilik**: `src/features/owner/services/ownerService.js` dan `src/features/owner/hooks/useOwnerKos.js`.
-- [/] **Katalog & Filter Kos Lengkap (`/kos`)**:
-  - [x] Folder dan placeholder interaktif: `src/app/kos/page.jsx`.
+- [x] **Modul Logic, Service & Komponen Katalog Kos**: `src/features/kos/services/kosService.js`, `useKosList.js`, `useNearbyKos.js`, serta `KosCardReal.jsx`, `KosFilterSidebar.jsx`, `CampusPresetSelector.jsx`, dan `KosCatalogSkeleton.jsx`.
+- [x] **Modul Logic, Service & Komponen Kos Pemilik**: `src/features/owner/services/ownerService.js`, `useOwnerKos.js`, `useOwnerDashboard.js`, serta `OwnerLayout.jsx`, `OwnerMetricsGrid.jsx`, `OwnerKosTable.jsx`, dan `OwnerKosForm.jsx`.
+- [x] **Katalog & Filter Kos Lengkap (`/kos`)**:
+  - [x] Halaman katalog terimplementasi penuh: `src/app/kos/page.jsx`.
   - [x] Dokumen instruksi teknis: `src/app/kos/README.md`.
-  - [ ] Integrasi UI filter katalog dengan hook `useKosList.js`.
-- [/] **Kos Terdekat Kampus Geospasial (`/kos/nearby`)**:
-  - [x] Folder dan placeholder interaktif: `src/app/kos/nearby/page.jsx`.
+  - [x] Integrasi UI filter katalog, sidebar pencarian, dan kartu kos (`KosCardReal.jsx`) dengan hook `useKosList.js` dalam palet Architectural Limestone & Royal Cobalt.
+- [x] **Kos Terdekat Kampus Geospasial (`/kos/nearby`)**:
+  - [x] Halaman pencarian terdekat terimplementasi penuh: `src/app/kos/nearby/page.jsx`.
   - [x] Dokumen instruksi teknis: `src/app/kos/nearby/README.md`.
-  - [ ] Integrasi Geolocation API browser dan kalkulasi radius jarak ke `GET /api/kos/nearby`.
-- [/] **Dashboard Pemilik Kos (`/owner/dashboard`)**:
-  - [x] Folder dan placeholder interaktif: `src/app/owner/dashboard/page.jsx`.
+  - [x] Integrasi Geolocation API browser, preset koordinat kampus (`CampusPresetSelector.jsx`), dan kalkulasi jarak radius ke `GET /api/kos/nearby` melalui `useNearbyKos.js`.
+- [x] **Dashboard Pemilik Kos (`/owner/dashboard`)**:
+  - [x] Halaman dashboard pemilik terimplementasi penuh: `src/app/owner/dashboard/page.jsx`.
   - [x] Dokumen instruksi teknis: `src/app/owner/dashboard/README.md`.
-  - [ ] Integrasi metrik total kos dan antrean booking baru dari `GET /api/owner/kos`.
-- [/] **Manajemen Inventaris Kos Pemilik (`/owner/kos`)**:
-  - [x] Folder dan placeholder interaktif: `src/app/owner/kos/page.jsx`.
+  - [x] Integrasi metrik analitik (`OwnerMetricsGrid.jsx`), ringkasan permohonan booking, dan inventaris properti melalui `useOwnerDashboard.js`.
+- [x] **Manajemen Inventaris Kos Pemilik (`/owner/kos`)**:
+  - [x] Halaman manajemen kos terimplementasi penuh: `src/app/owner/kos/page.jsx`.
   - [x] Dokumen instruksi teknis: `src/app/owner/kos/README.md`.
-  - [ ] Integrasi tabel kos owner dan aksi status dengan hook `useOwnerKos.js`.
-- [/] **Form Tambah & Edit Kos + Upload Cloudinary (`/owner/kos/tambah` & `.../edit`)**:
-  - [x] Folder dan placeholder interaktif: `src/app/owner/kos/tambah/page.jsx` dan `src/app/owner/kos/[id]/edit/page.jsx`.
+  - [x] Integrasi `OwnerKosTable.jsx`, filter status verifikasi (`ALL`/`Approved`/`Pending`/`Rejected`), aksi hapus/verifikasi/update kuota kamar dengan `useOwnerKos.js`.
+- [x] **Form Tambah & Edit Kos + Upload Foto (`/owner/kos/tambah` & `.../edit`)**:
+  - [x] Halaman create dan edit terimplementasi penuh: `src/app/owner/kos/tambah/page.jsx` dan `src/app/owner/kos/[id]/edit/page.jsx`.
   - [x] Dokumen instruksi teknis: `README.md` pada masing-masing folder.
-  - [ ] Implementasi form spesifikasi kos dan dropzone upload hingga 5 foto ke Cloudinary (`POST /api/owner/upload`).
+  - [x] Implementasi `OwnerKosForm.jsx` (mode tambah & edit), preset koordinat kampus, pemilihan fasilitas, serta dropzone upload hingga 5 foto (maks. 5 MB/file) melalui `POST /api/owner/upload`.
 
 ---
 
@@ -143,13 +149,13 @@ Keterangan status:
 
 ## 4. Rencana Kerja Selanjutnya (Next Sprint Goals)
 
-1. **Sprint 1 (Prioritas Awal)**:
+1. **Sprint 1 (Fondasi Autentikasi & Detail Properti)**:
    - Anggota 1 menyelesaikan integrasi form di `/auth/login` dan `/auth/register` agar seluruh anggota tim dapat login dan memperoleh token JWT riil.
-   - Anggota 2 menghubungkan `/kos` dengan data kos Approved dari backend.
-   - Anggota 3 menghubungkan `/kos/[id]` dengan detail data kos riil.
+   - *(Selesai)* Anggota 2 menyelesaikan katalog publik `/kos`, pencarian geospasial `/kos/nearby`, portal pemilik `/owner/dashboard`, `/owner/kos`, dan form `/owner/kos/tambah` + `/owner/kos/[id]/edit` (PR `#15`, diperbarui visual beranda & katalog pada branch `fe-homepage-experiment-1`).
+   - Anggota 3 menghubungkan `/kos/[id]` dengan detail data kos riil menggunakan `useKosDetail.js`.
    - Anggota 4 menyambungkan koneksi aktif Socket.IO saat user login.
-2. **Sprint 2 (Modul Transaksi & Operasional)**:
-   - Form booking mahasiswa dan persetujuan pemilik kos.
-   - Form tambah kos baru dengan unggah foto ke Cloudinary.
-   - Audit verifikasi pengajuan kos oleh admin.
-   - Chatting real-time mahasiswa dengan pemilik kos.
+2. **Sprint 2 (Modul Transaksi, Admin, Chat & Wishlist)**:
+   - Form pengajuan booking mahasiswa (`/bookings`), modal booking di `/kos/[id]`, dan persetujuan pemilik kos (`/owner/bookings`) oleh Anggota 3.
+   - Fitur wishlist/favorit (`/favorites`) oleh Anggota 3.
+   - Audit verifikasi pengajuan kos (`/admin/submissions`), statistik (`/admin/dashboard`), dan manajemen user (`/admin/users`) oleh Anggota 1.
+   - Chatting real-time (`/chat` dan `/chat/[userId]`), notifikasi lonceng + toast, dan ulasan/rating bintang oleh Anggota 4.
