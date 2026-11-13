@@ -6,7 +6,7 @@ export default function SupportButton() {
       <button
         type="button"
         onClick={() => alert("Layanan Bantuan & Chat Customer Support CariKos")}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-emerald-400 hover:bg-emerald-300 text-neutral-950 shadow-2xl shadow-emerald-500/40 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer border border-emerald-200/50"
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[#1D4ED8] hover:bg-[#1E40AF] text-white shadow-xl shadow-[#1D4ED8]/30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer border border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
         title="Bantuan & Dukungan"
       >
         <svg

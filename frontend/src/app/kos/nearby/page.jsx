@@ -27,13 +27,13 @@ function KosNearbyContent() {
   } = useNearbyKos();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-8 flex flex-col gap-6">
       {/* Page Title & Heading */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F1F5F9] tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
           Pencarian Kos Terdekat Kampus
         </h1>
-        <p className="mt-1.5 text-sm text-[#94A3B8]">
+        <p className="mt-1.5 text-sm text-[#475569]">
           Hitung jarak akurat dengan formula Haversine dari kampus atau koordinat GPS perangkat Anda.
         </p>
       </div>
@@ -52,21 +52,21 @@ function KosNearbyContent() {
       />
 
       {/* Results Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-xs text-[#94A3B8]">
+      <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] text-xs text-[#475569]">
         <div>
           Ditemukan{' '}
-          <strong className="text-[#F1F5F9] font-mono tabular-nums">
+          <strong className="text-[#0F172A] font-mono tabular-nums">
             {isLoading ? '...' : total}
           </strong>{' '}
           kos dalam radius{' '}
-          <strong className="text-emerald-400 font-mono">{radiusKm} km</strong> dari{' '}
-          <span className="text-[#F1F5F9] font-medium">{coords.label}</span>
+          <strong className="text-[#1D4ED8] font-mono">{radiusKm} km</strong> dari{' '}
+          <span className="text-[#0F172A] font-medium">{coords.label}</span>
         </div>
 
         <button
           type="button"
           onClick={refetch}
-          className="text-slate-400 hover:text-emerald-400 transition-colors"
+          className="text-[#475569] hover:text-[#1D4ED8] transition-colors"
         >
           Muat Ulang
         </button>
@@ -74,7 +74,7 @@ function KosNearbyContent() {
 
       {/* Error Message */}
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
           {error}
         </div>
       )}
@@ -83,8 +83,8 @@ function KosNearbyContent() {
       {isLoading ? (
         <KosCatalogSkeleton count={6} />
       ) : kosList.length === 0 ? (
-        <div className="rounded-xl bg-[#141D30] border border-slate-800 p-12 text-center flex flex-col items-center justify-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400">
+        <div className="rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-xs p-12 text-center flex flex-col items-center justify-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-[#EEF2F7] flex items-center justify-center text-[#475569]">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -99,16 +99,16 @@ function KosNearbyContent() {
               />
             </svg>
           </div>
-          <h3 className="text-base font-semibold text-[#F1F5F9]">
+          <h3 className="text-base font-semibold text-[#0F172A]">
             Tidak Ada Kos dalam Radius {radiusKm} km
           </h3>
-          <p className="text-xs text-[#94A3B8] max-w-sm">
+          <p className="text-xs text-[#475569] max-w-sm">
             Belum ada kos terverifikasi di sekitar radius ini. Coba perlebar slider radius hingga 10 km atau pilih kampus lainnya.
           </p>
           <button
             type="button"
             onClick={() => setRadiusKm(10)}
-            className="mt-2 px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-[#10B981] hover:text-[#0A0F1D] border border-emerald-500/30 transition-colors"
+            className="mt-2 px-4 py-2 rounded-lg text-xs font-semibold bg-[#EFF6FF] text-[#1D4ED8] hover:bg-[#1D4ED8] hover:text-white border border-[#BFDBFE] transition-colors"
           >
             Perlebar ke Radius 10 km
           </button>
@@ -126,9 +126,9 @@ function KosNearbyContent() {
 
 export default function KosNearbyPage() {
   return (
-    <div className="min-h-screen bg-[#0A0F1D] text-[#F1F5F9] flex flex-col justify-between">
+    <div className="min-h-screen bg-[#F5F7FA] text-[#0F172A] flex flex-col justify-between">
       <Navbar />
-      <main className="flex-1 pt-24 pb-16">
+      <main className="flex-1 pt-20 pb-14">
         <Suspense fallback={<KosCatalogSkeleton count={6} />}>
           <KosNearbyContent />
         </Suspense>

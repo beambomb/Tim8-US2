@@ -16,13 +16,13 @@ export default function FeaturedCatalog({ favorites, toggleFavorite }) {
     <section id="katalog" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
+          <span className="text-xs font-semibold uppercase tracking-widest text-[#1D4ED8]">
             Katalog Pilihan
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#0F172A] mt-1">
             Rekomendasi Kos Sekitar Kampus
           </h2>
-          <p className="text-sm text-neutral-400 mt-1 max-w-xl">
+          <p className="text-sm text-[#475569] mt-1 max-w-xl">
             Setiap properti telah diperiksa dan diverifikasi oleh Administrator sebelum tampil secara publik.
           </p>
         </div>
@@ -36,8 +36,8 @@ export default function FeaturedCatalog({ favorites, toggleFavorite }) {
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                 selectedCategory === cat
-                  ? "bg-emerald-500 text-[#0A0F1D] shadow-md shadow-emerald-500/20"
-                  : "bg-neutral-900 text-neutral-300 hover:bg-neutral-800 border border-neutral-800"
+                  ? "bg-[#1D4ED8] text-white shadow-sm"
+                  : "bg-[#FFFFFF] text-[#475569] hover:text-[#0F172A] hover:bg-[#EEF2F7] border border-[#CBD5E1]"
               }`}
             >
               {cat}
@@ -62,13 +62,13 @@ export default function FeaturedCatalog({ favorites, toggleFavorite }) {
       <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
         <Link
           href="/kos"
-          className="px-6 py-3 rounded-full text-sm font-semibold bg-[#10B981] text-[#0A0F1D] hover:bg-[#059669] transition-colors shadow-md shadow-emerald-500/20"
+          className="px-6 py-3 rounded-full text-sm font-semibold bg-[#1D4ED8] text-white hover:bg-[#1E40AF] transition-colors shadow-sm"
         >
           Lihat Semua Katalog Kos
         </Link>
         <Link
           href="/kos/nearby"
-          className="px-6 py-3 rounded-full text-sm font-semibold bg-[#141D30] text-[#F1F5F9] hover:text-[#10B981] border border-slate-700/80 hover:border-[#10B981]/50 transition-colors"
+          className="px-6 py-3 rounded-full text-sm font-semibold bg-[#FFFFFF] text-[#0F172A] hover:text-[#1D4ED8] border border-[#CBD5E1] hover:border-[#1D4ED8]/50 transition-colors"
         >
           Cari Kos Terdekat Kampus
         </Link>

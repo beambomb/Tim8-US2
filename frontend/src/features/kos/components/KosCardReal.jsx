@@ -26,25 +26,25 @@ export default function KosCardReal({ kos }) {
     maximumFractionDigits: 0,
   }).format(harga);
 
-  // Type badge color styling (Slate/Sky or Emerald based on type)
+  // Type badge color styling (Frosted light pills over photos)
   const getTypeBadgeClass = (t) => {
     switch (t) {
       case 'Putra':
-        return 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+        return 'bg-white/95 text-sky-800 border-sky-200 shadow-xs';
       case 'Putri':
-        return 'bg-rose-500/10 text-rose-300 border-rose-500/20';
+        return 'bg-white/95 text-rose-700 border-rose-200 shadow-xs';
       case 'Campur':
       default:
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        return 'bg-white/95 text-slate-800 border-slate-200 shadow-xs';
     }
   };
 
   const isAvailable = Number(jumlahKamarTersedia) > 0;
 
   return (
-    <article className="group flex flex-col rounded-xl bg-[#141D30] border border-slate-800/80 hover:border-emerald-500/40 transition-all duration-200 overflow-hidden">
+    <article className="group flex flex-col rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] hover:border-[#1D4ED8]/50 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden">
       {/* Photo Frame */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#EEF2F7]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={displayImage}
@@ -54,7 +54,7 @@ export default function KosCardReal({ kos }) {
         />
 
         {/* Gradient Scrim */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1D]/80 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
@@ -69,8 +69,8 @@ export default function KosCardReal({ kos }) {
           <span
             className={`px-2.5 py-1 rounded-md text-xs font-medium border backdrop-blur-md ${
               isAvailable
-                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                : 'bg-slate-800/90 text-slate-400 border-slate-700/60'
+                ? 'bg-[#0F172A]/80 text-white border-white/15'
+                : 'bg-white/90 text-[#475569] border-[#E2E8F0]'
             }`}
           >
             {isAvailable ? `Sisa ${jumlahKamarTersedia} Kamar` : 'Kamar Penuh'}
@@ -79,9 +79,9 @@ export default function KosCardReal({ kos }) {
 
         {/* Distance Badge (if geospatial data present) */}
         {(jarakKm !== undefined || jarakMeter !== undefined) && (
-          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0A0F1D]/90 border border-slate-700 text-xs text-[#F1F5F9] font-medium backdrop-blur-md">
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0F172A]/85 border border-white/15 text-xs text-white font-medium backdrop-blur-md">
             <svg
-              className="w-3.5 h-3.5 text-[#10B981]"
+              className="w-3.5 h-3.5 text-sky-300"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -110,11 +110,11 @@ export default function KosCardReal({ kos }) {
       {/* Content Body */}
       <div className="p-4 flex flex-col flex-1 justify-between gap-3">
         <div>
-          <h3 className="text-base font-semibold text-[#F1F5F9] line-clamp-1 group-hover:text-[#10B981] transition-colors">
+          <h3 className="text-base font-semibold text-[#0F172A] line-clamp-1 group-hover:text-[#1D4ED8] transition-colors">
             {nama}
           </h3>
 
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-[#94A3B8] line-clamp-1">
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-[#475569] line-clamp-1">
             <svg
               className="w-3.5 h-3.5 shrink-0 text-[#64748B]"
               fill="none"
@@ -142,7 +142,7 @@ export default function KosCardReal({ kos }) {
               {fasilitas.slice(0, 3).map((f, i) => (
                 <span
                   key={i}
-                  className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800/80 text-slate-300 border border-slate-700/50"
+                  className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#F1F5F9] text-[#334155] border border-[#E2E8F0]"
                 >
                   {f}
                 </span>
@@ -157,11 +157,11 @@ export default function KosCardReal({ kos }) {
         </div>
 
         {/* Card Footer */}
-        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+        <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between">
           <div>
-            <span className="text-[11px] text-[#94A3B8] block">Mulai dari</span>
+            <span className="text-[11px] text-[#64748B] block">Mulai dari</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-base font-bold text-[#F1F5F9] tracking-tight">
+              <span className="text-base font-bold text-[#0F172A] tracking-tight">
                 {formattedPrice}
               </span>
               <span className="text-xs text-[#64748B]">/bln</span>
@@ -170,7 +170,7 @@ export default function KosCardReal({ kos }) {
 
           <Link
             href={`/kos/${_id}`}
-            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-[#10B981] hover:text-[#0A0F1D] border border-emerald-500/30 transition-colors"
+            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#EFF6FF] text-[#1D4ED8] hover:bg-[#1D4ED8] hover:text-white border border-[#BFDBFE] transition-colors"
           >
             Lihat Detail
           </Link>

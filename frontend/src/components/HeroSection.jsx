@@ -36,7 +36,7 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <Link
             href="/owner/dashboard"
-            className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-[background-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+            className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#1D4ED8] hover:bg-[#1E40AF] active:scale-[0.97] text-white transition-[background-color,transform] shadow-sm touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
           >
             <span>Buka Dashboard Pemilik</span>
             <svg
@@ -63,7 +63,7 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <Link
             href="/admin/dashboard"
-            className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-[background-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+            className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#1D4ED8] hover:bg-[#1E40AF] active:scale-[0.97] text-white transition-[background-color,transform] shadow-sm touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
           >
             <span>Buka Panel Admin</span>
             <svg
@@ -89,7 +89,7 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
       <div className="flex flex-wrap items-center gap-3 pt-1">
         <Link
           href="/kos"
-          className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-[background-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+          className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#1D4ED8] hover:bg-[#1E40AF] active:scale-[0.97] text-white transition-[background-color,transform] shadow-sm touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
         >
           <span>Jelajahi Katalog</span>
           <svg
@@ -109,7 +109,7 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
         </Link>
         <Link
           href="/bookings"
-          className="inline-flex items-center justify-center min-h-[48px] px-5 py-3 rounded-xl text-sm font-semibold bg-[#141D30] hover:bg-slate-800 active:scale-[0.97] text-[#F1F5F9] border border-slate-700/80 hover:border-slate-600 transition-[background-color,border-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+          className="inline-flex items-center justify-center min-h-[48px] px-5 py-3 rounded-xl text-sm font-semibold bg-[#FFFFFF] hover:bg-[#EEF2F7] active:scale-[0.97] text-[#0F172A] border border-[#CBD5E1] hover:border-[#94A3B8] transition-[background-color,border-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
         >
           Booking Saya
         </Link>
@@ -122,23 +122,23 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
       <div className="flex flex-wrap items-center gap-3">
         <Link
           href="/auth/register"
-          className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] transition-[background-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+          className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#1D4ED8] hover:bg-[#1E40AF] active:scale-[0.97] text-white transition-[background-color,transform] shadow-sm touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
         >
           Daftar Akun
         </Link>
         <Link
           href="/auth/login"
-          className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 rounded-xl text-sm font-semibold bg-[#141D30] hover:bg-slate-800 active:scale-[0.97] text-[#F1F5F9] border border-slate-700/80 hover:border-slate-600 transition-[background-color,border-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+          className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 rounded-xl text-sm font-semibold bg-[#FFFFFF] hover:bg-[#EEF2F7] active:scale-[0.97] text-[#0F172A] border border-[#CBD5E1] hover:border-[#94A3B8] transition-[background-color,border-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
         >
           Masuk
         </Link>
       </div>
 
-      <p className="text-sm text-[#94A3B8]">
+      <p className="text-sm text-[#475569]">
         Pemilik properti kos?{" "}
         <Link
           href="/auth/register?role=PEMILIK_KOS"
-          className="inline-flex items-center gap-1 font-semibold text-[#10B981] hover:text-emerald-300 underline-offset-4 hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981] rounded"
+          className="inline-flex items-center gap-1 font-semibold text-[#1D4ED8] hover:text-[#1E40AF] underline-offset-4 hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8] rounded"
         >
           <span>Bergabung bersama kami</span>
           <svg
@@ -221,22 +221,15 @@ export default function HeroSection({
   };
 
   return (
-    <section className="relative bg-[#0A0F1D] pt-28 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-x-clip">
+    <section className="relative bg-[#F5F7FA] pt-28 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-x-clip">
       <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
         {/* Left Column: Copy, Typewriter Search, Quick Tags, Role-Adaptive CTA */}
         <div className="lg:col-span-7 flex flex-col items-start gap-6">
           <div className="flex flex-col gap-3.5">
-            <p className="inline-flex items-center gap-2 text-sm font-medium text-[#10B981]">
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-1.5 rounded-full bg-[#10B981]"
-              />
-              Platform Kos Terverifikasi Sekitar Kampus
-            </p>
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-[#F1F5F9] tracking-tight leading-[1.08] max-w-xl text-balance">
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight leading-[1.08] max-w-xl text-balance">
               Hunian Nyaman Dekat Kampus
             </h1>
-            <p className="text-base sm:text-lg text-[#94A3B8] leading-relaxed max-w-xl text-pretty">
+            <p className="text-base sm:text-lg text-[#475569] leading-relaxed max-w-xl text-pretty">
               Temukan kamar kos terverifikasi admin dengan perhitungan radius
               kampus yang akurat, foto asli, dan status kamar real-time.
             </p>
@@ -249,9 +242,9 @@ export default function HeroSection({
                 action="/kos"
                 method="GET"
                 onSubmit={handleSubmit}
-                className="relative flex items-center bg-[#141D30] ring-1 ring-slate-700/70 rounded-2xl p-1.5 sm:p-2 transition-colors focus-within:ring-2 focus-within:ring-[#10B981]"
+                className="relative flex items-center bg-[#FFFFFF] ring-1 ring-[#CBD5E1] shadow-sm rounded-2xl p-1.5 sm:p-2 transition-colors focus-within:ring-2 focus-within:ring-[#1D4ED8]"
               >
-                <div className="pl-3 sm:pl-4 text-[#10B981] flex items-center pointer-events-none">
+                <div className="pl-3 sm:pl-4 text-[#1D4ED8] flex items-center pointer-events-none">
                   <svg
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
@@ -291,14 +284,14 @@ export default function HeroSection({
                   autoCorrect="off"
                   autoCapitalize="none"
                   spellCheck={false}
-                  className="w-full min-h-[48px] bg-transparent px-3 sm:px-3.5 py-2.5 text-base text-[#F1F5F9] placeholder-[#94A3B8] font-medium focus:outline-none"
+                  className="w-full min-h-[48px] bg-transparent px-3 sm:px-3.5 py-2.5 text-base text-[#0F172A] placeholder-[#64748B] font-medium focus:outline-none"
                 />
 
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center mr-1 text-[#94A3B8] hover:text-[#F1F5F9] rounded-lg cursor-pointer transition-colors touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+                    className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center mr-1 text-[#64748B] hover:text-[#0F172A] rounded-lg cursor-pointer transition-colors touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
                     aria-label="Hapus kata kunci"
                   >
                     <svg
@@ -320,7 +313,7 @@ export default function HeroSection({
 
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 min-h-[48px] px-4 sm:px-5 rounded-xl bg-[#10B981] hover:bg-[#059669] active:scale-[0.97] text-[#0A0F1D] font-bold text-sm shrink-0 transition-[background-color,transform] cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+                  className="inline-flex items-center justify-center gap-2 min-h-[48px] px-4 sm:px-5 rounded-xl bg-[#1D4ED8] hover:bg-[#1E40AF] active:scale-[0.97] text-white font-bold text-sm shrink-0 transition-[background-color,transform] cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
                   aria-label="Cari Kos Sekarang"
                 >
                   <svg
@@ -345,7 +338,7 @@ export default function HeroSection({
 
             {/* Popular Search Chips + Nearby Link */}
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-[#94A3B8] mr-1">
+              <span className="text-xs font-medium text-[#475569] mr-1">
                 Pencarian Populer:
               </span>
               {quickTags.map((tag) => (
@@ -356,14 +349,14 @@ export default function HeroSection({
                     setSearchQuery(tag);
                     if (onSearchSubmit) onSearchSubmit(tag);
                   }}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#141D30] hover:bg-slate-800 text-[#94A3B8] hover:text-[#F1F5F9] border border-slate-700/80 hover:border-[#10B981]/50 transition-colors cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+                  className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#FFFFFF] hover:bg-[#EEF2F7] text-[#475569] hover:text-[#0F172A] border border-[#CBD5E1] hover:border-[#1D4ED8]/50 transition-colors cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
                 >
                   {tag}
                 </button>
               ))}
               <Link
                 href="/kos/nearby"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#10B981]/15 hover:bg-[#10B981] text-[#10B981] hover:text-[#0A0F1D] border border-[#10B981]/40 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10B981]"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#EFF6FF] hover:bg-[#1D4ED8] text-[#1D4ED8] hover:text-white border border-[#BFDBFE] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
               >
                 Cari Radius Kampus
               </Link>
