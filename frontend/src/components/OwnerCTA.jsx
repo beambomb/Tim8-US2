@@ -1,4 +1,15 @@
+"use client";
+
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+
 export default function OwnerCTA() {
+  const { user, isAuthenticated } = useAuth();
+  const registerOrAddHref =
+    isAuthenticated && user?.role === "PEMILIK_KOS"
+      ? "/owner/kos/tambah"
+      : "/auth/register";
+
   return (
     <section
       id="pemilik"
@@ -17,21 +28,20 @@ export default function OwnerCTA() {
           </p>
         </div>
         <div className="shrink-0 flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <button
-            type="button"
-            className="px-6 py-3.5 rounded-full font-bold bg-[#0A0F1D] text-white hover:bg-[#141D30] transition-transform active:scale-95 text-center text-sm cursor-pointer shadow-lg"
+          <Link
+            href={registerOrAddHref}
+            className="px-6 py-3.5 rounded-full font-bold bg-[#0A0F1D] text-white hover:bg-[#141D30] transition-transform active:scale-95 text-center text-sm shadow-lg"
           >
             Daftar Sebagai Pemilik Kos
-          </button>
-          <button
-            type="button"
-            className="px-5 py-3.5 rounded-full font-bold bg-white/20 hover:bg-white/30 text-white transition-colors text-center text-sm cursor-pointer border border-white/20"
+          </Link>
+          <Link
+            href="/owner/dashboard"
+            className="px-5 py-3.5 rounded-full font-bold bg-white/20 hover:bg-white/30 text-white transition-colors text-center text-sm border border-white/20"
           >
-            Panduan Pemilik
-          </button>
+            Portal Pemilik
+          </Link>
         </div>
       </div>
     </section>
   );
 }
-

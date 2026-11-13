@@ -12,8 +12,10 @@ export const kosService = {
   },
 
   async getNearbyKos(lat, lng, radiusKm = 5) {
+    // Backend expects radius in METERS (maxDistance default is 5000 meters)
+    const radiusMeters = Math.round(Number(radiusKm) * 1000);
     const response = await api.get('/kos/nearby', {
-      params: { lat, lng, radius: radiusKm },
+      params: { lat, lng, radius: radiusMeters },
     });
     return response.data;
   },

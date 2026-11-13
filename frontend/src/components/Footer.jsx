@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="mt-auto border-t border-[#141D30] bg-[#0A0F1D] text-[#94A3B8] text-xs py-12 px-4 sm:px-6 lg:px-8">
@@ -19,19 +21,24 @@ export default function Footer() {
           <h4 className="text-[#F1F5F9] font-semibold text-sm mb-3">Navigasi</h4>
           <ul className="space-y-2">
             <li>
-              <a href="#katalog" className="hover:text-[#10B981] transition-colors">
+              <Link href="/kos" className="hover:text-[#10B981] transition-colors">
                 Katalog Kos
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#keunggulan" className="hover:text-[#10B981] transition-colors">
-                Tentang CariKos
-              </a>
+              <Link href="/kos/nearby" className="hover:text-[#10B981] transition-colors">
+                Kos Terdekat Kampus
+              </Link>
             </li>
             <li>
-              <a href="#pemilik" className="hover:text-[#10B981] transition-colors">
+              <Link href="/owner/dashboard" className="hover:text-[#10B981] transition-colors">
                 Portal Pemilik Kos
-              </a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/auth/login" className="hover:text-[#10B981] transition-colors">
+                Masuk / Daftar Akun
+              </Link>
             </li>
           </ul>
         </div>

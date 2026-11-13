@@ -21,7 +21,11 @@ export const ownerService = {
     return response.data;
   },
 
-  async updateAvailability(id, payload) {
+  async updateAvailability(id, jumlahKamarTersedia) {
+    const payload =
+      typeof jumlahKamarTersedia === 'object' && jumlahKamarTersedia !== null
+        ? jumlahKamarTersedia
+        : { jumlahKamarTersedia: Number(jumlahKamarTersedia) };
     const response = await api.patch(`/owner/kos/${id}/availability`, payload);
     return response.data;
   },
@@ -46,14 +50,28 @@ export const ownerService = {
     return response.data;
   },
 
-  async uploadPhoto(file) {
+  /**
+   * Upload multiple photos to Cloudinary via backend endpoint POST /api/owner/upload
+   * Multer middleware on backend uses field name: 'images' (max 5)
+   * @param {File[]|FileList|File} files
+   */
+  async uploadImages(files) {
     const formData = new FormData();
-    formData.append('image', file);
-    const response = await api.post('/upload', formData, {
+    const fileList = Array.isArray(files) ? files : files instanceof FileList ? Array.from(files) : [files];
+    fileList.forEach((file) => {
+      formData.append('images', file);
+    });
+
+    const response = await api.post('/owner/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
     return response.data;
+  },
+
+  // Backward compatibility alias for single file
+  async uploadPhoto(file) {
+    return this.uploadImages([file]);
   },
 };
