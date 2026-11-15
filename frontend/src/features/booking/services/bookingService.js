@@ -15,4 +15,36 @@ export const bookingService = {
     const response = await api.patch(`/bookings/${bookingId}/cancel`);
     return response.data;
   },
+
+  async getOwnerBookings() {
+    const response = await api.get('/bookings/owner');
+    return response.data;
+  },
+
+  async approveBooking(bookingId) {
+    const response = await api.patch(`/bookings/${bookingId}/approve`);
+    return response.data;
+  },
+
+  async rejectBooking(bookingId) {
+    const response = await api.patch(`/bookings/${bookingId}/reject`);
+    return response.data;
+  },
+
+  async updateBookingStatus(bookingId, status) {
+    const s = (status || '').toLowerCase();
+    if (s === 'approved' || s === 'disetujui') {
+      return this.approveBooking(bookingId);
+    }
+    if (s === 'rejected' || s === 'ditolak') {
+      return this.rejectBooking(bookingId);
+    }
+    const response = await api.patch(`/bookings/${bookingId}/status`, { status });
+    return response.data;
+  },
 };
+
+export default bookingService;
+
+
+export default bookingService;
