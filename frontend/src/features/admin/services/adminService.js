@@ -22,7 +22,7 @@ export const adminService = {
   },
 
   async rejectSubmission(id, reason) {
-    const response = await api.patch(`/admin/submissions/${id}/reject`, { reason });
+    const response = await api.patch(`/admin/submissions/${id}/reject`, { alasanPenolakan: reason });
     return response.data;
   },
 
