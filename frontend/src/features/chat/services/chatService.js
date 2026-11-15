@@ -6,6 +6,11 @@ export const chatService = {
     return response.data;
   },
 
+  async getSupportContact() {
+    const response = await api.get('/chat/support');
+    return response.data;
+  },
+
   async getMessages(targetUserId) {
     const response = await api.get(`/chat/${targetUserId}`);
     return response.data;

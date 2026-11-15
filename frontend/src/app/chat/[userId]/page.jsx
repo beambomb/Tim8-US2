@@ -20,7 +20,13 @@ const formatCurrencyIDR = (amount) => {
   return `Rp ${num.toLocaleString('id-ID')}`;
 };
 
-const extractPartnerProfile = (messages, userId, currentUserId, kosContext) => {
+const extractPartnerProfile = (
+  messages,
+  userId,
+  currentUserId,
+  kosContext,
+  isSupportTopic = false
+) => {
   for (const msg of messages) {
     const candidates = [msg.senderId, msg.receiverId, msg.sender, msg.receiver];
     for (const candidate of candidates) {
@@ -52,6 +58,14 @@ const extractPartnerProfile = (messages, userId, currentUserId, kosContext) => {
     }
   }
 
+  if (isSupportTopic) {
+    return {
+      id: userId,
+      nama: 'Admin Support CariKos',
+      role: 'ADMIN',
+    };
+  }
+
   return {
     id: userId,
     nama: 'Mitra Obrolan',
@@ -79,6 +93,7 @@ function ChatConversationContent() {
 
   const userId = params?.userId;
   const kosIdParam = searchParams?.get('kosId') || null;
+  const isSupportTopic = searchParams?.get('topic') === 'support';
 
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const currentUserId = user?._id || user?.id;
@@ -105,7 +120,8 @@ function ChatConversationContent() {
     messages,
     userId,
     currentUserId,
-    kosContext
+    kosContext,
+    isSupportTopic
   );
   const activeKos = extractActiveKos(kosContext, messages);
 
