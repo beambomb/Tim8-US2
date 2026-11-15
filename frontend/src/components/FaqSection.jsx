@@ -42,9 +42,6 @@ export default function FaqSection() {
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0F172A] tracking-tight">
             Pertanyaan yang Sering Diajukan
           </h2>
-          <p className="mt-3 text-base text-[#475569] leading-relaxed">
-            Ringkasan hal penting seputar pencarian kampus, verifikasi properti, pengajuan booking, dan dukungan admin.
-          </p>
         </div>
 
         <div className="lg:col-span-8 flex flex-col gap-3" data-reveal="80">

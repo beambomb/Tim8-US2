@@ -19,9 +19,6 @@ export default function FeaturedCatalog({ favorites, toggleFavorite }) {
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0F172A]">
             Rekomendasi Kos Sekitar Kampus
           </h2>
-          <p className="text-base text-[#475569] mt-1.5 max-w-xl">
-            Setiap properti telah diperiksa dan diverifikasi oleh Administrator sebelum tampil secara publik.
-          </p>
         </div>
 
         {/* Category Filter Tabs */}

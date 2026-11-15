@@ -5,13 +5,10 @@ export default function ValueProps() {
       className="py-20 px-4 sm:px-6 lg:px-8 bg-[#EEF2F7]"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="max-w-2xl mb-14" data-reveal="0">
+        <div className="max-w-2xl mb-10" data-reveal="0">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0F172A]">
             Mengapa Memilih CariKos?
           </h2>
-          <p className="text-base text-[#475569] mt-2 leading-relaxed">
-            Kami menyelesaikan masalah info kos yang terpecah-pecah di media sosial dengan sistem terpusat dan terverifikasi.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">

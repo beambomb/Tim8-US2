@@ -223,18 +223,14 @@ export default function HeroSection({
   return (
     <section className="relative bg-[#F5F7FA] pt-24 pb-12 sm:pt-28 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-x-clip">
       <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-y-6 lg:gap-x-12 items-start">
-        {/* Title & Subtitle Block */}
+        {/* Title Block */}
         <div
-          className="lg:col-span-7 lg:col-start-1 lg:row-start-1 flex flex-col gap-3.5"
+          className="lg:col-span-7 lg:col-start-1 lg:row-start-1"
           data-reveal="0"
         >
           <h1 className="text-[30px] sm:text-5xl lg:text-[66px] font-extrabold text-[#0F172A] tracking-tight leading-[1.06] max-w-2xl text-balance">
             Hunian Nyaman Dekat Kampus
           </h1>
-          <p className="text-base sm:text-lg text-[#475569] leading-relaxed max-w-xl text-pretty">
-            Temukan kamar kos terverifikasi admin dengan perhitungan radius
-            kampus yang akurat, foto asli, dan status kamar real-time.
-          </p>
         </div>
 
         {/* Auto-Scrolling Kos Card Marquee: directly under title on mobile/tablet, right column on desktop */}
