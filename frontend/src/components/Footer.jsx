@@ -22,12 +22,12 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             <li>
               <Link href="/kos" className="hover:text-[#1D4ED8] transition-colors">
-                Katalog Kos
+                Cari Kos Terverifikasi
               </Link>
             </li>
             <li>
-              <Link href="/kos/nearby" className="hover:text-[#1D4ED8] transition-colors">
-                Kos Terdekat Kampus
+              <Link href="/kos?campus=UGM&radius=5" className="hover:text-[#1D4ED8] transition-colors">
+                Kos Dekat Kampus
               </Link>
             </li>
             <li>

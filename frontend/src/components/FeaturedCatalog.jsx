@@ -65,10 +65,10 @@ export default function FeaturedCatalog({ favorites, toggleFavorite }) {
           Lihat Semua Katalog Kos
         </Link>
         <Link
-          href="/kos/nearby"
+          href="/kos?campus=UGM&radius=5"
           className="w-full sm:w-auto text-center px-6 py-3 rounded-full text-sm font-semibold bg-[#EEF2F7] text-[#0F172A] hover:text-[#1D4ED8] hover:bg-[#E2E8F0] transition-colors"
         >
-          Cari Kos Terdekat Kampus
+          Cari Kos Dekat Kampus
         </Link>
       </div>
     </section>

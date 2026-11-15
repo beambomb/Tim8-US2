@@ -370,7 +370,7 @@ export default function HeroSection({
                 </button>
               ))}
               <Link
-                href="/kos/nearby"
+                href="/kos?campus=UGM&radius=5"
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold bg-[#EFF6FF] hover:bg-[#1D4ED8] text-[#1D4ED8] hover:text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
               >
                 Cari Radius Kampus

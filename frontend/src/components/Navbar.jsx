@@ -7,8 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import NavbarNotifications from "./layout/NavbarNotifications";
 
 const PUBLIC_NAV_LINKS = [
-  { label: "Katalog Kos", href: "/kos" },
-  { label: "Kos Terdekat", href: "/kos/nearby" },
+  { label: "Cari Kos", href: "/kos" },
 ];
 
 const ROLE_LABELS = {
