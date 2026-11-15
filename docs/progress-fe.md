@@ -74,12 +74,11 @@ Keterangan status:
 - [x] **Sistem Ulasan & Rating Bintang**: Daftar ulasan kos serta form pemberian rating 1–5 di `/kos/[id]` melalui `useKosDetail.js`.
 
 ### 3.5 Komponen Pendukung Beranda (`SupportButton.jsx`)
-- [/] **Tombol Bantuan Mengambang (`src/components/SupportButton.jsx`)**: UI tombol Customer Support di sudut kanan bawah beranda (`/`), saat ini masih berupa aksi statis (`alert("Layanan Bantuan & Chat Customer Support CariKos")`) dan belum tersambung ke modal bantuan/FAQ atau kanal chat dukungan.
+- [x] **Pusat Bantuan & Chat Admin Support (`src/components/SupportButton.jsx`)**: Popover Pusat Bantuan (FAQ singkat) di sudut kanan bawah beranda yang terhubung ke peran aktif pengguna (`PENCARI_KOS`/`PEMILIK_KOS` -> `GET /api/chat/support` lalu ke `/chat/[adminId]?topic=support`, `ADMIN` -> `/chat`, Guest -> `/auth/login`).
 
 ---
 
 ## 4. Rencana Tindak Lanjut Frontend (Next Action Items)
 
-1. **Menyambungkan `SupportButton.jsx`**: Mengganti `alert(...)` dengan panel bantuan/FAQ ringkas atau pintasan menuju halaman kontak/chat admin dukungan.
-2. **Uji Integrasi End-to-End Frontend + Backend**: Verifikasi alur penuh pada server lokal aktif (`npm run dev` di backend port `5000` & frontend port `3000`) untuk seluruh skenario peran (`PENCARI_KOS`, `PEMILIK_KOS`, `ADMIN`).
-3. **Optimasi Minor Lint**: Mengganti tag `<img>` pada `src/app/admin/submissions/page.jsx` bila diperlukan untuk menghilangkan warning `@next/next/no-img-element`.
+1. **Uji Integrasi End-to-End Frontend + Backend**: Verifikasi alur penuh pada server lokal aktif (`npm run dev` di backend port `5000` & frontend port `3000`) untuk seluruh skenario peran (`PENCARI_KOS`, `PEMILIK_KOS`, `ADMIN`).
+2. **Optimasi Minor Lint**: Mengganti tag `<img>` pada `src/app/admin/submissions/page.jsx` bila diperlukan untuk menghilangkan warning `@next/next/no-img-element`.

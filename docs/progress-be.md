@@ -82,6 +82,7 @@ Dokumen ini mencatat status implementasi, pengujian, dan integrasi seluruh modul
 
 ### 3.7 Modul Chat Real-Time & HTTP Fallback (`/api/chat` & Socket.IO)
 - [x] `GET /api/chat/inbox` - Daftar percakapan aktif yang dikelompokkan per mitra bicara beserta cuplikan pesan terakhir.
+- [x] `GET /api/chat/support` - Mengambil akun Administrator utama untuk layanan bantuan & Customer Support (`PENCARI_KOS` & `PEMILIK_KOS`).
 - [x] `GET /api/chat/:userId` - Riwayat obrolan lengkap antara dua user (otomatis mengubah `dibaca: true`).
 - [x] `POST /api/chat/send` - Pengiriman pesan melalui HTTP REST API (fallback).
 - [x] Socket Event `joinRoom` - Menggabungkan socket ke room personal pengguna (`userId`).
