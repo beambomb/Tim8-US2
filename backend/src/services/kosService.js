@@ -4,7 +4,7 @@ import Kos from '../models/Kos.js';
 const EARTH_RADIUS_METERS = 6371e3;
 const toRad = (value) => (value * Math.PI) / 180;
 
-function computeDistanceMeters(userLat, userLng, kosLat, kosLng) {
+export function computeDistanceMeters(userLat, userLng, kosLat, kosLng) {
   const lat1 = toRad(userLat);
   const lat2 = toRad(kosLat);
   const deltaLat = toRad(kosLat - userLat);
