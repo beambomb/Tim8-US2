@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import HeroSection from "../components/HeroSection";
 import FeaturedCatalog from "../components/FeaturedCatalog";
 import ValueProps from "../components/ValueProps";
+import FaqSection from "../components/FaqSection";
 import OwnerCTA from "../components/OwnerCTA";
 import Footer from "../components/Footer";
 import SupportButton from "../components/SupportButton";
@@ -81,6 +82,7 @@ export default function HomePage() {
           toggleFavorite={toggleFavorite}
         />
         <ValueProps />
+        <FaqSection />
         <OwnerCTA />
       </main>
       <Footer />
