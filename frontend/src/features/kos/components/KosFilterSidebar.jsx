@@ -62,7 +62,7 @@ export default function KosFilterSidebar({
           <input
             id="filter-lokasi"
             type="text"
-            placeholder="Contoh: Pogung, Kaliurang, Sleman..."
+            placeholder="Pogung, Seturan, Sleman"
             value={filters.lokasi || ''}
             onChange={(e) => updateFilter('lokasi', e.target.value)}
             className="w-full px-3 py-2 pr-8 rounded-lg bg-[#F5F7FA] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#1D4ED8] transition-colors"
@@ -133,7 +133,7 @@ export default function KosFilterSidebar({
               id="harga-min"
               type="number"
               min="0"
-              placeholder="Min: 500000"
+              placeholder="Min (Rp)"
               value={filters.hargaMin || ''}
               onChange={(e) => updateFilter('hargaMin', e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-[#F5F7FA] border border-[#CBD5E1] text-[13px] text-[#0F172A] tabular-nums placeholder-[#64748B] focus:outline-none focus:border-[#1D4ED8] transition-colors"
@@ -147,7 +147,7 @@ export default function KosFilterSidebar({
               id="harga-max"
               type="number"
               min="0"
-              placeholder="Maks: 2500000"
+              placeholder="Maks (Rp)"
               value={filters.hargaMax || ''}
               onChange={(e) => updateFilter('hargaMax', e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-[#F5F7FA] border border-[#CBD5E1] text-[13px] text-[#0F172A] tabular-nums placeholder-[#64748B] focus:outline-none focus:border-[#1D4ED8] transition-colors"

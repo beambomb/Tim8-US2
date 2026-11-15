@@ -90,7 +90,12 @@ export function useKosList(initialFilters = {}) {
   const [error, setError] = useState(null);
 
   const debounceTimerRef = useRef(null);
+  const filtersRef = useRef(initialFilterState);
   const lastSyncedQueryRef = useRef(searchParams ? searchParams.toString() : '');
+
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
 
   useEffect(() => {
     return () => {
@@ -118,6 +123,7 @@ export function useKosList(initialFilters = {}) {
     };
 
     queueMicrotask(() => {
+      filtersRef.current = nextFromUrl;
       setFilters((prev) => (filtersEqual(prev, nextFromUrl) ? prev : nextFromUrl));
       setQueryFilters((prev) => (filtersEqual(prev, nextFromUrl) ? prev : nextFromUrl));
     });
@@ -197,31 +203,29 @@ export function useKosList(initialFilters = {}) {
 
   const updateFilter = useCallback(
     (key, value, immediate = false) => {
-      setFilters((prev) => {
-        const updated = {
-          ...prev,
-          [key]: value,
-        };
+      const updated = {
+        ...filtersRef.current,
+        [key]: value,
+      };
+      filtersRef.current = updated;
+      setFilters(updated);
 
-        if (debounceTimerRef.current) {
-          clearTimeout(debounceTimerRef.current);
-        }
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
 
-        const shouldDebounce = DEBOUNCED_FIELDS.has(key) && !immediate;
-        if (shouldDebounce) {
-          debounceTimerRef.current = setTimeout(() => {
-            setIsLoading(true);
-            setQueryFilters(updated);
-            syncToUrl(updated);
-          }, 300);
-        } else {
+      const shouldDebounce = DEBOUNCED_FIELDS.has(key) && !immediate;
+      if (shouldDebounce) {
+        debounceTimerRef.current = setTimeout(() => {
           setIsLoading(true);
           setQueryFilters(updated);
           syncToUrl(updated);
-        }
-
-        return updated;
-      });
+        }, 300);
+      } else {
+        setIsLoading(true);
+        setQueryFilters(updated);
+        syncToUrl(updated);
+      }
     },
     [syncToUrl]
   );
@@ -230,6 +234,7 @@ export function useKosList(initialFilters = {}) {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
+    filtersRef.current = EMPTY_FILTERS;
     setIsLoading(true);
     setFilters(EMPTY_FILTERS);
     setQueryFilters(EMPTY_FILTERS);
