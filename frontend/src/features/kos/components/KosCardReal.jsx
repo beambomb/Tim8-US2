@@ -25,7 +25,8 @@ export default function KosCardReal({
     ulasanCount,
   } = kos;
 
-  const displayImage = fotoUrls && fotoUrls.length > 0 ? fotoUrls[0] : '/images/kamarKos2.webp';
+  const displayImage =
+    fotoUrls && fotoUrls.length > 0 ? fotoUrls[0] : '/images/kamarKos2.webp';
 
   const formattedPrice = new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -36,7 +37,7 @@ export default function KosCardReal({
   const getTypeBadgeClass = (t) => {
     switch (t) {
       case 'Putra':
-        return 'bg-[#EFF6FF] text-[#1E40AF]';
+        return 'bg-[#EFF6FF] text-[var(--accent)]';
       case 'Putri':
         return 'bg-[#FFF1F2] text-[#9F1239]';
       case 'Campur':
@@ -57,10 +58,17 @@ export default function KosCardReal({
       ? `${jarakKm} km`
       : `${(Number(jarakMeter || 0) / 1000).toFixed(2)} km`;
 
+  const compactFacilities =
+    fasilitas && fasilitas.length > 0
+      ? `${fasilitas.slice(0, 3).join(' · ')}${
+          fasilitas.length > 3 ? ` · +${fasilitas.length - 3}` : ''
+        }`
+      : 'Fasilitas dasar tersedia';
+
   return (
     <article className="group flex flex-col rounded-xl bg-[#FFFFFF] transition-colors duration-200 overflow-hidden">
-      {/* Photo Frame */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#EEF2F7]">
+      {/* Photo Frame (16:9 compact ratio, single status pill) */}
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#EEF2F7]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={displayImage}
@@ -69,33 +77,35 @@ export default function KosCardReal({
           loading="lazy"
         />
 
-        {/* Top Availability Pill */}
-        <div className="absolute top-3 left-3 pointer-events-none">
+        <div className="absolute top-2.5 left-2.5 pointer-events-none">
           <span
-            className={`inline-block px-2.5 py-1 rounded-md text-[13px] font-medium ${
+            className={`inline-block px-2 py-0.5 rounded-md text-xs font-medium ${
               isAvailable
                 ? 'bg-[#0F172A] text-white'
                 : 'bg-[#FFFFFF] text-[#475569]'
             }`}
           >
-            {isAvailable ? `Sisa ${jumlahKamarTersedia} Kamar` : 'Kamar Penuh'}
+            {isAvailable ? `Sisa ${jumlahKamarTersedia}` : 'Penuh'}
           </span>
         </div>
 
-        {/* Optional Favorite Wishlist Button (only for authenticated PENCARI_KOS) */}
         {showFavoriteButton && typeof onToggleFavorite === 'function' && (
           <button
             type="button"
             onClick={() => onToggleFavorite(_id)}
-            aria-label={isFavorited ? `Hapus ${nama} dari favorit` : `Simpan ${nama} ke favorit`}
+            aria-label={
+              isFavorited
+                ? `Hapus ${nama} dari favorit`
+                : `Simpan ${nama} ke favorit`
+            }
             aria-pressed={isFavorited}
-            className="absolute top-3 right-3 w-10 h-10 rounded-full bg-[#FFFFFF] text-[#0F172A] hover:text-[#1D4ED8] flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-[#FFFFFF] text-[#0F172A] hover:text-[var(--accent)] flex items-center justify-center transition-colors cursor-pointer"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4"
               viewBox="0 0 24 24"
-              fill={isFavorited ? '#1D4ED8' : 'none'}
-              stroke={isFavorited ? '#1D4ED8' : 'currentColor'}
+              fill={isFavorited ? 'var(--accent)' : 'none'}
+              stroke={isFavorited ? 'var(--accent)' : 'currentColor'}
               strokeWidth={1.75}
               aria-hidden="true"
             >
@@ -107,48 +117,50 @@ export default function KosCardReal({
             </svg>
           </button>
         )}
-
-        {/* Distance Badge (when geospatial data is present) */}
-        {hasDistance && (
-          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0F172A] text-[13px] text-white font-medium tabular-nums pointer-events-none">
-            <svg
-              className="w-3.5 h-3.5 text-[#93C5FD]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-            <span>{distanceLabel}</span>
-          </div>
-        )}
       </div>
 
-      {/* Content Body */}
-      <div className="p-4 flex flex-col flex-1 justify-between gap-4">
-        <div>
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <span
-              className={`px-2.5 py-0.5 rounded-md text-[13px] font-medium ${getTypeBadgeClass(tipe)}`}
-            >
-              Kos {tipe}
-            </span>
+      {/* Compact Content Body */}
+      <div className="p-3.5 flex flex-col flex-1 justify-between gap-2.5">
+        <div className="min-w-0 flex flex-col gap-1">
+          {/* Metadata Row: Type + Distance + Rating */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${getTypeBadgeClass(tipe)}`}
+              >
+                {tipe}
+              </span>
+
+              {hasDistance && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent)] tabular-nums truncate">
+                  <svg
+                    className="w-3.5 h-3.5 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  {distanceLabel}
+                </span>
+              )}
+            </div>
 
             {rating !== undefined && rating !== null && (
-              <div className="flex items-center gap-1 text-[13px] font-semibold text-[#1D4ED8] tabular-nums">
+              <div className="flex items-center gap-1 text-xs font-semibold text-[var(--accent)] tabular-nums shrink-0">
                 <svg
-                  className="w-3.5 h-3.5 fill-[#1D4ED8]"
+                  className="w-3.5 h-3.5 fill-[var(--accent)]"
                   viewBox="0 0 20 20"
                   aria-hidden="true"
                 >
@@ -156,23 +168,25 @@ export default function KosCardReal({
                 </svg>
                 <span>{rating}</span>
                 {ulasanCount !== undefined && (
-                  <span className="text-[#475569] font-normal">({ulasanCount})</span>
+                  <span className="text-[#475569] font-normal">
+                    ({ulasanCount})
+                  </span>
                 )}
               </div>
             )}
           </div>
 
-          <h3 className="text-base font-semibold text-[#0F172A] line-clamp-1 group-hover:text-[#1D4ED8] transition-colors">
-            {nama}
+          <h3 className="text-[15px] font-semibold text-[#0F172A] truncate group-hover:text-[var(--accent)] transition-colors">
+            <Link href={`/kos/${_id}`}>{nama}</Link>
           </h3>
 
-          <p className="mt-1 flex items-center gap-1.5 text-sm text-[#475569] line-clamp-1">
+          <p className="flex items-center gap-1 text-xs text-[#475569] min-w-0">
             <svg
-              className="w-3.5 h-3.5 shrink-0 text-[#475569]"
+              className="w-3.5 h-3.5 shrink-0 text-[#64748B]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              strokeWidth={2}
+              strokeWidth={1.75}
               aria-hidden="true"
             >
               <path
@@ -186,46 +200,28 @@ export default function KosCardReal({
                 d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
               />
             </svg>
-            <span>{lokasi}</span>
+            <span className="truncate min-w-0">{lokasi}</span>
           </p>
 
-          {/* Facility Chips */}
-          {fasilitas && fasilitas.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {fasilitas.slice(0, 3).map((f, i) => (
-                <span
-                  key={i}
-                  className="px-2 py-0.5 rounded text-[13px] font-medium bg-[#EEF2F7] text-[#334155]"
-                >
-                  {f}
-                </span>
-              ))}
-              {fasilitas.length > 3 && (
-                <span className="px-1.5 py-0.5 rounded text-[13px] font-medium text-[#475569]">
-                  +{fasilitas.length - 3} lainnya
-                </span>
-              )}
-            </div>
-          )}
+          <p className="text-xs text-[#64748B] truncate pt-0.5">
+            {compactFacilities}
+          </p>
         </div>
 
-        {/* Card Footer */}
-        <div className="pt-2 flex items-center justify-between gap-3">
-          <div>
-            <span className="text-[13px] text-[#475569] block">Mulai dari</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-base font-bold text-[#0F172A] tracking-tight tabular-nums">
-                {formattedPrice}
-              </span>
-              <span className="text-[13px] text-[#475569]">/bln</span>
-            </div>
+        {/* Compact Single-Row Footer */}
+        <div className="pt-1 flex items-center justify-between gap-2">
+          <div className="flex items-baseline gap-1 min-w-0">
+            <span className="text-[15px] font-bold text-[#0F172A] tracking-tight tabular-nums truncate">
+              {formattedPrice}
+            </span>
+            <span className="text-xs text-[#475569] shrink-0">/bln</span>
           </div>
 
           <Link
             href={`/kos/${_id}`}
-            className="px-3.5 py-2 rounded-lg text-[13px] font-semibold bg-[#EFF6FF] text-[#1D4ED8] hover:bg-[#1D4ED8] hover:text-white transition-colors whitespace-nowrap"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#EFF6FF] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-colors whitespace-nowrap shrink-0"
           >
-            Lihat Detail
+            Detail
           </Link>
         </div>
       </div>
