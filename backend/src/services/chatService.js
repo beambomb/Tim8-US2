@@ -71,3 +71,22 @@ export const getInboxListService = async (userId) => {
 
   return Array.from(conversationMap.values());
 };
+
+export const getSupportAdminService = async () => {
+  const admin = await User.findOne({ role: 'ADMIN' })
+    .select('_id nama email role')
+    .sort({ createdAt: 1 });
+
+  if (!admin) {
+    const error = new Error('Akun admin layanan bantuan belum tersedia');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return {
+    id: admin._id,
+    nama: admin.nama,
+    email: admin.email,
+    role: admin.role,
+  };
+};

@@ -34,6 +34,21 @@ export const getInboxList = async (req, res) => {
   }
 };
 
+export const getSupportContact = async (_req, res) => {
+  try {
+    const supportAdmin = await chatService.getSupportAdminService();
+    res.status(200).json({
+      success: true,
+      data: supportAdmin,
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Gagal mengambil kontak admin layanan bantuan',
+    });
+  }
+};
+
 export const sendMessageHttp = async (req, res) => {
   try {
     const senderId = req.user.id;
