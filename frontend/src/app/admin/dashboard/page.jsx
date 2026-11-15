@@ -32,9 +32,9 @@ function MetricGroup({ title, items }) {
       <div className="rounded-xl border border-[#E2E8F0] bg-[#E2E8F0] overflow-hidden grid grid-cols-2 lg:grid-cols-4 gap-px">
         {items.map((item) => (
           <div key={item.name} className="bg-[#FFFFFF] p-5">
-            <p className="text-sm text-[#475569]">{item.name}</p>
+            <p className="text-xs font-medium text-[#475569]">{item.name}</p>
             <p
-              className={`mt-2 text-2xl font-bold tabular-nums ${
+              className={`mt-1.5 text-2xl font-semibold tracking-tight tabular-nums ${
                 item.warning ? "text-[#B45309]" : "text-[#0F172A]"
               }`}
             >
@@ -104,7 +104,7 @@ export default function Dashboard() {
           <div className="grid sm:grid-cols-2 gap-4">
             <Link
               href="/admin/submissions"
-              className="group rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-5 text-[#0F172A] hover:border-[#CBD5E1] transition-colors flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2"
+              className="group rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-5 text-[#0F172A] hover:border-[#CBD5E1] transition-colors flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               <div>
                 <h2 className="text-base font-semibold text-[#0F172A]">
@@ -114,7 +114,7 @@ export default function Dashboard() {
                   Tinjau {pendingCount} pengajuan yang menunggu keputusan.
                 </p>
               </div>
-              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1D4ED8] group-hover:text-[#1E40AF]">
+              <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent)] group-hover:text-[var(--accent-hover)]">
                 <span>Buka antrean verifikasi</span>
                 <ArrowRightIcon />
               </span>
@@ -122,7 +122,7 @@ export default function Dashboard() {
 
             <Link
               href="/admin/users"
-              className="group rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-5 text-[#0F172A] hover:border-[#CBD5E1] transition-colors flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2"
+              className="group rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-5 text-[#0F172A] hover:border-[#CBD5E1] transition-colors flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2"
             >
               <div>
                 <h2 className="text-base font-semibold text-[#0F172A]">
@@ -133,7 +133,7 @@ export default function Dashboard() {
                   pengguna.
                 </p>
               </div>
-              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1D4ED8] group-hover:text-[#1E40AF]">
+              <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent)] group-hover:text-[var(--accent-hover)]">
                 <span>Buka daftar pengguna</span>
                 <ArrowRightIcon />
               </span>

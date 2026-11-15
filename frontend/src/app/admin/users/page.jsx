@@ -69,7 +69,7 @@ export default function Users() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Cari nama atau email..."
           aria-label="Cari pengguna"
-          className="rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-4 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] w-full sm:w-80 outline-none focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/20 transition-colors"
+          className="rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-4 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] w-full sm:w-80 outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 transition-colors"
         />
       </div>
 
@@ -137,7 +137,7 @@ export default function Users() {
                         value={u.role}
                         disabled={busy === u._id || isSelf}
                         onChange={(e) => handleRoleChange(u, e.target.value)}
-                        className="rounded-lg border border-[#CBD5E1] bg-[#FFFFFF] px-3 py-1.5 text-sm text-[#0F172A] outline-none focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/20 disabled:bg-[#F5F7FA] disabled:text-[#64748B] disabled:cursor-not-allowed transition-colors"
+                        className="rounded-lg border border-[#CBD5E1] bg-[#FFFFFF] px-3 py-1.5 text-sm text-[#0F172A] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 disabled:bg-[#F5F7FA] disabled:text-[#64748B] disabled:cursor-not-allowed transition-colors"
                       >
                         <option value="PENCARI_KOS">Pencari Kos</option>
                         <option value="PEMILIK_KOS">Pemilik Kos</option>

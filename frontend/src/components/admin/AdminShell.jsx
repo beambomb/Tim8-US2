@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import PortalShell from "@/components/portal/PortalShell";
+import PortalPageHeader from "@/components/portal/PortalPageHeader";
 
 function NavIcon({ kind }) {
   if (kind === "dashboard") {
@@ -62,131 +60,52 @@ function NavIcon({ kind }) {
   );
 }
 
-const nav = [
-  { href: "/admin/dashboard", label: "Ringkasan", icon: "dashboard" },
-  { href: "/admin/submissions", label: "Verifikasi Kos", icon: "submissions" },
-  { href: "/admin/users", label: "Pengguna", icon: "users" },
+const navItems = [
+  {
+    href: "/admin/dashboard",
+    label: "Ringkasan",
+    icon: <NavIcon kind="dashboard" />,
+    exact: true,
+  },
+  {
+    href: "/admin/submissions",
+    label: "Verifikasi Kos",
+    icon: <NavIcon kind="submissions" />,
+  },
+  {
+    href: "/admin/users",
+    label: "Pengguna",
+    icon: <NavIcon kind="users" />,
+  },
 ];
 
-export default function AdminShell({ children, title, subtitle, headerAction = null }) {
-  const { user, loading, logout } = useAuth();
-  const pathname = usePathname();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) router.replace("/auth/login");
-    else if (!loading && user?.role !== "ADMIN") router.replace("/");
-  }, [loading, user, router]);
-
-  if (loading || !user || user.role !== "ADMIN") {
-    return (
-      <div className="min-h-dvh bg-[#F5F7FA] grid place-items-center text-sm text-[#475569]">
-        Memeriksa akses administrator...
-      </div>
-    );
-  }
-
+export default function AdminShell({
+  children,
+  title,
+  subtitle,
+  headerAction = null,
+}) {
   return (
-    <div className="min-h-dvh bg-[#F5F7FA] text-[#0F172A]">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-2 mb-6">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2"
-          >
-            <span className="w-9 h-9 rounded-xl bg-[#1D4ED8] text-white flex items-center justify-center shrink-0">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.75}
-                aria-hidden="true"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-                />
-              </svg>
-            </span>
-            <span className="text-xl font-bold tracking-tight text-[#0F172A]">
-              Cari<span className="text-[#1D4ED8]">Kos</span>
-            </span>
-            <span className="text-sm font-medium text-[#475569]">/ Admin</span>
-          </Link>
-
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-[#475569]">{user.nama}</span>
-            <button
-              type="button"
-              onClick={logout}
-              className="rounded-lg border border-[#CBD5E1] bg-[#FFFFFF] px-3.5 py-1.5 text-sm font-medium text-[#0F172A] hover:bg-[#EEF2F7] transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2"
-            >
-              Keluar
-            </button>
-          </div>
-        </div>
-
-        <div className="grid gap-7 md:grid-cols-[220px_1fr]">
-          <nav
-            aria-label="Navigasi administrator"
-            className="flex md:flex-col gap-1 overflow-x-auto pb-1 md:pb-0"
-          >
-            {nav.map((item) => {
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`inline-flex items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2 ${
-                    active
-                      ? "bg-[#EEF2F7] text-[#0F172A] font-semibold"
-                      : "text-[#475569] font-medium hover:bg-[#EEF2F7]/70 hover:text-[#0F172A]"
-                  }`}
-                >
-                  <NavIcon kind={item.icon} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          <main className="min-w-0">
-            <header className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2.5">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.75}
-                    aria-hidden="true"
-                    className="w-5 h-5 text-[#1D4ED8] shrink-0"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-                    />
-                  </svg>
-                  <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
-                    {title}
-                  </h1>
-                </div>
-                {subtitle && (
-                  <p className="text-sm text-[#475569] mt-1.5">{subtitle}</p>
-                )}
-              </div>
-              {headerAction && <div className="shrink-0">{headerAction}</div>}
-            </header>
-            {children}
-          </main>
-        </div>
+    <PortalShell
+      portalLabel="Portal Admin"
+      brandHref="/admin/dashboard"
+      navItems={navItems}
+      navLabel="Navigasi administrator"
+      navSectionLabel="Menu administrasi"
+      allowedRole="ADMIN"
+      loadingText="Memeriksa akses administrator..."
+      redirectOnUnauthorized={true}
+      fallbackUserName="Administrator"
+      fallbackUserSubtext="Tim Kurasi CariKos"
+    >
+      <div className="flex flex-col gap-6">
+        <PortalPageHeader
+          title={title}
+          subtitle={subtitle}
+          actions={headerAction}
+        />
+        <div>{children}</div>
       </div>
-    </div>
+    </PortalShell>
   );
 }

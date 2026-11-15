@@ -283,7 +283,7 @@ export default function Submissions() {
               <label className="block text-sm font-semibold text-[#0F172A] mt-6">
                 Alasan penolakan
                 <textarea
-                  className="mt-2 w-full rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] p-3 text-sm font-normal text-[#0F172A] placeholder:text-[#64748B] outline-none focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/20 transition-colors"
+                  className="mt-2 w-full rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] p-3 text-sm font-normal text-[#0F172A] placeholder:text-[#64748B] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 transition-colors"
                   rows={3}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
