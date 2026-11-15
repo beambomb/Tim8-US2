@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import AdminShell from "@/components/admin/AdminShell";
-import { Panel, Loading, Alert, Button } from "@/components/admin/UI";
+import RefreshButton from "@/components/ui/RefreshButton";
+import { Panel, Loading, Alert } from "@/components/admin/UI";
 import { useAdminDashboard } from "@/features/admin/hooks/useAdminDashboard";
 
 function ArrowRightIcon() {
@@ -77,12 +78,15 @@ export default function Dashboard() {
     <AdminShell
       title="Dashboard Administrator"
       subtitle="Pantau aktivitas pengguna dan status verifikasi kos secara langsung."
+      headerAction={
+        <RefreshButton
+          onClick={refetch}
+          isLoading={loading}
+          label="Muat ulang dashboard"
+          variant="app"
+        />
+      }
     >
-      <div className="flex justify-end mb-4">
-        <Button variant="outline" onClick={refetch} disabled={loading}>
-          Muat ulang
-        </Button>
-      </div>
 
       {error && (
         <div className="mb-4">

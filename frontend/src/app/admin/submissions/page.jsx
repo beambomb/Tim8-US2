@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
+import RefreshButton from "@/components/ui/RefreshButton";
 import {
   Panel,
   Loading,
@@ -89,15 +90,18 @@ export default function Submissions() {
     <AdminShell
       title="Verifikasi Pengajuan Kos"
       subtitle="Periksa informasi kos sebelum menerima atau menolak pengajuan."
+      headerAction={
+        <RefreshButton
+          onClick={refetch}
+          isLoading={isLoading}
+          label="Muat ulang pengajuan"
+          variant="app"
+        />
+      }
     >
-      <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
-        <p className="text-sm text-[#475569] tabular-nums">
-          {submissions.length} pengajuan menunggu
-        </p>
-        <Button variant="outline" onClick={refetch} disabled={isLoading}>
-          Muat ulang
-        </Button>
-      </div>
+      <p className="text-sm text-[#475569] tabular-nums mb-4">
+        {submissions.length} pengajuan menunggu
+      </p>
 
       {message && (
         <div className="mb-4">

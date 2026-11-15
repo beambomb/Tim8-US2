@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import RefreshButton from '@/components/ui/RefreshButton';
 import { useAuth } from '@/context/AuthContext';
 import { useNearbyKos } from '@/features/kos/hooks/useNearbyKos';
 import { useFavorites } from '@/features/kos/hooks/useFavorites';
@@ -76,13 +77,13 @@ function KosNearbyContent() {
           <span className="text-[#0F172A] font-medium">{coords.label}</span>
         </div>
 
-        <button
-          type="button"
+        <RefreshButton
           onClick={refetch}
-          className="text-[#475569] hover:text-[#1D4ED8] font-medium transition-colors cursor-pointer shrink-0 ml-3"
-        >
-          Muat Ulang
-        </button>
+          isLoading={isLoading}
+          label="Muat ulang kos terdekat"
+          variant="public"
+          className="shrink-0 ml-3"
+        />
       </div>
 
       {/* Error Message */}

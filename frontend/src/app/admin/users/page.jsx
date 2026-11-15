@@ -1,11 +1,11 @@
 "use client";
 
 import AdminShell from "@/components/admin/AdminShell";
+import RefreshButton from "@/components/ui/RefreshButton";
 import {
   Panel,
   Loading,
   Alert,
-  Button,
   roleLabel,
 } from "@/components/admin/UI";
 import { useAuth } from "@/context/AuthContext";
@@ -53,8 +53,16 @@ export default function Users() {
     <AdminShell
       title="Manajemen Pengguna"
       subtitle="Cari akun dan ubah peran pengguna yang terdaftar."
+      headerAction={
+        <RefreshButton
+          onClick={refetch}
+          isLoading={loading}
+          label="Muat ulang daftar pengguna"
+          variant="app"
+        />
+      }
     >
-      <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+      <div className="mb-4">
         <input
           type="search"
           value={query}
@@ -63,9 +71,6 @@ export default function Users() {
           aria-label="Cari pengguna"
           className="rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-4 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] w-full sm:w-80 outline-none focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/20 transition-colors"
         />
-        <Button variant="outline" onClick={refetch} disabled={loading}>
-          Muat ulang
-        </Button>
       </div>
 
       {error && (
