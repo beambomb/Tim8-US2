@@ -20,7 +20,7 @@ Dokumen ini mencatat status implementasi, pengujian, dan integrasi seluruh modul
 
 ## 2. Status Implementasi Model Data (MongoDB Schema)
 
-- [x] **User (`src/models/User.js`)**: Fields `nama`, `email` (unique), `password`, `noHp`, `role` (`PENCARI_KOS`, `PEMILIK_KOS`, `ADMIN`).
+- [x] **User (`src/models/User.js`)**: Fields `nama`, `email` (unique), `password`, `noHp`, `role` (`PENCARI_KOS`, `PEMILIK_KOS`, `ADMIN`), `savedCampuses` (daftar titik lokasi kampus custom/preset tersimpan).
 - [x] **Kos (`src/models/Kos.js`)**: Fields `ownerId`, `nama`, `harga`, `lokasi`, `latitude`, `longitude`, `tipe`, `fasilitas`, `jumlahKamar`, `jumlahKamarTersedia`, `fotoUrls`, `statusVerifikasi` (`Pending`, `Approved`, `Rejected`), `alasanPenolakan`.
 - [x] **Booking (`src/models/Booking.js`)**: Fields `userId`, `kosId`, `tanggalMulai`, `durasiBulan`, `catatan`, `status` (`PENDING`, `DISETUJUI`, `DITOLAK`, `DIBATALKAN`).
 - [x] **Review (`src/models/Review.js`)**: Fields `userId`, `kosId`, `rating` (1-5), `komentar`. Proteksi compound unique index `(userId, kosId)`.
@@ -34,12 +34,15 @@ Dokumen ini mencatat status implementasi, pengujian, dan integrasi seluruh modul
 
 ### 3.1 Modul Autentikasi (`/api/auth`)
 - [x] `POST /api/auth/register` - Pendaftaran akun baru dengan enkripsi kata sandi bcrypt.
-- [x] `POST /api/auth/login` - Verifikasi akun dan penerbitan token JWT.
+- [x] `POST /api/auth/login` - Verifikasi akun, penerbitan token JWT (expiry 1 hari), dan pengembalian `savedCampuses`.
 - [x] `GET /api/auth/me` - Verifikasi token dan pengambilan data pengguna aktif.
+- [x] `POST /api/auth/campuses` - Menyimpan titik lokasi kampus acuan custom ke profil pengguna aktif.
+- [x] `DELETE /api/auth/campuses/:campusId` - Menghapus titik kampus tersimpan dari profil pengguna aktif.
 
 ### 3.2 Modul Eksplorasi & Katalog Kos (`/api/kos`)
-- [x] `GET /api/kos` - Pengambilan seluruh kos berstatus `Approved` dengan filter harga, lokasi, tipe, fasilitas, ketersediaan.
-- [x] `GET /api/kos/nearby` - Kalkulasi jarak lengkung bumi formula Haversine berdasarkan koordinat GPS dan radius meter.
+- [x] `GET /api/kos` - Pengambilan seluruh kos berstatus `Approved` dengan filter multikriteria (`hargaMin`, `hargaMax`, `lokasi`, `tipe`, `fasilitas`, `tersedia`) sekaligus dukungan geospasial opsional (`lat`, `lng`, `radius`) yang menyertakan `jarakMeter` & `jarakKm`.
+- [x] `GET /api/kos/campuses` - Pencarian lokasi kampus acuan via OpenStreetMap Nominatim (`campusService.js`) dengan kamus singkatan kampus Indonesia, fallback preset populer, dan in-memory TTL cache (10 menit, maks. 100 entri).
+- [x] `GET /api/kos/nearby` - Endpoint geospasial radius meter (berbagi kalkulasi Haversine terpadu dengan `getAllKosService` untuk kompatibilitas mundur).
 - [x] `GET /api/kos/:id` - Detail spesifikasi kos terverifikasi beserta relasi data pemilik kos.
 - [x] `GET /api/kos/:id/reviews` - Daftar ulasan dan rating kos dari mahasiswa.
 - [x] `POST /api/kos/:id/reviews` - Penulisan ulasan dan rating (khusus `PENCARI_KOS`, dibatasi 1 kali).
