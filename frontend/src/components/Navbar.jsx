@@ -130,26 +130,26 @@ function NavbarContent() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#FFFFFF] border-b-2 border-[#EEF2F7]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand Logo */}
         <Link
           href="/"
           className={`flex items-center gap-2.5 group rounded-lg p-1 shrink-0 ${FOCUS_OUTLINE_CLASS}`}
         >
-          <div className="w-10 h-10 rounded-xl bg-[#1D4ED8] text-white flex items-center justify-center font-black text-xl group-hover:bg-[#1E40AF] transition-colors">
+          <div className="w-9 h-9 rounded-xl bg-[var(--accent)] text-white flex items-center justify-center font-black text-lg group-hover:bg-[var(--accent-hover)] transition-colors">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
               aria-hidden="true"
-              className="w-6 h-6"
+              className="w-5 h-5"
             >
               <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
               <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
             </svg>
           </div>
           <span className="text-xl font-bold tracking-tight text-[#0F172A]">
-            Cari<span className="text-[#1D4ED8]">Kos</span>
+            Cari<span className="text-[var(--accent)]">Kos</span>
           </span>
         </Link>
 
@@ -235,7 +235,7 @@ function NavbarContent() {
                     </div>
 
                     {accountLinks.length > 0 && (
-                      <nav aria-label="Akun" className="py-1 border-b border-[#E2E8F0]">
+                      <nav aria-label="Akun" className="py-1 pb-1.5 mb-1">
                         <ul className="flex flex-col">
                           {accountLinks.map((item) => {
                             const active = isActiveRoute(item.href);
@@ -453,7 +453,7 @@ export default function Navbar() {
   return (
     <Suspense
       fallback={
-        <header className="fixed top-0 left-0 right-0 z-50 h-20 bg-[#FFFFFF] border-b-2 border-[#EEF2F7]" />
+        <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-[#FFFFFF] border-b-2 border-[#EEF2F7]" />
       }
     >
       <NavbarContent />

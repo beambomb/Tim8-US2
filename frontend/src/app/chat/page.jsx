@@ -49,7 +49,7 @@ export default function ChatInboxPage() {
     <div className="min-h-dvh flex flex-col bg-[#F5F7FA]">
       <Navbar />
 
-      <main className="pt-24 pb-12 bg-[#F5F7FA] flex-1">
+      <main className="pt-20 pb-12 bg-[#F5F7FA] flex-1">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <section className="bg-[#FFFFFF] rounded-2xl p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">

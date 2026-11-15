@@ -758,10 +758,10 @@ function KosDetailSkeleton() {
 export default function KosDetailPage() {
   return (
     <div className="min-h-dvh flex flex-col bg-[#F5F7FA] text-[#0F172A]">
-      <Suspense fallback={<div className="h-20 bg-[#FFFFFF]" />}>
+      <Suspense fallback={<div className="h-16 bg-[#FFFFFF]" />}>
         <Navbar />
       </Suspense>
-      <main className="flex-1 pt-24 pb-12">
+      <main className="flex-1 pt-20 pb-12">
         <Suspense fallback={<KosDetailSkeleton />}>
           <KosDetailContent />
         </Suspense>

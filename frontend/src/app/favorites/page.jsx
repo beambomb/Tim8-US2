@@ -23,7 +23,7 @@ export default function FavoritesPage() {
     <div className="min-h-dvh flex flex-col bg-[#F5F7FA] text-[#0F172A]">
       <Navbar />
 
-      <main className="flex-1 pt-24 pb-12">
+      <main className="flex-1 pt-20 pb-12">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

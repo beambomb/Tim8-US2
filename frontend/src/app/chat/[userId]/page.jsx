@@ -386,10 +386,10 @@ function ChatConversationContent() {
 export default function ChatConversationPage() {
   return (
     <div className="min-h-dvh bg-[#F5F7FA]">
-      <Suspense fallback={<div className="h-20 bg-[#FFFFFF]" />}>
+      <Suspense fallback={<div className="h-16 bg-[#FFFFFF]" />}>
         <Navbar />
       </Suspense>
-      <main className="pt-20 min-h-dvh bg-[#F5F7FA]">
+      <main className="pt-16 min-h-dvh bg-[#F5F7FA]">
         <Suspense
           fallback={
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

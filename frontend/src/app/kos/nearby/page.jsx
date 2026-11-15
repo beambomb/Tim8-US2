@@ -148,7 +148,7 @@ export default function KosNearbyPage() {
   return (
     <div className="min-h-dvh bg-[#F5F7FA] text-[#0F172A] flex flex-col justify-between">
       <Navbar />
-      <main className="flex-1 pt-20 pb-14">
+      <main className="flex-1 pt-16 pb-14">
         <Suspense
           fallback={
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-8">
