@@ -45,6 +45,3 @@ export const bookingService = {
 };
 
 export default bookingService;
-
-
-export default bookingService;
