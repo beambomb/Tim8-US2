@@ -70,6 +70,7 @@ export const login = async (req, res) => {
         email: user.email,
         noHp: user.noHp,
         role: user.role,
+        savedCampuses: user.savedCampuses || [],
       },
     });
   } catch (error) {
@@ -98,5 +99,84 @@ export const getMe = async (req, res) => {
     res
       .status(500)
       .json({ message: "Terjadi kesalahan pada server", error: error.message });
+  }
+};
+
+export const addSavedCampus = async (req, res) => {
+  try {
+    const { id, shortName, nama, kota, latitude, longitude, source } = req.body;
+    const latNum = Number(latitude);
+    const lngNum = Number(longitude);
+
+    if (!nama || !Number.isFinite(latNum) || !Number.isFinite(lngNum)) {
+      return res.status(400).json({
+        success: false,
+        message: "Nama kampus dan koordinat yang valid wajib diisi",
+      });
+    }
+
+    const campusId = String(
+      id || `custom_${nama.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`
+    );
+
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    const exists = (user.savedCampuses || []).some(
+      (item) => item.id === campusId
+    );
+    if (!exists) {
+      if ((user.savedCampuses || []).length >= 12) {
+        return res.status(400).json({
+          success: false,
+          message: "Maksimal 12 kampus tersimpan per akun",
+        });
+      }
+      user.savedCampuses.push({
+        id: campusId,
+        shortName: String(shortName || nama).slice(0, 40),
+        nama: String(nama).slice(0, 120),
+        kota: String(kota || "").slice(0, 80),
+        latitude: latNum,
+        longitude: lngNum,
+        source: source === "preset" ? "preset" : "nominatim",
+      });
+      await user.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      savedCampuses: user.savedCampuses,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Gagal menyimpan kampus", error: error.message });
+  }
+};
+
+export const removeSavedCampus = async (req, res) => {
+  try {
+    const campusId = decodeURIComponent(req.params.campusId || "");
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    user.savedCampuses = (user.savedCampuses || []).filter(
+      (item) => item.id !== campusId
+    );
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      savedCampuses: user.savedCampuses,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Gagal menghapus kampus", error: error.message });
   }
 };
