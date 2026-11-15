@@ -2,7 +2,8 @@ import express from 'express';
 import {
   getAllKos,
   getKosById,
-  getNearbyKos
+  getNearbyKos,
+  searchCampuses
 } from '../controllers/kosController.js';
 import {
   createReview,
@@ -13,6 +14,7 @@ import { verifyToken, authorizeRoles } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.get('/', getAllKos);
+router.get('/campuses', searchCampuses);
 router.get('/nearby', getNearbyKos);
 router.get('/:id', getKosById);
 

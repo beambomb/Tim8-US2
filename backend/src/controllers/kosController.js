@@ -3,6 +3,7 @@ import {
   getKosByIdService,
   getNearbyKosService
 } from '../services/kosService.js';
+import { searchCampusesService } from '../services/campusService.js';
 
 export const getAllKos = async (req, res) => {
   try {
@@ -67,6 +68,25 @@ export const getNearbyKos = async (req, res) => {
     res.status(error.statusCode || 500).json({
       success: false,
       message: error.message || 'Gagal mencari kos terdekat',
+    });
+  }
+};
+
+export const searchCampuses = async (req, res) => {
+  try {
+    const query = req.query.q || '';
+    const { results, cached } = await searchCampusesService(query);
+
+    res.status(200).json({
+      success: true,
+      cached,
+      total: results.length,
+      data: results,
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Gagal mencari lokasi kampus',
     });
   }
 };
