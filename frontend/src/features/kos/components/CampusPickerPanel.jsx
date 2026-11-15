@@ -19,10 +19,7 @@ export default function CampusPickerPanel({
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length < 2) {
-      setResults([]);
-      setSearching(false);
-      setSearchError(null);
-      return;
+      return undefined;
     }
 
     let cancelled = false;
@@ -51,11 +48,22 @@ export default function CampusPickerPanel({
     };
   }, [query]);
 
+  const handleQueryChange = (e) => {
+    const nextValue = e.target.value;
+    setQuery(nextValue);
+    if (nextValue.trim().length < 2) {
+      setResults([]);
+      setSearching(false);
+      setSearchError(null);
+    }
+  };
+
   const unpinnedPresets = (popularPresets || []).filter(
     (preset) => !pinnedIds.has(preset.id)
   );
 
-  const displayList = query.trim().length >= 2 ? results : unpinnedPresets;
+  const isSearchingQuery = query.trim().length >= 2;
+  const displayList = isSearchingQuery ? results : unpinnedPresets;
 
   return (
     <div className="rounded-lg bg-[#F5F7FA] p-3 flex flex-col gap-2.5">
@@ -79,7 +87,7 @@ export default function CampusPickerPanel({
         id="campus-search-input"
         type="search"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={handleQueryChange}
         placeholder="Ketik nama kampus bebas..."
         className="w-full px-3 py-2 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-xs text-[#0F172A] placeholder:text-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
       />
