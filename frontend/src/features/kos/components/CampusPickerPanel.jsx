@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { kosService } from '../services/kosService';
+import { searchCampusesDirectly } from '../utils/campusStorage';
 
 export default function CampusPickerPanel({
   campuses,
@@ -28,12 +29,20 @@ export default function CampusPickerPanel({
       setSearchError(null);
       try {
         const res = await kosService.searchCampuses(trimmed);
+        const backendData = Array.isArray(res?.data) ? res.data : [];
         if (!cancelled) {
-          setResults(Array.isArray(res?.data) ? res.data : []);
+          setResults(backendData);
         }
       } catch {
-        if (!cancelled) {
-          setSearchError('Gagal mencari lokasi kampus. Coba kata kunci lain.');
+        try {
+          const fallbackResults = await searchCampusesDirectly(trimmed, popularPresets);
+          if (!cancelled) {
+            setResults(fallbackResults);
+          }
+        } catch {
+          if (!cancelled) {
+            setSearchError('Gagal terhubung ke layanan lokasi. Periksa koneksi internet Anda.');
+          }
         }
       } finally {
         if (!cancelled) {
@@ -46,7 +55,7 @@ export default function CampusPickerPanel({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, popularPresets]);
 
   const handleQueryChange = (e) => {
     const nextValue = e.target.value;
@@ -67,28 +76,19 @@ export default function CampusPickerPanel({
 
   return (
     <div className="rounded-lg bg-[#F5F7FA] p-3 flex flex-col gap-2.5">
-      <div className="flex items-center justify-between gap-2">
-        <label
-          htmlFor="campus-search-input"
-          className="text-xs font-semibold text-[#0F172A]"
-        >
-          Tambah Kampus Acuan
-        </label>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-xs font-medium text-[#475569] hover:text-[#0F172A] cursor-pointer"
-        >
-          Tutup
-        </button>
-      </div>
+      <label
+        htmlFor="campus-search-input"
+        className="text-xs font-semibold text-[#0F172A]"
+      >
+        Cari Kampus Apa Saja (Contoh: Unhas, Undip, ITS)
+      </label>
 
       <input
         id="campus-search-input"
         type="search"
         value={query}
         onChange={handleQueryChange}
-        placeholder="Ketik nama kampus bebas..."
+        placeholder="Ketik nama atau singkatan kampus..."
         className="w-full px-3 py-2 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-xs text-[#0F172A] placeholder:text-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
       />
 

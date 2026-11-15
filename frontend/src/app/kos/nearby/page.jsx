@@ -201,10 +201,10 @@ function KosNearbyContent() {
                 Belum ada kos yang cocok di sekitar titik lokasi ini. Coba reset filter tipe kos, perlebar radius hingga 10 km, atau pilih kampus lainnya.
               </p>
               <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                {tipeFilter && (
+                {tipeFilter && tipeFilter !== 'all' && (
                   <button
                     type="button"
-                    onClick={() => setTipeFilter('')}
+                    onClick={() => setTipeFilter('all')}
                     className="px-4 py-2 rounded-lg text-[13px] font-semibold bg-[#F5F7FA] text-[#0F172A] hover:bg-[#EEF2F7] transition-colors cursor-pointer"
                   >
                     Tampilkan Semua Tipe

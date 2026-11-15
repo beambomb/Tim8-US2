@@ -2,6 +2,35 @@ const CACHE_TTL_MS = 10 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 100;
 const NOMINATIM_TIMEOUT_MS = 6000;
 
+const CAMPUS_QUERY_ALIASES = {
+  unhas: 'Universitas Hasanuddin',
+  undip: 'Universitas Diponegoro',
+  unpad: 'Universitas Padjadjaran',
+  unair: 'Universitas Airlangga',
+  uns: 'Universitas Sebelas Maret',
+  usu: 'Universitas Sumatera Utara',
+  ub: 'Universitas Brawijaya',
+  unibraw: 'Universitas Brawijaya',
+  its: 'Institut Teknologi Sepuluh Nopember',
+  ipb: 'Institut Pertanian Bogor',
+  upi: 'Universitas Pendidikan Indonesia',
+  unnes: 'Universitas Negeri Semarang',
+  unsoed: 'Universitas Jenderal Soedirman',
+  unud: 'Universitas Udayana',
+  unm: 'Universitas Negeri Makassar',
+  um: 'Universitas Negeri Malang',
+  unila: 'Universitas Lampung',
+  unsri: 'Universitas Sriwijaya',
+  unand: 'Universitas Andalas',
+  untar: 'Universitas Tarumanagara',
+  trisakti: 'Universitas Trisakti',
+  binus: 'Universitas Bina Nusantara',
+  telkom: 'Telkom University',
+  ums: 'Universitas Muhammadiyah Surakarta',
+  umy: 'Universitas Muhammadiyah Yogyakarta',
+  uad: 'Universitas Ahmad Dahlan',
+};
+
 export const POPULAR_CAMPUSES = [
   {
     id: 'UGM',
@@ -145,6 +174,7 @@ export async function searchCampusesService(rawQuery = '') {
   let nominatimMatches = [];
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), NOMINATIM_TIMEOUT_MS);
+  const nominatimQuery = CAMPUS_QUERY_ALIASES[cacheKey] || normalizedQuery;
 
   try {
     const url = new URL('https://nominatim.openstreetmap.org/search');
@@ -152,7 +182,7 @@ export async function searchCampusesService(rawQuery = '') {
     url.searchParams.set('addressdetails', '1');
     url.searchParams.set('countrycodes', 'id');
     url.searchParams.set('limit', '8');
-    url.searchParams.set('q', normalizedQuery);
+    url.searchParams.set('q', nominatimQuery);
 
     const response = await fetch(url.toString(), {
       signal: controller.signal,

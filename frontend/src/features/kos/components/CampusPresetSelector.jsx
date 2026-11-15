@@ -4,7 +4,7 @@ import { useState } from 'react';
 import CampusPickerPanel from './CampusPickerPanel';
 
 const TIPE_KOS_OPTIONS = [
-  { label: 'Semua Tipe', value: '' },
+  { label: 'Semua Tipe', value: 'all' },
   { label: 'Putra', value: 'Putra' },
   { label: 'Putri', value: 'Putri' },
   { label: 'Campur', value: 'Campur' },
@@ -75,6 +75,7 @@ export default function CampusPresetSelector({
           {(campuses || []).map((campus) => {
             const isSelected =
               locationSource === 'preset' && selectedPreset === campus.id;
+            const isDefaultCampus = Boolean(campus.isDefault || campus.id === 'UGM');
             return (
               <div key={campus.id} className="flex items-stretch gap-1.5">
                 <button
@@ -88,26 +89,32 @@ export default function CampusPresetSelector({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold truncate">
-                      {campus.shortName}
+                      {campus.shortName || campus.nama}
                     </span>
-                    {campus.source === 'nominatim' && (
+                    {isDefaultCampus ? (
                       <span className="text-[10px] font-medium text-[#64748B] shrink-0">
-                        Custom
+                        Default
                       </span>
+                    ) : (
+                      campus.source === 'nominatim' && (
+                        <span className="text-[10px] font-medium text-[#64748B] shrink-0">
+                          Custom
+                        </span>
+                      )
                     )}
                   </div>
                   <div className="text-[11px] text-[#475569] truncate mt-0.5">
-                    {campus.city || campus.label}
+                    {campus.kota || campus.nama}
                   </div>
                 </button>
 
-                {!campus.isDefault && onRemoveCampus && (
+                {!isDefaultCampus && onRemoveCampus && (
                   <button
                     type="button"
                     onClick={() => onRemoveCampus(campus.id)}
-                    aria-label={`Hapus ${campus.shortName}`}
-                    title={`Hapus ${campus.shortName}`}
-                    className="px-2 rounded-lg bg-[#F5F7FA] text-[#64748B] hover:bg-[#FEF2F2] hover:text-[#991B1B] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+                    aria-label={`Hapus ${campus.shortName || campus.nama}`}
+                    title={`Hapus ${campus.shortName || campus.nama}`}
+                    className="px-2.5 rounded-lg bg-[#F5F7FA] text-[#64748B] hover:bg-[#FEF2F2] hover:text-[#991B1B] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
                   >
                     <svg
                       className="w-3.5 h-3.5"
