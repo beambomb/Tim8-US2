@@ -83,11 +83,9 @@ export function useNearbyKos() {
     }
 
     if (immediate) {
-      setIsLoading(true);
       setDebouncedRadiusKm(numericRadius);
     } else {
       radiusDebounceRef.current = setTimeout(() => {
-        setIsLoading(true);
         setDebouncedRadiusKm(numericRadius);
       }, 300);
     }
@@ -163,7 +161,6 @@ export function useNearbyKos() {
         campuses.find((item) => item.id === campusId) || CAMPUS_PRESETS[campusId];
       if (!target) return;
 
-      setIsLoading(true);
       setSelectedPreset(target.id);
       setLocationSource('preset');
       setCoords({
@@ -198,7 +195,6 @@ export function useNearbyKos() {
         return next;
       });
 
-      setIsLoading(true);
       setSelectedPreset(normalized.id);
       setLocationSource('preset');
       setCoords({
@@ -235,7 +231,6 @@ export function useNearbyKos() {
       });
 
       if (selectedPreset === campusId) {
-        setIsLoading(true);
         setSelectedPreset(DEFAULT_CAMPUS.id);
         setLocationSource('preset');
         setCoords({
@@ -273,7 +268,6 @@ export function useNearbyKos() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setIsLocating(false);
-        setIsLoading(true);
         const { latitude, longitude } = position.coords;
         setSelectedPreset('gps');
         setLocationSource('gps');

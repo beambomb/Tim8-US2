@@ -32,16 +32,16 @@ export default function CampusPresetSelector({
     <aside
       className={`rounded-xl bg-[#FFFFFF] p-5 flex flex-col gap-5 text-[#0F172A] ${className}`}
     >
-      {/* Titik Lokasi Kampus + Tombol Tambah Kampus */}
+      {/* Kampus Acuan + Tombol Tambah Kampus */}
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-[#0F172A]">
-            Titik Lokasi Kampus
+          <h2 className="text-sm font-semibold text-[#0F172A] whitespace-nowrap">
+            Kampus Acuan
           </h2>
           <button
             type="button"
             onClick={() => setPickerOpen((prev) => !prev)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-[#EFF6FF] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-[#EFF6FF] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-colors cursor-pointer whitespace-nowrap shrink-0"
           >
             <svg
               className="w-3.5 h-3.5"
