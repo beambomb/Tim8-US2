@@ -1,46 +1,167 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { kosService } from '../services/kosService';
+import { useState, useEffect, useCallback } from "react";
+import { kosService } from "../services/kosService";
+import { bookingService } from "@/features/booking/services/bookingService";
+import { useAuth } from "@/context/AuthContext";
 
 export function useKosDetail(kosId) {
+  const { user, isAuthenticated } = useAuth();
+
   const [kos, setKos] = useState(null);
   const [reviews, setReviews] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(Boolean(kosId));
   const [error, setError] = useState(null);
 
-  const fetchDetail = useCallback(async () => {
+  // State Favorit
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteId, setFavoriteId] = useState(null);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+
+  // State Pengajuan Booking
+  const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
+
+  const fetchDetailData = useCallback(async () => {
     if (!kosId) return;
-    setIsLoading(true);
-    setError(null);
     try {
-      const [kosRes, reviewsRes] = await Promise.all([
+      const [kosRes, reviewRes] = await Promise.all([
         kosService.getKosDetail(kosId),
         kosService.getReviews(kosId).catch(() => ({ data: [] })),
       ]);
-      setKos(kosRes.data);
-      setReviews(reviewsRes.data || []);
+
+      setKos(kosRes?.data || kosRes);
+      setReviews(reviewRes?.data || []);
+      setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || 'Gagal memuat detail data kos.');
+      setError(err.response?.data?.message || "Gagal memuat detail kos.");
     } finally {
       setIsLoading(false);
     }
   }, [kosId]);
 
   useEffect(() => {
-    fetchDetail();
-  }, [fetchDetail]);
+    let ignore = false;
 
-  const submitReview = async ({ rating, review }) => {
+    if (!kosId) {
+      return;
+    }
+
+    const execute = async () => {
+      try {
+        const [kosRes, reviewRes] = await Promise.all([
+          kosService.getKosDetail(kosId),
+          kosService.getReviews(kosId).catch(() => ({ data: [] })),
+        ]);
+
+        if (!ignore) {
+          setKos(kosRes?.data || kosRes);
+          setReviews(reviewRes?.data || []);
+          setError(null);
+        }
+      } catch (err) {
+        if (!ignore) {
+          setError(err.response?.data?.message || "Gagal memuat detail kos.");
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    execute();
+
+    return () => {
+      ignore = true;
+    };
+  }, [kosId]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    if (!isAuthenticated || user?.role !== "PENCARI_KOS" || !kosId) {
+      return;
+    }
+
+    const checkFavorite = async () => {
+      try {
+        const res = await kosService.getFavorites();
+        const favList = res?.data || [];
+        const found = favList.find(
+          (item) => (item.kosId?._id || item.kosId) === kosId
+        );
+        if (!ignore) {
+          if (found) {
+            setIsFavorite(true);
+            setFavoriteId(found._id);
+          } else {
+            setIsFavorite(false);
+            setFavoriteId(null);
+          }
+        }
+      } catch (err) {
+        console.error("Gagal mengecek status favorit:", err);
+      }
+    };
+
+    checkFavorite();
+
+    return () => {
+      ignore = true;
+    };
+  }, [isAuthenticated, user, kosId]);
+
+  const refetch = useCallback(async () => {
+    setIsLoading(true);
+    await fetchDetailData();
+  }, [fetchDetailData]);
+
+  // Toggle Favorit dengan Optimistic Update
+  const handleToggleFavorite = async () => {
+    if (!isAuthenticated || user?.role !== "PENCARI_KOS" || isTogglingFavorite) return;
+
+    const prevStatus = isFavorite;
+    const prevFavId = favoriteId;
+
+    // Optimistic UI update
+    setIsFavorite(!prevStatus);
+    setIsTogglingFavorite(true);
+
     try {
-      const result = await kosService.addReview(kosId, { rating, review });
-      await fetchDetail();
-      return { success: true, data: result.data };
+      if (!prevStatus) {
+        const res = await kosService.addFavorite(kosId);
+        setFavoriteId(res?.data?._id || null);
+      } else {
+        await kosService.removeFavorite(kosId);
+        setFavoriteId(null);
+      }
     } catch (err) {
-      return {
-        success: false,
-        error: err.response?.data?.message || 'Gagal mengirimkan ulasan.',
-      };
+      // Rollback jika gagal
+      setIsFavorite(prevStatus);
+      setFavoriteId(prevFavId);
+      alert(err.response?.data?.message || "Gagal memperbarui favorit.");
+    } finally {
+      setIsTogglingFavorite(false);
+    }
+  };
+
+  // Submit Booking dari Modal
+  const handleCreateBooking = async (payload) => {
+    setIsBookingSubmitting(true);
+    setBookingError(null);
+    try {
+      const res = await bookingService.createBooking({
+        kosId,
+        ...payload,
+      });
+      return { success: true, data: res?.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || "Gagal mengajukan booking.";
+      setBookingError(msg);
+      return { success: false, message: msg };
+    } finally {
+      setIsBookingSubmitting(false);
     }
   };
 
@@ -49,7 +170,15 @@ export function useKosDetail(kosId) {
     reviews,
     isLoading,
     error,
-    refetch: fetchDetail,
-    submitReview,
+    isFavorite,
+    isTogglingFavorite,
+    handleToggleFavorite,
+    isBookingSubmitting,
+    bookingError,
+    setBookingError,
+    handleCreateBooking,
+    refetch,
   };
 }
+
+export default useKosDetail;
