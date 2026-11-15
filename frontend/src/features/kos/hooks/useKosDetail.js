@@ -5,6 +5,12 @@ import { kosService } from "../services/kosService";
 import { bookingService } from "@/features/booking/services/bookingService";
 import { useAuth } from "@/context/AuthContext";
 
+function extractReviewList(reviewRes) {
+  if (Array.isArray(reviewRes?.data)) return reviewRes.data;
+  if (Array.isArray(reviewRes?.data?.reviews)) return reviewRes.data.reviews;
+  return [];
+}
+
 export function useKosDetail(kosId) {
   const { user, isAuthenticated } = useAuth();
 
@@ -31,7 +37,7 @@ export function useKosDetail(kosId) {
       ]);
 
       setKos(kosRes?.data || kosRes);
-      setReviews(reviewRes?.data || []);
+      setReviews(extractReviewList(reviewRes));
       setError(null);
     } catch (err) {
       setError(err.response?.data?.message || "Gagal memuat detail kos.");
@@ -56,7 +62,7 @@ export function useKosDetail(kosId) {
 
         if (!ignore) {
           setKos(kosRes?.data || kosRes);
-          setReviews(reviewRes?.data || []);
+          setReviews(extractReviewList(reviewRes));
           setError(null);
         }
       } catch (err) {
@@ -87,9 +93,9 @@ export function useKosDetail(kosId) {
     const checkFavorite = async () => {
       try {
         const res = await kosService.getFavorites();
-        const favList = res?.data || [];
+        const favList = Array.isArray(res?.data) ? res.data : [];
         const found = favList.find(
-          (item) => (item.kosId?._id || item.kosId) === kosId
+          (item) => String(item.kosId?._id || item.kosId) === String(kosId)
         );
         if (!ignore) {
           if (found) {
@@ -133,7 +139,7 @@ export function useKosDetail(kosId) {
         const res = await kosService.addFavorite(kosId);
         setFavoriteId(res?.data?._id || null);
       } else {
-        await kosService.removeFavorite(kosId);
+        await kosService.removeFavorite(prevFavId || kosId);
         setFavoriteId(null);
       }
     } catch (err) {

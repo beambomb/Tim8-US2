@@ -51,6 +51,32 @@ export default function OwnerBookingsPage() {
     return s || "PENDING";
   };
 
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "DISETUJUI":
+        return "Disetujui";
+      case "DITOLAK":
+        return "Ditolak";
+      case "DIBATALKAN":
+        return "Dibatalkan";
+      default:
+        return "Menunggu";
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case "DISETUJUI":
+        return "bg-[#DCFAE5] text-[#04250E] border border-[#BBF7D0]";
+      case "DITOLAK":
+        return "bg-[#FFEDEA] text-[#831C1E] border border-[#FECACA]";
+      case "DIBATALKAN":
+        return "bg-[#EEF2F7] text-[#475569] border border-[#E2E8F0]";
+      default:
+        return "bg-[#FFFBEB] text-[#92400E] border border-[#FDE68A]";
+    }
+  };
+
   const filteredBookings = useMemo(() => {
     if (activeTab === "ALL") return bookings;
     return bookings.filter((b) => normalizeStatus(b.status) === activeTab);
@@ -80,11 +106,26 @@ export default function OwnerBookingsPage() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="flex flex-col gap-6 animate-pulse">
-        <div className="h-10 w-72 rounded-lg bg-slate-800" />
-        <div className="h-12 w-full rounded-xl bg-slate-800/60" />
-        <div className="h-44 w-full rounded-xl bg-[#141D30] border border-slate-800" />
-        <div className="h-44 w-full rounded-xl bg-[#141D30] border border-slate-800" />
+      <div className="flex flex-col gap-6 text-[#0F172A]">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-7 w-72 rounded-md bg-[#E2E8F0]" />
+            <div className="h-4 w-96 rounded-md bg-[#EEF2F7]" />
+          </div>
+          <div className="h-9 w-32 rounded-lg bg-[#E2E8F0]" />
+        </div>
+        <div className="h-10 w-full rounded-lg bg-[#EEF2F7]" />
+        <div className="rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] divide-y divide-[#E2E8F0]">
+          {[1, 2, 3].map((row) => (
+            <div key={row} className="p-5 flex items-center justify-between gap-4">
+              <div className="space-y-2 flex-1">
+                <div className="h-4 w-56 rounded bg-[#E2E8F0]" />
+                <div className="h-3.5 w-80 rounded bg-[#EEF2F7]" />
+              </div>
+              <div className="h-9 w-36 rounded-lg bg-[#EEF2F7]" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -92,17 +133,17 @@ export default function OwnerBookingsPage() {
   if (!isAuthenticated || user?.role !== "PEMILIK_KOS") {
     return (
       <div className="mx-auto max-w-2xl py-16 text-center">
-        <div className="rounded-2xl border border-slate-800 bg-[#141D30] p-8 shadow-sm">
-          <h2 className="text-xl font-bold text-[#F1F5F9]">
+        <div className="rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-8">
+          <h1 className="text-xl font-bold text-[#0F172A]">
             Akses Khusus Pemilik Kos
-          </h2>
-          <p className="mt-2 text-sm text-[#94A3B8]">
+          </h1>
+          <p className="mt-2 text-sm text-[#475569]">
             Halaman ini hanya dapat diakses oleh akun dengan peran{" "}
-            <strong className="text-emerald-400">Pemilik Kos</strong>.
+            <strong className="text-[#0F172A]">Pemilik Kos</strong>.
           </p>
           <Link
             href="/auth/login"
-            className="mt-5 inline-block rounded-lg bg-emerald-500 px-5 py-2.5 text-xs font-semibold text-[#0A0F1D] hover:bg-emerald-400 transition-colors"
+            className="mt-5 inline-block rounded-lg bg-[#1D4ED8] px-5 py-2.5 text-xs font-semibold text-white hover:bg-[#1E40AF] transition-colors"
           >
             Login Pemilik Kos
           </Link>
@@ -112,36 +153,51 @@ export default function OwnerBookingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 text-[#0F172A]">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F1F5F9]">
-            Manajemen Permohonan Booking Masuk
+          <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
+            Permohonan Booking Masuk
           </h1>
-          <p className="mt-1 text-xs text-[#94A3B8]">
-            Setujui atau tolak permohonan sewa kamar dari mahasiswa. Persetujuan
-            akan otomatis mengurangi kuota kamar tersedia secara atomik.
+          <p className="mt-1 text-sm text-[#475569] tabular-nums">
+            {counts.PENDING > 0
+              ? `${counts.PENDING} permohonan menunggu konfirmasi dari total ${counts.ALL} pengajuan.`
+              : `Seluruh ${counts.ALL} permohonan booking telah ditinjau.`}
           </p>
         </div>
 
         <button
           type="button"
           onClick={refetch}
-          className="self-start sm:self-auto px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-[#141D30] border border-slate-700/80 transition-colors"
+          className="self-start sm:self-auto inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-xs font-medium text-[#0F172A] bg-[#FFFFFF] border border-[#CBD5E1] hover:bg-[#EEF2F7] transition-colors cursor-pointer"
         >
-          Segarkan Antrean
+          <svg
+            className="w-3.5 h-3.5 text-[#475569]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.75}
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+            />
+          </svg>
+          <span>Segarkan Antrean</span>
         </button>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs text-rose-300">
+        <div className="rounded-xl border border-[#FECACA] bg-[#FFEDEA] p-4 text-xs font-medium text-[#831C1E]">
           {error}
         </div>
       )}
 
-      {/* Tabs Filter Status */}
-      <div className="flex gap-2 overflow-x-auto pb-1 border-b border-slate-800/80">
+      {/* Underline Tabs Filter Status */}
+      <div className="flex gap-1 overflow-x-auto border-b border-[#E2E8F0]">
         {STATUS_TABS.map((tab) => {
           const isActive = activeTab === tab.key;
           const count = counts[tab.key] || 0;
@@ -150,18 +206,18 @@ export default function OwnerBookingsPage() {
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-2 px-3.5 py-2.5 text-xs whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                 isActive
-                  ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold"
-                  : "text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#141D30]"
+                  ? "border-[#1D4ED8] text-[#0F172A] font-semibold"
+                  : "border-transparent text-[#475569] hover:text-[#0F172A]"
               }`}
             >
               <span>{tab.label}</span>
               <span
-                className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono tabular-nums ${
+                className={`px-2 py-0.5 rounded-full text-xs tabular-nums ${
                   isActive
-                    ? "bg-emerald-500/20 text-emerald-300"
-                    : "bg-slate-800 text-slate-400"
+                    ? "bg-[#EFF6FF] text-[#1D4ED8] font-semibold"
+                    : "bg-[#EEF2F7] text-[#475569]"
                 }`}
               >
                 {count}
@@ -171,149 +227,224 @@ export default function OwnerBookingsPage() {
         })}
       </div>
 
-      {/* Booking List */}
+      {/* Booking Queue List */}
       {filteredBookings.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-800 bg-[#141D30]/40 p-12 text-center">
-          <p className="text-sm font-medium text-[#94A3B8]">
+        <div className="rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-12 text-center">
+          <p className="text-sm font-semibold text-[#0F172A]">
             Tidak ada permohonan booking pada kategori ini.
+          </p>
+          <p className="mt-1 text-xs text-[#475569]">
+            Permohonan baru dari mahasiswa akan langsung muncul di daftar ini.
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] overflow-hidden divide-y divide-[#E2E8F0]">
           {filteredBookings.map((booking) => {
             const tenant = booking.userId || {};
+            const tenantId = tenant._id || tenant.id;
             const kos = booking.kosId || {};
+            const kosId = kos._id || kos.id;
             const status = normalizeStatus(booking.status);
             const totalHarga = (kos.harga || 0) * (booking.durasiBulan || 1);
             const isProcessing = processingId === booking._id;
+            const tenantInitial = (tenant.nama || "M").charAt(0).toUpperCase();
 
             return (
               <div
                 key={booking._id}
-                className="flex flex-col justify-between gap-5 rounded-xl border border-slate-800 bg-[#141D30] p-5 shadow-sm lg:flex-row lg:items-center"
+                className="flex flex-col justify-between gap-4 px-5 py-4 hover:bg-[#F5F7FA]/70 transition-colors lg:flex-row lg:items-center"
               >
-                <div className="space-y-3">
-                  {/* Status Badge & Kos Title */}
+                {/* Identitas Properti, Penyewa & Detail Sewa */}
+                <div className="min-w-0 flex-1 space-y-2.5">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border tracking-wider uppercase ${
-                        status === "DISETUJUI"
-                          ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                          : status === "DITOLAK"
-                          ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
-                          : status === "DIBATALKAN"
-                          ? "bg-slate-800 text-slate-400 border-slate-700"
-                          : "bg-amber-500/15 text-amber-400 border-amber-500/30"
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${getStatusBadgeClass(
+                        status
+                      )}`}
                     >
-                      {status}
+                      {getStatusLabel(status)}
                     </span>
 
-                    {kos._id ? (
+                    {kosId ? (
                       <Link
-                        href={`/kos/${kos._id}`}
-                        className="text-sm font-semibold text-[#F1F5F9] hover:text-emerald-400 transition-colors"
+                        href={`/kos/${kosId}`}
+                        className="text-sm font-semibold text-[#0F172A] hover:text-[#1D4ED8] transition-colors truncate"
                       >
                         {kos.nama || "Properti Kos"}
                       </Link>
                     ) : (
-                      <span className="text-sm font-semibold text-[#F1F5F9]">
+                      <span className="text-sm font-semibold text-[#0F172A] truncate">
                         {kos.nama || "Properti Kos"}
                       </span>
                     )}
 
-                    <span className="text-xs text-[#64748B]">
-                      • Diajukan {formatDate(booking.createdAt)}
+                    <span className="text-xs text-[#475569] tabular-nums">
+                      Diajukan {formatDate(booking.createdAt)}
                     </span>
                   </div>
 
-                  {/* Profil Mahasiswa Pemesan */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#0A0F1D] border border-slate-800/80 p-3 text-xs">
-                    <div className="space-y-0.5">
-                      <p className="font-semibold text-[#F1F5F9]">
+                  {/* Baris Profil Mahasiswa Pemesan */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#475569]">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-[#EEF2F7] text-[#0F172A] flex items-center justify-center text-xs font-semibold shrink-0">
+                        {tenantInitial}
+                      </span>
+                      <span className="font-semibold text-[#0F172A]">
                         {tenant.nama || "Mahasiswa Pemesan"}
-                      </p>
-                      <p className="text-[#94A3B8]">
-                        Email: {tenant.email || "-"} • No. HP:{" "}
-                        <span className="text-slate-300 font-mono">
-                          {tenant.noHp || "-"}
-                        </span>
-                      </p>
+                      </span>
                     </div>
-
-                    {tenant._id && (
+                    <span>{tenant.email || "-"}</span>
+                    <span className="tabular-nums text-[#0F172A]">
+                      {tenant.noHp || "-"}
+                    </span>
+                    {tenantId && (
                       <Link
-                        href={`/chat/${tenant._id}?kosId=${kos._id || ""}`}
-                        className="px-3 py-1.5 rounded-md text-xs font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 transition-colors"
+                        href={`/chat/${tenantId}?kosId=${kosId || ""}`}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#1D4ED8] hover:underline"
                       >
-                        💬 Chat Mahasiswa
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.75}
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
+                          />
+                        </svg>
+                        <span>Chat Mahasiswa</span>
                       </Link>
                     )}
                   </div>
 
                   {/* Rincian Sewa */}
-                  <div className="flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-[#94A3B8]">
-                    <span>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-[#475569]">
+                    <span className="tabular-nums">
                       Mulai Sewa:{" "}
-                      <strong className="text-[#F1F5F9]">
+                      <strong className="font-semibold text-[#0F172A]">
                         {formatDate(booking.tanggalMulai)}
                       </strong>
                     </span>
-                    <span>
+                    <span className="tabular-nums">
                       Durasi:{" "}
-                      <strong className="text-[#F1F5F9]">
+                      <strong className="font-semibold text-[#0F172A]">
                         {booking.durasiBulan || 1} Bulan
-                      </strong>
-                    </span>
-                    <span>
-                      Estimasi Total:{" "}
-                      <strong className="text-emerald-400 font-mono tabular-nums">
-                        {formatRupiah(booking.totalHarga || totalHarga)}
                       </strong>
                     </span>
                   </div>
 
                   {booking.catatan && (
-                    <p className="text-xs italic text-[#94A3B8] bg-[#0A0F1D]/50 rounded p-2 border border-slate-800/50">
+                    <p className="text-xs text-[#475569] bg-[#F5F7FA] rounded-lg px-3 py-2">
                       Catatan pemesan: &quot;{booking.catatan}&quot;
                     </p>
                   )}
                 </div>
 
-                {/* Tombol Aksi Persetujuan / Penolakan */}
-                <div className="flex shrink-0 flex-wrap items-center gap-2 pt-2 lg:pt-0">
-                  {status === "PENDING" ? (
-                    <>
-                      <button
-                        type="button"
-                        disabled={isProcessing}
-                        onClick={() => handleApprove(booking._id)}
-                        className="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-500 text-[#0A0F1D] hover:bg-emerald-400 disabled:opacity-50 transition-colors shadow-xs"
-                      >
-                        {isProcessing ? "Memproses..." : "✓ Setujui (Approve)"}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isProcessing}
-                        onClick={() => handleReject(booking._id)}
-                        className="px-4 py-2 rounded-lg text-xs font-semibold text-rose-400 hover:text-white bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 disabled:opacity-50 transition-colors"
-                      >
-                        ✕ Tolak (Reject)
-                      </button>
-                    </>
-                  ) : status === "DISETUJUI" ? (
-                    <span className="text-xs font-medium text-emerald-400 flex items-center gap-1.5">
-                      ✓ Telah Disetujui
+                {/* Kolom Kanan: Total Biaya (rata kanan tabular) & Tombol Aksi */}
+                <div className="flex shrink-0 flex-wrap items-center justify-between lg:justify-end gap-5 pt-2 lg:pt-0">
+                  <div className="lg:text-right">
+                    <span className="block text-xs text-[#475569]">
+                      Estimasi Total
                     </span>
-                  ) : status === "DITOLAK" ? (
-                    <span className="text-xs font-medium text-rose-400 flex items-center gap-1.5">
-                      ✕ Telah Ditolak
-                    </span>
-                  ) : (
-                    <span className="text-xs font-medium text-slate-400">
-                      Permohonan Dibatalkan
-                    </span>
-                  )}
+                    <strong className="text-base font-bold text-[#0F172A] tabular-nums">
+                      {formatRupiah(booking.totalHarga || totalHarga)}
+                    </strong>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {status === "PENDING" ? (
+                      <>
+                        <button
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => handleApprove(booking._id)}
+                          className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold bg-[#1D4ED8] text-white hover:bg-[#1E40AF] disabled:opacity-50 transition-colors cursor-pointer"
+                        >
+                          <svg
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            aria-hidden="true"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M4.5 12.75l6 6 9-13.5"
+                            />
+                          </svg>
+                          <span>{isProcessing ? "Memproses..." : "Setujui"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => handleReject(booking._id)}
+                          className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold text-[#831C1E] bg-[#FFFFFF] border border-[#FECACA] hover:bg-[#FFEDEA] disabled:opacity-50 transition-colors cursor-pointer"
+                        >
+                          <svg
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            aria-hidden="true"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                          <span>Tolak</span>
+                        </button>
+                      </>
+                    ) : status === "DISETUJUI" ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#247B50]">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4.5 12.75l6 6 9-13.5"
+                          />
+                        </svg>
+                        <span>Telah Disetujui</span>
+                      </span>
+                    ) : status === "DITOLAK" ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#C4242A]">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                        <span>Telah Ditolak</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs font-medium text-[#475569]">
+                        Permohonan Dibatalkan
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );

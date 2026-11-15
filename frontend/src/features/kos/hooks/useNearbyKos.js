@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { kosService } from '../services/kosService';
 
 export const CAMPUS_PRESETS = {
@@ -59,7 +59,8 @@ export function useNearbyKos() {
     longitude: CAMPUS_PRESETS.UGM.longitude,
     label: CAMPUS_PRESETS.UGM.nama,
   });
-  const [radiusKm, setRadiusKm] = useState(5);
+  const [radiusKm, setRadiusKmState] = useState(5);
+  const [debouncedRadiusKm, setDebouncedRadiusKm] = useState(5);
   const [kosList, setKosList] = useState([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,17 +68,51 @@ export function useNearbyKos() {
   const [error, setError] = useState(null);
   const [locationSource, setLocationSource] = useState('preset'); // 'preset' | 'gps'
 
-  // Fetch nearby kos from API
+  const radiusDebounceRef = useRef(null);
+
   useEffect(() => {
-    if (!coords.latitude || !coords.longitude) return;
+    return () => {
+      if (radiusDebounceRef.current) {
+        clearTimeout(radiusDebounceRef.current);
+      }
+    };
+  }, []);
+
+  // Update radius immediately for slider feedback, debounce query trigger by 300ms
+  const setRadiusKm = useCallback((nextRadius, immediate = false) => {
+    const numericRadius = Number(nextRadius);
+    setRadiusKmState(numericRadius);
+
+    if (radiusDebounceRef.current) {
+      clearTimeout(radiusDebounceRef.current);
+    }
+
+    if (immediate) {
+      setIsLoading(true);
+      setDebouncedRadiusKm(numericRadius);
+    } else {
+      radiusDebounceRef.current = setTimeout(() => {
+        setIsLoading(true);
+        setDebouncedRadiusKm(numericRadius);
+      }, 300);
+    }
+  }, []);
+
+  // Fetch nearby kos from API whenever coordinates or debounced radius changes
+  useEffect(() => {
+    if (coords.latitude === undefined || coords.longitude === undefined) return;
 
     let ignore = false;
     const execute = async () => {
+      await Promise.resolve();
+      if (ignore) return;
+      setIsLoading(true);
+
       try {
         const result = await kosService.getNearbyKos(
           coords.latitude,
           coords.longitude,
-          radiusKm
+          debouncedRadiusKm
         );
         if (!ignore) {
           setKosList(result.data || []);
@@ -103,10 +138,10 @@ export function useNearbyKos() {
     return () => {
       ignore = true;
     };
-  }, [coords.latitude, coords.longitude, radiusKm]);
+  }, [coords.latitude, coords.longitude, debouncedRadiusKm]);
 
   const refetch = useCallback(async () => {
-    if (!coords.latitude || !coords.longitude) return;
+    if (coords.latitude === undefined || coords.longitude === undefined) return;
 
     setIsLoading(true);
     setError(null);
@@ -114,7 +149,7 @@ export function useNearbyKos() {
       const result = await kosService.getNearbyKos(
         coords.latitude,
         coords.longitude,
-        radiusKm
+        debouncedRadiusKm
       );
       setKosList(result.data || []);
       setTotal(result.total || (result.data ? result.data.length : 0));
@@ -127,12 +162,13 @@ export function useNearbyKos() {
     } finally {
       setIsLoading(false);
     }
-  }, [coords.latitude, coords.longitude, radiusKm]);
+  }, [coords.latitude, coords.longitude, debouncedRadiusKm]);
 
   // Handler for university preset selection
-  const selectCampusPreset = (presetKey) => {
+  const selectCampusPreset = useCallback((presetKey) => {
     const preset = CAMPUS_PRESETS[presetKey];
     if (preset) {
+      setIsLoading(true);
       setSelectedPreset(presetKey);
       setLocationSource('preset');
       setCoords({
@@ -141,10 +177,10 @@ export function useNearbyKos() {
         label: preset.nama,
       });
     }
-  };
+  }, []);
 
   // Handler for browser GPS geolocation
-  const detectLocation = () => {
+  const detectLocation = useCallback(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setError('Browser Anda tidak mendukung layanan geolokasi GPS.');
       return;
@@ -156,6 +192,7 @@ export function useNearbyKos() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setIsLocating(false);
+        setIsLoading(true);
         const { latitude, longitude } = position.coords;
         setSelectedPreset('custom');
         setLocationSource('gps');
@@ -181,7 +218,7 @@ export function useNearbyKos() {
         maximumAge: 30000,
       }
     );
-  };
+  }, []);
 
   return {
     kosList,

@@ -7,12 +7,22 @@ import { io } from "socket.io-client";
 
 let socket = null;
 
+const resolveSocketUrl = () => {
+  if (process.env.NEXT_PUBLIC_SOCKET_URL) {
+    return process.env.NEXT_PUBLIC_SOCKET_URL;
+  }
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, "");
+  }
+  return "http://localhost:5000";
+};
+
 export const getSocket = () => {
   if (!socket && typeof window !== "undefined") {
-    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000", {
+    socket = io(resolveSocketUrl(), {
       autoConnect: false,
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 10,
       reconnectionDelay: 1000,
     });
   }

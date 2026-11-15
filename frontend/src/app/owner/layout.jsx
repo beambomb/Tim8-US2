@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function Layout({ children }) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0A0F1D]" />}>
+    <Suspense fallback={<div className="min-h-dvh bg-[#F5F7FA]" />}>
       <OwnerLayout>{children}</OwnerLayout>
     </Suspense>
   );

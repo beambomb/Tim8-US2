@@ -7,12 +7,27 @@ api.interceptors.request.use(config => {
   }
   return config;
 });
-api.interceptors.response.use(response => response, error => {
-  if (typeof window !== "undefined" && error.response?.status === 401 && !["/auth/login", "/auth/register"].some(path => error.config?.url?.endsWith(path))) {
-    localStorage.removeItem("token");
-    window.dispatchEvent(new Event("carikos:unauthorized"));
-    if (!window.location.pathname.startsWith("/auth/")) window.location.replace("/auth/login");
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const urlPath = (error.config?.url || "").split("?")[0];
+    const isAuthEndpoint = ["/auth/login", "/auth/register"].some((path) =>
+      urlPath.endsWith(path)
+    );
+    const isMeEndpoint = urlPath.endsWith("/auth/me");
+
+    if (
+      typeof window !== "undefined" &&
+      error.response?.status === 401 &&
+      !isAuthEndpoint
+    ) {
+      localStorage.removeItem("token");
+      window.dispatchEvent(new Event("carikos:unauthorized"));
+      if (!isMeEndpoint && !window.location.pathname.startsWith("/auth/")) {
+        window.location.replace("/auth/login");
+      }
+    }
+    return Promise.reject(error);
   }
-  return Promise.reject(error);
-});
+);
 export default api;

@@ -11,59 +11,51 @@ export default function PlaceholderPage({
   description = "",
 }) {
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col items-center justify-center p-6 selection:bg-amber-400 selection:text-neutral-950">
-      <div className="max-w-2xl w-full bg-neutral-900 border border-neutral-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
-        {/* Accent Glow */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/5 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Top Badges */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 border-b border-neutral-800 pb-5">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-xs font-mono uppercase tracking-wider text-amber-400 font-semibold">
-              Halaman Dalam Pengerjaan
-            </span>
-          </div>
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-neutral-800 text-neutral-200 border border-neutral-700">
-            Penanggung Jawab: {assignedTo}
+    <div className="min-h-dvh bg-[#F5F7FA] text-[#0F172A] flex flex-col items-center justify-center p-6">
+      <main className="max-w-2xl w-full bg-[#FFFFFF] rounded-2xl p-8 sm:p-10">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#FFFBEB] px-3 py-1 text-xs font-semibold text-[#92400E]">
+            Halaman dalam pengerjaan
+          </span>
+          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#EEF2F7] text-[#475569]">
+            Penanggung jawab: {assignedTo}
           </span>
         </div>
 
-        {/* Title & Route */}
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#0F172A] tracking-tight mb-3">
           {title}
         </h1>
-        <p className="font-mono text-xs sm:text-sm text-neutral-400 bg-neutral-950 px-3 py-1.5 rounded-lg border border-neutral-800 inline-block mb-4">
+        <p className="text-sm font-medium text-[#475569] bg-[#F5F7FA] px-3.5 py-2 rounded-lg inline-block mb-6">
           Rute: {route}
         </p>
 
-        {/* Domain & Description */}
-        <div className="space-y-4 text-sm text-neutral-300 mb-6 leading-relaxed">
+        <div className="space-y-5 text-sm text-[#475569] mb-8 leading-relaxed">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 block mb-1">
-              Domain Modul
-            </span>
-            <p className="font-medium text-neutral-200">{domain}</p>
+            <p className="text-xs font-semibold text-[#475569] mb-1">
+              Domain modul
+            </p>
+            <p className="font-medium text-[#0F172A]">{domain}</p>
           </div>
 
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 block mb-1">
-              Rencana Fitur & Tugas
-            </span>
-            <p className="text-neutral-400 text-xs sm:text-sm">{description}</p>
-          </div>
+          {description && (
+            <div>
+              <p className="text-xs font-semibold text-[#475569] mb-1">
+                Rencana fitur dan tugas
+              </p>
+              <p className="text-[#475569] text-sm">{description}</p>
+            </div>
+          )}
 
-          {/* Endpoints */}
           {endpoints.length > 0 && (
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 block mb-1.5">
-                Endpoint API Terkait
-              </span>
-              <div className="flex flex-wrap gap-1.5">
+              <p className="text-xs font-semibold text-[#475569] mb-2">
+                Endpoint API terkait
+              </p>
+              <div className="flex flex-wrap gap-2">
                 {endpoints.map((ep, i) => (
                   <span
                     key={i}
-                    className="font-mono text-[11px] bg-neutral-950 text-amber-300/90 px-2.5 py-1 rounded border border-neutral-800"
+                    className="text-xs font-medium bg-[#EEF2F7] text-[#0F172A] px-2.5 py-1 rounded-md"
                   >
                     {ep}
                   </span>
@@ -73,19 +65,30 @@ export default function PlaceholderPage({
           )}
         </div>
 
-        {/* Back Link */}
-        <div className="pt-6 border-t border-neutral-800 flex items-center justify-between">
+        <div className="pt-2 flex items-center justify-between gap-4">
           <Link
             href="/"
-            className="text-xs font-semibold text-neutral-400 hover:text-amber-400 transition-colors inline-flex items-center gap-1.5"
+            className="text-sm font-semibold text-[#1D4ED8] hover:text-[#1E40AF] transition-colors inline-flex items-center gap-1.5"
           >
-            ← Kembali ke Beranda
+            <svg
+              className="w-4 h-4 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.75}
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+              />
+            </svg>
+            <span>Kembali ke Beranda</span>
           </Link>
-          <span className="text-[11px] text-neutral-400">
-            CariKos Platform Web
-          </span>
+          <span className="text-xs text-[#64748B]">CariKos Platform Web</span>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

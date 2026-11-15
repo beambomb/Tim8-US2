@@ -13,13 +13,14 @@ export function useOwnerBookings() {
 
   const fetchOwnerBookingsData = useCallback(async () => {
     if (!isAuthenticated || user?.role !== "PEMILIK_KOS") {
+      setBookings([]);
       setIsLoading(false);
       return;
     }
 
     try {
       const res = await bookingService.getOwnerBookings();
-      setBookings(res?.data || []);
+      setBookings(Array.isArray(res?.data) ? res.data : []);
       setError(null);
     } catch (err) {
       setError(
@@ -35,14 +36,17 @@ export function useOwnerBookings() {
 
     const execute = async () => {
       if (!isAuthenticated || user?.role !== "PEMILIK_KOS") {
-        setIsLoading(false);
+        if (!ignore) {
+          setBookings([]);
+          setIsLoading(false);
+        }
         return;
       }
 
       try {
         const res = await bookingService.getOwnerBookings();
         if (!ignore) {
-          setBookings(res?.data || []);
+          setBookings(Array.isArray(res?.data) ? res.data : []);
           setError(null);
         }
       } catch (err) {

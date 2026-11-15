@@ -9,9 +9,9 @@ const AUTO_SCROLL_PX_PER_SEC = 38;
 const CARD_STEP_PX = 304; // 288px card + 16px gap
 
 const TIPE_BADGE_STYLES = {
-  Putra: "bg-white/95 text-sky-800 border-sky-200 shadow-xs",
-  Putri: "bg-white/95 text-rose-700 border-rose-200 shadow-xs",
-  Campur: "bg-white/95 text-slate-800 border-slate-200 shadow-xs",
+  Putra: "bg-white/95 text-sky-800",
+  Putri: "bg-white/95 text-rose-700",
+  Campur: "bg-white/95 text-slate-800",
 };
 
 function MarqueeKosCard({ kos, slideIndex, totalSlides, isDuplicate = false }) {
@@ -32,7 +32,7 @@ function MarqueeKosCard({ kos, slideIndex, totalSlides, isDuplicate = false }) {
         href={targetHref}
         tabIndex={isDuplicate ? -1 : undefined}
         draggable={false}
-        className="group h-full rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] hover:border-[#1D4ED8]/60 shadow-xs hover:shadow-md overflow-hidden flex flex-col transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
+        className="group h-full rounded-2xl bg-[#FFFFFF] overflow-hidden flex flex-col transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
       >
         <div className="relative h-40 w-full overflow-hidden bg-[#EEF2F7]">
           <Image
@@ -44,33 +44,28 @@ function MarqueeKosCard({ kos, slideIndex, totalSlides, isDuplicate = false }) {
             draggable={false}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {/* Subtle top scrim over kos photo for pill contrast */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-transparent" /* taste-skill-ignore */
-          />
 
           <span
-            className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold border backdrop-blur-sm ${badgeStyle}`}
+            className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[13px] font-semibold ${badgeStyle}`}
           >
             Kos {kos.tipe}
           </span>
 
-          <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-medium bg-[#0F172A]/80 text-white backdrop-blur-sm tabular-nums">
+          <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[13px] font-medium bg-[#0F172A]/90 text-white tabular-nums">
             Sisa {kos.sisaKamar} kamar
           </span>
         </div>
 
         <div className="p-4 flex flex-col flex-1 justify-between gap-3">
           <div>
-            <h3 className="text-sm font-bold text-[#0F172A] group-hover:text-[#1D4ED8] transition-colors line-clamp-1">
+            <h3 className="text-base font-bold text-[#0F172A] group-hover:text-[#1D4ED8] transition-colors line-clamp-1">
               {kos.nama}
             </h3>
-            <p className="mt-1 text-xs text-[#475569] line-clamp-1">
+            <p className="mt-1 text-[13px] text-[#475569] line-clamp-1">
               {kos.lokasi}
             </p>
 
-            <div className="mt-2.5 flex items-center justify-between gap-2 text-xs">
+            <div className="mt-2.5 flex items-center justify-between gap-2 text-[13px]">
               <span className="inline-flex items-center gap-1 text-[#475569]">
                 <svg
                   aria-hidden="true"
@@ -112,9 +107,9 @@ function MarqueeKosCard({ kos, slideIndex, totalSlides, isDuplicate = false }) {
               <span className="text-base font-extrabold text-[#0F172A] tabular-nums">
                 {kos.harga}
               </span>
-              <span className="text-xs text-[#64748B]">{kos.periode}</span>
+              <span className="text-[13px] text-[#64748B]">{kos.periode}</span>
             </div>
-            <span className="text-xs font-semibold text-[#1D4ED8] group-hover:translate-x-0.5 transition-transform">
+            <span className="text-[13px] font-semibold text-[#1D4ED8] group-hover:translate-x-0.5 transition-transform">
               Lihat
             </span>
           </div>
@@ -302,13 +297,56 @@ export default function HeroKosMarquee({ items = featuredKos }) {
         }
       }}
     >
-      {/* Left/Right Navigation Controls before the track in DOM order */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 right-0 z-20 flex items-center justify-between px-1 sm:px-2">
+      {/* Mobile & Tablet Navigation Bar above cards so touch users have clear controls without overlap */}
+      <div className="flex lg:hidden items-center justify-between mb-3">
+        <span className="text-[13px] font-semibold text-[#475569]">
+          Geser pilihan kos
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleStep("prev")}
+            aria-label="Geser ke kos sebelumnya"
+            className="w-10 h-10 rounded-full bg-[#FFFFFF] hover:bg-[#EEF2F7] text-[#0F172A] hover:text-[#1D4ED8] flex items-center justify-center transition-colors cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
+          >
+            <svg
+              aria-hidden="true"
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleStep("next")}
+            aria-label="Geser ke kos berikutnya"
+            className="w-10 h-10 rounded-full bg-[#FFFFFF] hover:bg-[#EEF2F7] text-[#0F172A] hover:text-[#1D4ED8] flex items-center justify-center transition-colors cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
+          >
+            <svg
+              aria-hidden="true"
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop Left/Right Navigation Controls before the track in DOM order */}
+      <div className="hidden lg:flex pointer-events-none absolute inset-y-0 left-0 right-0 z-20 items-center justify-between px-2">
         <button
           type="button"
           onClick={() => handleStep("prev")}
           aria-label="Geser ke kos sebelumnya"
-          className="pointer-events-auto w-9 h-9 rounded-full bg-[#FFFFFF]/95 hover:bg-[#FFFFFF] border border-[#CBD5E1] hover:border-[#1D4ED8] text-[#0F172A] hover:text-[#1D4ED8] shadow-md flex items-center justify-center transition-all cursor-pointer touch-manipulation opacity-90 sm:opacity-0 sm:group-hover/marquee:opacity-100 sm:group-focus-within/marquee:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
+          className="pointer-events-auto w-9 h-9 rounded-full bg-[#FFFFFF] hover:bg-[#EEF2F7] border border-[#CBD5E1] hover:border-[#1D4ED8] text-[#0F172A] hover:text-[#1D4ED8] flex items-center justify-center transition-[opacity,border-color,color,background-color] cursor-pointer touch-manipulation opacity-0 group-hover/marquee:opacity-100 group-focus-within/marquee:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
         >
           <svg
             aria-hidden="true"
@@ -326,7 +364,7 @@ export default function HeroKosMarquee({ items = featuredKos }) {
           type="button"
           onClick={() => handleStep("next")}
           aria-label="Geser ke kos berikutnya"
-          className="pointer-events-auto w-9 h-9 rounded-full bg-[#FFFFFF]/95 hover:bg-[#FFFFFF] border border-[#CBD5E1] hover:border-[#1D4ED8] text-[#0F172A] hover:text-[#1D4ED8] shadow-md flex items-center justify-center transition-all cursor-pointer touch-manipulation opacity-90 sm:opacity-0 sm:group-hover/marquee:opacity-100 sm:group-focus-within/marquee:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
+          className="pointer-events-auto w-9 h-9 rounded-full bg-[#FFFFFF] hover:bg-[#EEF2F7] border border-[#CBD5E1] hover:border-[#1D4ED8] text-[#0F172A] hover:text-[#1D4ED8] flex items-center justify-center transition-[opacity,border-color,color,background-color] cursor-pointer touch-manipulation opacity-0 group-hover/marquee:opacity-100 group-focus-within/marquee:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
         >
           <svg
             aria-hidden="true"

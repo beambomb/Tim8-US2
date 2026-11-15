@@ -3,15 +3,23 @@
 export default function OwnerMetricsGrid({ metrics, isLoading }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div
+        className="rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] overflow-hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5"
+        aria-busy="true"
+        aria-label="Memuat metrik dasbor"
+      >
+        {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-xl bg-[#141D30] border border-slate-800 p-5 flex flex-col gap-3"
+            className={`p-5 flex flex-col gap-3 ${
+              i < 4 ? 'border-b lg:border-b-0 lg:border-r border-[#E2E8F0]' : ''
+            } ${i === 0 || i === 2 ? 'sm:border-r border-[#E2E8F0]' : ''} ${
+              i === 4 ? 'sm:col-span-2 lg:col-span-1' : ''
+            }`}
           >
-            <div className="h-3.5 bg-slate-800 rounded w-1/2" />
-            <div className="h-7 bg-slate-700/60 rounded w-3/4" />
-            <div className="h-3 bg-slate-800/80 rounded w-2/3" />
+            <div className="h-3.5 bg-[#EEF2F7] rounded w-2/3" />
+            <div className="h-7 bg-[#E2E8F0] rounded w-1/2" />
+            <div className="h-3 bg-[#EEF2F7] rounded w-4/5" />
           </div>
         ))}
       </div>
@@ -36,72 +44,79 @@ export default function OwnerMetricsGrid({ metrics, isLoading }) {
     maximumFractionDigits: 0,
   }).format(estimatedIncome);
 
-  const metricCards = [
+  const metricCells = [
     {
-      label: 'Total Properti Kos',
+      label: 'Total properti kos',
       value: totalKos.toString(),
-      subtext: `${statusCounts.approved} aktif, ${statusCounts.pending} verifikasi, ${statusCounts.rejected} ditolak`,
-      accent: 'emerald',
+      subtext: `${statusCounts.approved} aktif, ${statusCounts.pending} tunggu, ${statusCounts.rejected} ditolak`,
+      highlight: false,
     },
     {
-      label: 'Tingkat Okupansi Kamar',
+      label: 'Tingkat okupansi kamar',
       value: `${okupansi}%`,
-      subtext: `${kamarTerisi} terisi dari ${totalKamar} total kapasitas`,
-      accent: 'emerald',
+      subtext: `${kamarTerisi} terisi dari ${totalKamar} kapasitas`,
+      highlight: false,
     },
     {
-      label: 'Kamar Siap Huni',
+      label: 'Kamar siap huni',
       value: kamarTersedia.toString(),
       subtext: `Dari total ${totalKamar} kamar terdaftar`,
-      accent: 'sky',
+      highlight: false,
     },
     {
-      label: 'Permohonan Booking',
+      label: 'Permohonan booking',
       value: totalBookings.toString(),
-      subtext: `${bookingPending} booking menunggu konfirmasi`,
-      accent: bookingPending > 0 ? 'sky' : 'neutral',
+      subtext: `${bookingPending} menunggu konfirmasi`,
+      highlight: bookingPending > 0,
     },
     {
-      label: 'Estimasi Pendapatan Terkonfirmasi',
+      label: 'Estimasi pendapatan disetujui',
       value: formattedIncome,
-      subtext: 'Berdasarkan durasi sewa booking disetujui',
-      accent: 'emerald',
-      fullWidthOnMobile: true,
+      subtext: 'Akumulasi durasi sewa terkonfirmasi',
+      highlight: false,
+      isMoney: true,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-      {metricCards.map((card, idx) => (
-        <div
-          key={idx}
-          className={`rounded-xl bg-[#141D30] border border-slate-800 p-5 flex flex-col justify-between ${
-            card.fullWidthOnMobile ? 'sm:col-span-2 lg:col-span-1' : ''
-          }`}
-        >
-          <div>
-            <span className="text-xs font-medium text-[#94A3B8] block mb-2">
-              {card.label}
-            </span>
-            <div className="text-2xl font-bold text-[#F1F5F9] tracking-tight tabular-nums font-mono">
-              {card.value}
+    <div className="rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] overflow-hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+      {metricCells.map((cell, idx) => {
+        const isLast = idx === metricCells.length - 1;
+        const isLeftColumnOnTablet = idx === 0 || idx === 2;
+        return (
+          <div
+            key={cell.label}
+            className={`p-5 flex flex-col justify-between gap-2 ${
+              !isLast ? 'border-b lg:border-b-0 lg:border-r border-[#E2E8F0]' : ''
+            } ${isLeftColumnOnTablet ? 'sm:border-r border-[#E2E8F0]' : ''} ${
+              isLast ? 'sm:col-span-2 lg:col-span-1' : ''
+            }`}
+          >
+            <div>
+              <span className="text-xs font-medium text-[#475569] block mb-1.5">
+                {cell.label}
+              </span>
+              <div
+                className={`text-2xl tracking-tight tabular-nums text-[#0F172A] ${
+                  cell.isMoney ? 'font-bold' : 'font-semibold'
+                }`}
+              >
+                {cell.value}
+              </div>
             </div>
-          </div>
 
-          <div className="mt-3 pt-3 border-t border-slate-800/80 text-[11px] text-[#64748B] flex items-center gap-1.5">
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                card.accent === 'emerald'
-                  ? 'bg-emerald-400'
-                  : card.accent === 'sky'
-                  ? 'bg-sky-400'
-                  : 'bg-slate-500'
+            <p
+              className={`text-[11px] leading-snug ${
+                cell.highlight
+                  ? 'text-[var(--accent)] font-medium'
+                  : 'text-[#475569]'
               }`}
-            />
-            <span className="truncate">{card.subtext}</span>
+            >
+              {cell.subtext}
+            </p>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -45,17 +45,30 @@ export default function MyBookingsPage() {
     return s || "PENDING";
   };
 
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "DISETUJUI":
+        return "Disetujui";
+      case "DITOLAK":
+        return "Ditolak";
+      case "DIBATALKAN":
+        return "Dibatalkan";
+      default:
+        return "Menunggu Konfirmasi";
+    }
+  };
+
   const getStatusBadge = (rawStatus) => {
     const status = normalizeStatus(rawStatus);
     switch (status) {
       case "DISETUJUI":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        return "bg-[#DCFAE5] text-[#04250E]";
       case "DITOLAK":
-        return "bg-rose-50 text-rose-700 border-rose-200";
+        return "bg-[#FFEDEA] text-[#831C1E]";
       case "DIBATALKAN":
-        return "bg-slate-100 text-slate-600 border-slate-200";
+        return "bg-[#EEF2F7] text-[#475569]";
       default:
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-[#FFFBEB] text-[#92400E]";
     }
   };
 
@@ -87,27 +100,24 @@ export default function MyBookingsPage() {
   }, [bookings]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
+    <div className="min-h-dvh flex flex-col bg-[#F5F7FA] text-[#0F172A]">
       <Navbar />
 
-      <main className="flex-1">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <main className="flex-1 pt-24 pb-12">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
                 Riwayat Booking Saya
               </h1>
-              <p className="mt-1 text-sm text-[#475569]">
-                Pantau status pengajuan sewa kamar kos Anda secara real-time.
-              </p>
             </div>
 
             {isAuthenticated && (
               <button
                 type="button"
                 onClick={refetch}
-                className="self-start sm:self-auto px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] hover:bg-[#DBEAFE] transition-colors"
+                className="self-start sm:self-auto px-4 py-2 rounded-xl text-[13px] font-semibold text-[#1D4ED8] bg-[#EFF6FF] hover:bg-[#DBEAFE] transition-colors cursor-pointer"
               >
                 Segarkan Data
               </button>
@@ -117,14 +127,10 @@ export default function MyBookingsPage() {
           {/* Unauthorized / Not logged in */}
           {!authLoading && (!isAuthenticated || user?.role !== "PENCARI_KOS") ? (
             <div className="mx-auto max-w-2xl py-12 text-center">
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
-                <h2 className="text-xl font-bold text-slate-900">
+              <div className="rounded-2xl bg-[#FFFFFF] p-8">
+                <h2 className="text-xl font-bold text-[#0F172A]">
                   Akses Khusus Mahasiswa Pencari Kos
                 </h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  Silakan login menggunakan akun <strong>Pencari Kos</strong> untuk
-                  melihat riwayat dan status pengajuan sewa Anda.
-                </p>
                 <Link
                   href="/auth/login"
                   className="mt-5 inline-block rounded-xl bg-[#1D4ED8] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1E40AF] transition-colors"
@@ -135,15 +141,15 @@ export default function MyBookingsPage() {
             </div>
           ) : authLoading || isLoading ? (
             /* Skeleton Loading */
-            <div className="space-y-4 animate-pulse">
-              <div className="h-10 w-full rounded-xl bg-slate-200" />
-              <div className="h-44 w-full rounded-2xl bg-slate-200" />
-              <div className="h-44 w-full rounded-2xl bg-slate-200" />
+            <div className="space-y-4">
+              <div className="h-11 w-full rounded-xl bg-[#E2E8F0]" />
+              <div className="h-44 w-full rounded-2xl bg-[#FFFFFF]" />
+              <div className="h-44 w-full rounded-2xl bg-[#FFFFFF]" />
             </div>
           ) : (
             <>
               {/* Tab Filter Status */}
-              <div className="mb-6 flex gap-2 overflow-x-auto border-b border-slate-200 pb-2">
+              <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
                 {TABS.map((tab) => {
                   const isActive = activeTab === tab.key;
                   const count = counts[tab.key] || 0;
@@ -152,18 +158,18 @@ export default function MyBookingsPage() {
                       key={tab.key}
                       type="button"
                       onClick={() => setActiveTab(tab.key)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                         isActive
-                          ? "bg-[#1D4ED8] text-white shadow-xs"
-                          : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                          ? "bg-[#1D4ED8] text-white"
+                          : "bg-[#FFFFFF] text-[#475569] hover:bg-[#EEF2F7] hover:text-[#0F172A]"
                       }`}
                     >
                       <span>{tab.label}</span>
                       <span
-                        className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono tabular-nums ${
+                        className={`px-2 py-0.5 rounded-full text-xs tabular-nums ${
                           isActive
                             ? "bg-white/20 text-white"
-                            : "bg-slate-100 text-slate-600"
+                            : "bg-[#EEF2F7] text-[#475569]"
                         }`}
                       >
                         {count}
@@ -174,19 +180,20 @@ export default function MyBookingsPage() {
               </div>
 
               {error && (
-                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                <div className="mb-6 rounded-xl bg-[#FFEDEA] p-4 text-sm text-[#831C1E]">
                   {error}
                 </div>
               )}
 
               {/* Daftar Booking */}
               {filteredBookings.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-xs">
-                  <p className="text-base font-semibold text-slate-700">
+                <div className="rounded-2xl bg-[#FFFFFF] p-12 text-center">
+                  <p className="text-base font-semibold text-[#0F172A]">
                     Belum ada riwayat booking pada kategori ini.
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Mulai eksplorasi katalog kos untuk menemukan tempat tinggal idaman.
+                  <p className="mt-1 text-base text-[#475569]">
+                    Mulai eksplorasi katalog kos untuk menemukan tempat tinggal
+                    idaman.
                   </p>
                   <Link
                     href="/kos"
@@ -214,12 +221,12 @@ export default function MyBookingsPage() {
                     return (
                       <div
                         key={booking._id}
-                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-[#1D4ED8]/30 transition-all"
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 rounded-2xl bg-[#FFFFFF] p-5 transition-colors"
                       >
                         {/* Foto & Info Utama */}
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
                           {/* Thumbnail Foto Kos */}
-                          <div className="relative h-28 w-full sm:w-36 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                          <div className="relative h-28 w-full sm:w-36 shrink-0 overflow-hidden rounded-xl bg-[#EEF2F7]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={thumbnail}
@@ -227,7 +234,7 @@ export default function MyBookingsPage() {
                               className="h-full w-full object-cover"
                             />
                             {kos.tipe && (
-                              <span className="absolute bottom-1.5 left-1.5 rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-xs">
+                              <span className="absolute bottom-2 left-2 rounded-md bg-[#0F172A]/85 px-2 py-0.5 text-xs font-medium text-white">
                                 Kos {kos.tipe}
                               </span>
                             )}
@@ -237,13 +244,13 @@ export default function MyBookingsPage() {
                           <div className="space-y-1.5">
                             <div className="flex flex-wrap items-center gap-2">
                               <span
-                                className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${getStatusBadge(
+                                className={`rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${getStatusBadge(
                                   booking.status
                                 )}`}
                               >
-                                {normalizedStatus}
+                                {getStatusLabel(normalizedStatus)}
                               </span>
-                              <span className="text-xs text-slate-400">
+                              <span className="text-[13px] text-[#475569] tabular-nums">
                                 Diajukan pada {formatDate(booking.createdAt)}
                               </span>
                             </div>
@@ -251,32 +258,57 @@ export default function MyBookingsPage() {
                             {kos._id ? (
                               <Link
                                 href={`/kos/${kos._id}`}
-                                className="block text-base font-bold text-slate-900 hover:text-[#1D4ED8] transition-colors"
+                                className="block text-base font-bold text-[#0F172A] hover:text-[#1D4ED8] transition-colors"
                               >
                                 {kos.nama || "Properti Kos"}
                               </Link>
                             ) : (
-                              <span className="block text-base font-bold text-slate-900">
+                              <span className="block text-base font-bold text-[#0F172A]">
                                 {kos.nama || "Properti Kos"}
                               </span>
                             )}
 
-                            <p className="text-xs text-slate-500">
-                              📍 {kos.lokasi || "-"}
+                            <p className="flex items-center gap-1.5 text-sm text-[#475569]">
+                              <svg
+                                className="w-3.5 h-3.5 shrink-0 text-[#475569]"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={1.75}
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+                                />
+                              </svg>
+                              <span>{kos.lokasi || "-"}</span>
                             </p>
 
-                            <div className="flex flex-wrap gap-x-5 gap-y-1 pt-1 text-xs text-slate-700">
-                              <span>
-                                <strong>Mulai Sewa:</strong>{" "}
+                            <div className="flex flex-wrap gap-x-5 gap-y-1 pt-1 text-[13px] text-[#475569]">
+                              <span className="tabular-nums">
+                                <strong className="text-[#0F172A]">
+                                  Mulai Sewa:
+                                </strong>{" "}
                                 {formatDate(booking.tanggalMulai)}
                               </span>
-                              <span>
-                                <strong>Durasi:</strong> {booking.durasiBulan}{" "}
-                                Bulan
+                              <span className="tabular-nums">
+                                <strong className="text-[#0F172A]">
+                                  Durasi:
+                                </strong>{" "}
+                                {booking.durasiBulan} Bulan
                               </span>
                               <span>
-                                <strong>Total:</strong>{" "}
-                                <span className="font-bold text-emerald-700 font-mono">
+                                <strong className="text-[#0F172A]">
+                                  Total:
+                                </strong>{" "}
+                                <span className="font-bold text-[#0F172A] tabular-nums">
                                   {formatRupiah(
                                     booking.totalHarga || totalHarga
                                   )}
@@ -285,7 +317,7 @@ export default function MyBookingsPage() {
                             </div>
 
                             {booking.catatan && (
-                              <p className="text-xs italic text-slate-500 bg-slate-50 rounded-lg p-2 border border-slate-100">
+                              <p className="text-sm italic text-[#475569] bg-[#F5F7FA] rounded-lg px-3 py-2">
                                 Catatan Anda: &quot;{booking.catatan}&quot;
                               </p>
                             )}
@@ -299,7 +331,7 @@ export default function MyBookingsPage() {
                               type="button"
                               disabled={cancellingId === booking._id}
                               onClick={() => handleCancelBooking(booking._id)}
-                              className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50 transition-colors"
+                              className="rounded-xl bg-[#FFEDEA] px-4 py-2 text-[13px] font-semibold text-[#831C1E] hover:bg-[#FEE2E2] disabled:opacity-50 transition-colors cursor-pointer"
                             >
                               {cancellingId === booking._id
                                 ? "Membatalkan..."
@@ -310,7 +342,7 @@ export default function MyBookingsPage() {
                           {kos._id && (
                             <Link
                               href={`/kos/${kos._id}`}
-                              className="rounded-xl border border-slate-300 px-4 py-2 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                              className="rounded-xl bg-[#EEF2F7] px-4 py-2 text-center text-[13px] font-semibold text-[#0F172A] hover:bg-[#E2E8F0] transition-colors"
                             >
                               Lihat Kos
                             </Link>
@@ -319,9 +351,23 @@ export default function MyBookingsPage() {
                           {ownerId && (
                             <Link
                               href={`/chat/${ownerId}?kosId=${kos._id || ""}`}
-                              className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-center text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#EFF6FF] px-4 py-2 text-center text-[13px] font-semibold text-[#1D4ED8] hover:bg-[#DBEAFE] transition-colors"
                             >
-                              💬 Chat Pemilik
+                              <svg
+                                className="w-3.5 h-3.5 shrink-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={1.75}
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
+                                />
+                              </svg>
+                              <span>Chat Pemilik</span>
                             </Link>
                           )}
                         </div>

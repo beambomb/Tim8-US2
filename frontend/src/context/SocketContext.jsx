@@ -5,7 +5,14 @@
  * Penanggung Jawab: Anggota 4
  */
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { getSocket } from "../lib/socket";
 import { useAuth } from "./AuthContext";
 
@@ -13,41 +20,113 @@ const SocketContext = createContext(null);
 
 export function SocketProvider({ children }) {
   const { user, isAuthenticated } = useAuth();
+  const currentUserId = user?._id || user?.id;
+
   const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [latestNotification, setLatestNotification] = useState(null);
 
   useEffect(() => {
-    if (isAuthenticated && user?._id) {
-      const socketInstance = getSocket();
-      socketInstance.connect();
+    let cancelled = false;
 
-      // Gabung ke room pribadi pengguna
-      socketInstance.emit("joinRoom", user._id);
-      setSocket(socketInstance);
-
-      // Dengarkan event notifikasi real-time
-      socketInstance.on("notification", (notif) => {
-        setLatestNotification(notif);
-        setUnreadNotifications((prev) => prev + 1);
+    if (!isAuthenticated || !currentUserId) {
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setSocket(null);
+        setIsConnected(false);
+        setUnreadNotifications(0);
+        setLatestNotification(null);
       });
-
       return () => {
-        socketInstance.off("notification");
-        socketInstance.disconnect();
+        cancelled = true;
       };
     }
-  }, [isAuthenticated, user]);
+
+    const socketInstance = getSocket();
+    if (!socketInstance) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const handleConnect = () => {
+      setIsConnected(true);
+      socketInstance.emit("joinRoom", String(currentUserId));
+    };
+
+    const handleDisconnect = () => {
+      setIsConnected(false);
+    };
+
+    const handleNotification = (notif) => {
+      setLatestNotification(notif);
+      setUnreadNotifications((prev) => prev + 1);
+    };
+
+    socketInstance.on("connect", handleConnect);
+    socketInstance.on("disconnect", handleDisconnect);
+    socketInstance.on("notification", handleNotification);
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setSocket(socketInstance);
+      if (socketInstance.connected) {
+        setIsConnected(true);
+      }
+    });
+
+    if (socketInstance.connected) {
+      socketInstance.emit("joinRoom", String(currentUserId));
+    } else {
+      socketInstance.connect();
+    }
+
+    return () => {
+      cancelled = true;
+      socketInstance.off("connect", handleConnect);
+      socketInstance.off("disconnect", handleDisconnect);
+      socketInstance.off("notification", handleNotification);
+      socketInstance.disconnect();
+    };
+  }, [isAuthenticated, currentUserId]);
+
+  const clearLatestNotification = useCallback(() => {
+    setLatestNotification(null);
+  }, []);
+
+  const resetUnreadNotifications = useCallback(() => {
+    setUnreadNotifications(0);
+  }, []);
+
+  const decrementUnreadNotifications = useCallback((amount = 1) => {
+    const step = Number.isFinite(Number(amount)) ? Math.max(0, Number(amount)) : 1;
+    setUnreadNotifications((prev) => Math.max(0, prev - step));
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      socket,
+      isConnected,
+      unreadNotifications,
+      latestNotification,
+      clearLatestNotification,
+      resetUnreadNotifications,
+      decrementUnreadNotifications,
+    }),
+    [
+      socket,
+      isConnected,
+      unreadNotifications,
+      latestNotification,
+      clearLatestNotification,
+      resetUnreadNotifications,
+      decrementUnreadNotifications,
+    ]
+  );
 
   return (
-    <SocketContext.Provider
-      value={{
-        socket,
-        unreadNotifications,
-        latestNotification,
-        clearLatestNotification: () => setLatestNotification(null),
-      }}
-    >
+    <SocketContext.Provider value={contextValue}>
       {children}
     </SocketContext.Provider>
   );

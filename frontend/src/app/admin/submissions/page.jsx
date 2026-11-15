@@ -1,11 +1,320 @@
 "use client";
-import {useState} from "react";
+
+import { useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
-import {Panel,Loading,Alert,Button,errorText} from "@/components/admin/UI";
-import {useAdminSubmissions} from "@/features/admin/hooks/useAdminSubmissions";
-import {adminService} from "@/features/admin/services/adminService";
-export default function Submissions(){const {submissions,isLoading,error,actionLoadingId,refetch,approveKos,rejectKos}=useAdminSubmissions();const [selected,setSelected]=useState(null);const [detailLoading,setDetailLoading]=useState(false);const [reason,setReason]=useState("");const [message,setMessage]=useState("");const [actionError,setActionError]=useState("");
- const open=async id=>{setSelected(null);setDetailLoading(true);setActionError("");setReason("");try{setSelected((await adminService.getSubmissionDetail(id)).data)}catch(e){setActionError(errorText(e))}finally{setDetailLoading(false)}};
- const decide=async type=>{if(!selected)return;if(type==="approve"&&!window.confirm(`Setujui kos ${selected.nama}?`))return;const result=type==="approve"?await approveKos(selected._id):await rejectKos(selected._id,reason);if(result.success){setMessage(type==="approve"?"Pengajuan berhasil disetujui.":"Pengajuan berhasil ditolak.");setSelected(null);setActionError("");}else setActionError(result.error);};
- return <AdminShell title="Verifikasi Pengajuan Kos" subtitle="Periksa informasi kos sebelum menerima atau menolak pengajuan."><div className="flex justify-between items-center mb-4"><p className="text-sm text-slate-600">{submissions.length} pengajuan menunggu</p><Button variant="outline" onClick={refetch}>Muat ulang</Button></div>{message&&<div className="mb-4"><Alert type="success">{message}</Alert></div>}{(error||actionError)&&<div className="mb-4"><Alert>{error||actionError}</Alert></div>}{isLoading?<Loading/>:submissions.length===0?<Panel>Belum ada pengajuan kos yang menunggu verifikasi.</Panel>:<div className="grid gap-4">{submissions.map(k=><Panel key={k._id}><div className="flex flex-wrap justify-between items-start gap-4"><div><span className="text-xs font-semibold text-amber-700 bg-amber-50 rounded-full px-3 py-1">Pending</span><h2 className="text-lg font-bold mt-3">{k.nama}</h2><p className="text-sm text-slate-600 mt-1">{k.lokasi} · {k.tipe}</p><p className="text-sm text-slate-500 mt-1">Pemilik: {k.ownerId?.nama||"Tidak diketahui"}</p><p className="font-semibold text-blue-800 mt-2">Rp {Number(k.harga||0).toLocaleString("id-ID")}/bulan</p></div><Button onClick={()=>open(k._id)}>Tinjau pengajuan</Button></div></Panel>)}</div>}{detailLoading&&<Loading/>}{selected&&<div className="fixed inset-0 z-50 bg-slate-950/60 p-4 grid place-items-center" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null)}}><section role="dialog" aria-modal="true" aria-label="Detail pengajuan kos" className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"><div className="flex justify-between gap-3"><h2 className="text-2xl font-bold">{selected.nama}</h2><button aria-label="Tutup detail" onClick={()=>setSelected(null)} className="text-xl">✕</button></div><p className="mt-2 text-slate-600">{selected.lokasi}</p><div className="grid grid-cols-2 gap-3 mt-5 text-sm"><p><b>Harga:</b> Rp {Number(selected.harga||0).toLocaleString("id-ID")}</p><p><b>Tipe:</b> {selected.tipe}</p><p><b>Jumlah kamar:</b> {selected.jumlahKamar}</p><p><b>Tersedia:</b> {selected.jumlahKamarTersedia}</p><p><b>Pemilik:</b> {selected.ownerId?.nama||"-"}</p><p><b>Email:</b> {selected.ownerId?.email||"-"}</p></div><p className="mt-4 text-sm"><b>Fasilitas:</b> {selected.fasilitas?.join(", ")||"Tidak dicantumkan"}</p><h3 className="font-semibold mt-5">Foto properti</h3><div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">{selected.fotoUrls?.length?selected.fotoUrls.map((url,i)=><a href={url} target="_blank" rel="noopener noreferrer" key={i}><img src={url} alt={`Foto kos ${i+1}`} className="w-full h-32 object-cover rounded-xl border"/></a>):<p className="text-slate-500 text-sm">Tidak ada foto.</p>}</div><label className="block font-semibold text-sm mt-6">Alasan penolakan<textarea className="mt-2 w-full rounded-xl border border-slate-300 p-3 font-normal" rows={3} value={reason} onChange={e=>setReason(e.target.value)} placeholder="Wajib diisi jika pengajuan ditolak"/></label>{actionError&&<div className="mt-3"><Alert>{actionError}</Alert></div>}<div className="flex flex-wrap justify-end gap-3 mt-5"><Button variant="outline" onClick={()=>setSelected(null)}>Batal</Button><Button variant="danger" disabled={!!actionLoadingId||!reason.trim()} onClick={()=>decide("reject")}>Tolak pengajuan</Button><Button disabled={!!actionLoadingId} onClick={()=>decide("approve")}>Setujui kos</Button></div></section></div>}</AdminShell>;
+import {
+  Panel,
+  Loading,
+  Alert,
+  Button,
+  Badge,
+  Modal,
+} from "@/components/admin/UI";
+import { useAdminSubmissions } from "@/features/admin/hooks/useAdminSubmissions";
+
+function formatDate(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatPrice(value) {
+  return `Rp ${Number(value || 0).toLocaleString("id-ID")}`;
+}
+
+export default function Submissions() {
+  const {
+    submissions,
+    isLoading,
+    error,
+    actionLoadingId,
+    selected,
+    detailLoading,
+    actionError,
+    refetch,
+    openDetail,
+    closeDetail,
+    approveKos,
+    rejectKos,
+  } = useAdminSubmissions();
+
+  const [reason, setReason] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleOpen = (id) => {
+    setReason("");
+    setMessage("");
+    openDetail(id);
+  };
+
+  const handleClose = () => {
+    setReason("");
+    closeDetail();
+  };
+
+  const handleDecision = async (type) => {
+    if (!selected) return;
+    if (
+      type === "approve" &&
+      !window.confirm(`Setujui kos ${selected.nama}?`)
+    ) {
+      return;
+    }
+
+    const result =
+      type === "approve"
+        ? await approveKos(selected._id)
+        : await rejectKos(selected._id, reason);
+
+    if (result.success) {
+      setReason("");
+      setMessage(
+        type === "approve"
+          ? "Pengajuan berhasil disetujui."
+          : "Pengajuan berhasil ditolak."
+      );
+    }
+  };
+
+  const detailCreatedAt = formatDate(selected?.createdAt);
+  const hasCoordinates =
+    selected?.latitude != null && selected?.longitude != null;
+
+  return (
+    <AdminShell
+      title="Verifikasi Pengajuan Kos"
+      subtitle="Periksa informasi kos sebelum menerima atau menolak pengajuan."
+    >
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+        <p className="text-sm text-[#475569] tabular-nums">
+          {submissions.length} pengajuan menunggu
+        </p>
+        <Button variant="outline" onClick={refetch} disabled={isLoading}>
+          Muat ulang
+        </Button>
+      </div>
+
+      {message && (
+        <div className="mb-4">
+          <Alert type="success">{message}</Alert>
+        </div>
+      )}
+
+      {(error || (!selected && actionError)) && (
+        <div className="mb-4">
+          <Alert>{error || actionError}</Alert>
+        </div>
+      )}
+
+      {isLoading ? (
+        <Loading />
+      ) : submissions.length === 0 ? (
+        <Panel>
+          <p className="text-sm text-[#475569]">
+            Belum ada pengajuan kos yang menunggu verifikasi.
+          </p>
+        </Panel>
+      ) : (
+        <div className="grid gap-4">
+          {submissions.map((k) => {
+            const submittedAt = formatDate(k.createdAt);
+            return (
+              <Panel key={k._id}>
+                <div className="flex flex-wrap justify-between items-start gap-4">
+                  <div>
+                    <Badge variant="warning">Pending</Badge>
+                    <h2 className="text-lg font-semibold text-[#0F172A] mt-3">
+                      {k.nama}
+                    </h2>
+                    <p className="text-sm text-[#475569] mt-1">
+                      {k.lokasi} · {k.tipe}
+                    </p>
+                    <p className="text-sm text-[#475569] mt-1">
+                      Pemilik:{" "}
+                      {k.ownerId?.nama || (
+                        <span className="text-[#64748B]">-</span>
+                      )}
+                    </p>
+                    {submittedAt && (
+                      <p className="text-xs text-[#475569] tabular-nums mt-1">
+                        Diajukan: {submittedAt}
+                      </p>
+                    )}
+                    <p className="text-base font-semibold text-[#0F172A] tabular-nums mt-2">
+                      {formatPrice(k.harga)}/bulan
+                    </p>
+                  </div>
+                  <Button onClick={() => handleOpen(k._id)}>
+                    Tinjau pengajuan
+                  </Button>
+                </div>
+              </Panel>
+            );
+          })}
+        </div>
+      )}
+
+      <Modal
+        open={detailLoading || !!selected}
+        onClose={handleClose}
+        title={selected?.nama || "Memuat detail pengajuan"}
+      >
+        {detailLoading ? (
+          <div className="mt-4">
+            <Loading label="Memuat detail pengajuan..." />
+          </div>
+        ) : (
+          selected && (
+            <>
+              <p className="mt-1.5 text-sm text-[#475569]">{selected.lokasi}</p>
+
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5 rounded-xl border border-[#E2E8F0] bg-[#F5F7FA] p-4 text-sm">
+                <div>
+                  <dt className="text-xs text-[#475569]">Harga per bulan</dt>
+                  <dd className="mt-0.5 font-semibold text-[#0F172A] tabular-nums">
+                    {formatPrice(selected.harga)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#475569]">Tipe kos</dt>
+                  <dd className="mt-0.5 font-medium text-[#0F172A]">
+                    {selected.tipe || (
+                      <span className="text-[#64748B]">-</span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#475569]">Jumlah kamar</dt>
+                  <dd className="mt-0.5 font-medium text-[#0F172A] tabular-nums">
+                    {selected.jumlahKamar ?? (
+                      <span className="text-[#64748B]">-</span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#475569]">Kamar tersedia</dt>
+                  <dd className="mt-0.5 font-medium text-[#0F172A] tabular-nums">
+                    {selected.jumlahKamarTersedia ?? (
+                      <span className="text-[#64748B]">-</span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#475569]">Pemilik</dt>
+                  <dd className="mt-0.5 font-medium text-[#0F172A]">
+                    {selected.ownerId?.nama || (
+                      <span className="text-[#64748B]">-</span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#475569]">Email pemilik</dt>
+                  <dd className="mt-0.5 font-medium text-[#0F172A]">
+                    {selected.ownerId?.email || (
+                      <span className="text-[#64748B]">-</span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#475569]">Tanggal pengajuan</dt>
+                  <dd className="mt-0.5 font-medium text-[#0F172A] tabular-nums">
+                    {detailCreatedAt || (
+                      <span className="text-[#64748B]">-</span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#475569]">Koordinat</dt>
+                  <dd className="mt-0.5 font-medium text-[#0F172A] tabular-nums">
+                    {hasCoordinates ? (
+                      `${selected.latitude}, ${selected.longitude}`
+                    ) : (
+                      <span className="text-[#64748B]">-</span>
+                    )}
+                  </dd>
+                </div>
+              </dl>
+
+              <p className="mt-4 text-sm text-[#0F172A]">
+                <span className="font-semibold">Fasilitas:</span>{" "}
+                {selected.fasilitas?.length ? (
+                  <span className="text-[#475569]">
+                    {selected.fasilitas.join(", ")}
+                  </span>
+                ) : (
+                  <span className="text-[#64748B]">Tidak dicantumkan</span>
+                )}
+              </p>
+
+              <h3 className="text-sm font-semibold text-[#0F172A] mt-5">
+                Foto properti
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
+                {selected.fotoUrls?.length ? (
+                  selected.fotoUrls.map((url, i) => (
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      key={i}
+                      className="block rounded-lg overflow-hidden border border-[#E2E8F0]"
+                    >
+                      <img
+                        src={url}
+                        alt={`Foto kos ${i + 1}`}
+                        className="w-full h-32 object-cover"
+                      />
+                    </a>
+                  ))
+                ) : (
+                  <p className="text-sm text-[#64748B]">Tidak ada foto.</p>
+                )}
+              </div>
+
+              <label className="block text-sm font-semibold text-[#0F172A] mt-6">
+                Alasan penolakan
+                <textarea
+                  className="mt-2 w-full rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] p-3 text-sm font-normal text-[#0F172A] placeholder:text-[#64748B] outline-none focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/20 transition-colors"
+                  rows={3}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Wajib diisi jika pengajuan ditolak"
+                />
+              </label>
+
+              {actionError && (
+                <div className="mt-3">
+                  <Alert>{actionError}</Alert>
+                </div>
+              )}
+
+              <div className="flex flex-wrap justify-end gap-3 mt-5">
+                <Button variant="outline" onClick={handleClose}>
+                  Batal
+                </Button>
+                <Button
+                  variant="danger"
+                  disabled={!!actionLoadingId || !reason.trim()}
+                  onClick={() => handleDecision("reject")}
+                >
+                  Tolak pengajuan
+                </Button>
+                <Button
+                  disabled={!!actionLoadingId}
+                  onClick={() => handleDecision("approve")}
+                >
+                  Setujui kos
+                </Button>
+              </div>
+            </>
+          )
+        )}
+      </Modal>
+    </AdminShell>
+  );
 }

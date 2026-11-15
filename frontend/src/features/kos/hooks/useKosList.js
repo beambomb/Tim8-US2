@@ -1,8 +1,53 @@
 'use client';
 
-import { useState, useEffect, useCallback, useTransition } from 'react';
+import { useState, useEffect, useCallback, useTransition, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { kosService } from '../services/kosService';
+
+const EMPTY_FILTERS = {
+  tipe: 'all',
+  lokasi: '',
+  hargaMin: '',
+  hargaMax: '',
+  fasilitas: '',
+  tersedia: '',
+};
+
+const DEBOUNCED_FIELDS = new Set(['lokasi', 'hargaMin', 'hargaMax']);
+
+function buildKosParams(sourceFilters) {
+  const params = {};
+  if (sourceFilters.tipe && sourceFilters.tipe !== 'all') {
+    params.tipe = sourceFilters.tipe;
+  }
+  if (sourceFilters.lokasi && sourceFilters.lokasi.trim() !== '') {
+    params.lokasi = sourceFilters.lokasi.trim();
+  }
+  if (sourceFilters.hargaMin && Number(sourceFilters.hargaMin) > 0) {
+    params.hargaMin = Number(sourceFilters.hargaMin);
+  }
+  if (sourceFilters.hargaMax && Number(sourceFilters.hargaMax) > 0) {
+    params.hargaMax = Number(sourceFilters.hargaMax);
+  }
+  if (sourceFilters.fasilitas && sourceFilters.fasilitas.trim() !== '') {
+    params.fasilitas = sourceFilters.fasilitas.trim();
+  }
+  if (sourceFilters.tersedia === 'true' || sourceFilters.tersedia === true) {
+    params.tersedia = 'true';
+  }
+  return params;
+}
+
+function filtersEqual(a, b) {
+  return (
+    a.tipe === b.tipe &&
+    a.lokasi === b.lokasi &&
+    a.hargaMin === b.hargaMin &&
+    a.hargaMax === b.hargaMax &&
+    a.fasilitas === b.fasilitas &&
+    a.tersedia === b.tersedia
+  );
+}
 
 /**
  * Custom Hook for Kos Catalog with Multi-Criteria Filtering
@@ -22,7 +67,6 @@ export function useKosList(initialFilters = {}) {
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
 
-  // Read initial filter values from URL search params if present, otherwise fallback to defaults
   const getInitialValue = (key, fallback = '') => {
     if (searchParams && searchParams.has(key)) {
       return searchParams.get(key);
@@ -30,68 +74,66 @@ export function useKosList(initialFilters = {}) {
     return initialFilters[key] !== undefined ? initialFilters[key] : fallback;
   };
 
-  const [filters, setFilters] = useState({
+  const initialFilterState = {
     tipe: getInitialValue('tipe', 'all'),
     lokasi: getInitialValue('lokasi', ''),
     hargaMin: getInitialValue('hargaMin', ''),
     hargaMax: getInitialValue('hargaMax', ''),
     fasilitas: getInitialValue('fasilitas', ''),
     tersedia: getInitialValue('tersedia', ''),
-  });
+  };
 
+  const [filters, setFilters] = useState(initialFilterState);
+  const [queryFilters, setQueryFilters] = useState(initialFilterState);
   const [kosList, setKosList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const debounceTimerRef = useRef(null);
+  const lastSyncedQueryRef = useRef(searchParams ? searchParams.toString() : '');
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   // Sync state if URL search parameters change externally (e.g. browser back/forward)
   useEffect(() => {
     if (!searchParams) return;
 
-    const urlTipe = searchParams.get('tipe') || 'all';
-    const urlLokasi = searchParams.get('lokasi') || '';
-    const urlHargaMin = searchParams.get('hargaMin') || '';
-    const urlHargaMax = searchParams.get('hargaMax') || '';
-    const urlFasilitas = searchParams.get('fasilitas') || '';
-    const urlTersedia = searchParams.get('tersedia') || '';
+    const currentQuery = searchParams.toString();
+    if (currentQuery === lastSyncedQueryRef.current) return;
+    lastSyncedQueryRef.current = currentQuery;
+
+    const nextFromUrl = {
+      tipe: searchParams.get('tipe') || 'all',
+      lokasi: searchParams.get('lokasi') || '',
+      hargaMin: searchParams.get('hargaMin') || '',
+      hargaMax: searchParams.get('hargaMax') || '',
+      fasilitas: searchParams.get('fasilitas') || '',
+      tersedia: searchParams.get('tersedia') || '',
+    };
 
     queueMicrotask(() => {
-      setFilters((prev) => {
-        if (
-          prev.tipe === urlTipe &&
-          prev.lokasi === urlLokasi &&
-          prev.hargaMin === urlHargaMin &&
-          prev.hargaMax === urlHargaMax &&
-          prev.fasilitas === urlFasilitas &&
-          prev.tersedia === urlTersedia
-        ) {
-          return prev;
-        }
-        return {
-          tipe: urlTipe,
-          lokasi: urlLokasi,
-          hargaMin: urlHargaMin,
-          hargaMax: urlHargaMax,
-          fasilitas: urlFasilitas,
-          tersedia: urlTersedia,
-        };
-      });
+      setFilters((prev) => (filtersEqual(prev, nextFromUrl) ? prev : nextFromUrl));
+      setQueryFilters((prev) => (filtersEqual(prev, nextFromUrl) ? prev : nextFromUrl));
     });
   }, [searchParams]);
 
-  // Fetch kos based on active filter state
+  // Fetch kos based on debounced active query filter state
   useEffect(() => {
     let ignore = false;
 
     const executeFetch = async () => {
-      try {
-        const params = {};
-        if (filters.tipe && filters.tipe !== 'all') params.tipe = filters.tipe;
-        if (filters.lokasi && filters.lokasi.trim() !== '') params.lokasi = filters.lokasi.trim();
-        if (filters.hargaMin && Number(filters.hargaMin) > 0) params.hargaMin = Number(filters.hargaMin);
-        if (filters.hargaMax && Number(filters.hargaMax) > 0) params.hargaMax = Number(filters.hargaMax);
-        if (filters.fasilitas && filters.fasilitas.trim() !== '') params.fasilitas = filters.fasilitas.trim();
-        if (filters.tersedia === 'true' || filters.tersedia === true) params.tersedia = 'true';
+      await Promise.resolve();
+      if (ignore) return;
+      setIsLoading(true);
 
+      try {
+        const params = buildKosParams(queryFilters);
         const result = await kosService.getKosList(params);
         if (!ignore) {
           setKosList(result.data || []);
@@ -113,20 +155,13 @@ export function useKosList(initialFilters = {}) {
     return () => {
       ignore = true;
     };
-  }, [filters]);
+  }, [queryFilters]);
 
   const refetch = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const params = {};
-      if (filters.tipe && filters.tipe !== 'all') params.tipe = filters.tipe;
-      if (filters.lokasi && filters.lokasi.trim() !== '') params.lokasi = filters.lokasi.trim();
-      if (filters.hargaMin && Number(filters.hargaMin) > 0) params.hargaMin = Number(filters.hargaMin);
-      if (filters.hargaMax && Number(filters.hargaMax) > 0) params.hargaMax = Number(filters.hargaMax);
-      if (filters.fasilitas && filters.fasilitas.trim() !== '') params.fasilitas = filters.fasilitas.trim();
-      if (filters.tersedia === 'true' || filters.tersedia === true) params.tersedia = 'true';
-
+      const params = buildKosParams(queryFilters);
       const result = await kosService.getKosList(params);
       setKosList(result.data || []);
     } catch (err) {
@@ -134,51 +169,72 @@ export function useKosList(initialFilters = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [filters]);
+  }, [queryFilters]);
 
-  // Helper to synchronize local filters to URL query params
-  const syncToUrl = (newFilters) => {
-    if (!router || !pathname) return;
+  // Helper to synchronize filters to URL query params
+  const syncToUrl = useCallback(
+    (newFilters) => {
+      if (!router || !pathname) return;
 
-    const params = new URLSearchParams();
-    if (newFilters.tipe && newFilters.tipe !== 'all') params.set('tipe', newFilters.tipe);
-    if (newFilters.lokasi && newFilters.lokasi.trim() !== '') params.set('lokasi', newFilters.lokasi.trim());
-    if (newFilters.hargaMin && Number(newFilters.hargaMin) > 0) params.set('hargaMin', newFilters.hargaMin);
-    if (newFilters.hargaMax && Number(newFilters.hargaMax) > 0) params.set('hargaMax', newFilters.hargaMax);
-    if (newFilters.fasilitas && newFilters.fasilitas.trim() !== '') params.set('fasilitas', newFilters.fasilitas.trim());
-    if (newFilters.tersedia === 'true' || newFilters.tersedia === true) params.set('tersedia', 'true');
+      const params = new URLSearchParams();
+      if (newFilters.tipe && newFilters.tipe !== 'all') params.set('tipe', newFilters.tipe);
+      if (newFilters.lokasi && newFilters.lokasi.trim() !== '') params.set('lokasi', newFilters.lokasi.trim());
+      if (newFilters.hargaMin && Number(newFilters.hargaMin) > 0) params.set('hargaMin', String(newFilters.hargaMin));
+      if (newFilters.hargaMax && Number(newFilters.hargaMax) > 0) params.set('hargaMax', String(newFilters.hargaMax));
+      if (newFilters.fasilitas && newFilters.fasilitas.trim() !== '') params.set('fasilitas', newFilters.fasilitas.trim());
+      if (newFilters.tersedia === 'true' || newFilters.tersedia === true) params.set('tersedia', 'true');
 
-    const queryString = params.toString();
-    const targetUrl = queryString ? `${pathname}?${queryString}` : pathname;
+      const queryString = params.toString();
+      lastSyncedQueryRef.current = queryString;
+      const targetUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
-    startTransition(() => {
-      router.replace(targetUrl, { scroll: false });
-    });
-  };
+      startTransition(() => {
+        router.replace(targetUrl, { scroll: false });
+      });
+    },
+    [pathname, router]
+  );
 
-  const updateFilter = (key, value) => {
-    setFilters((prev) => {
-      const updated = {
-        ...prev,
-        [key]: value,
-      };
-      syncToUrl(updated);
-      return updated;
-    });
-  };
+  const updateFilter = useCallback(
+    (key, value, immediate = false) => {
+      setFilters((prev) => {
+        const updated = {
+          ...prev,
+          [key]: value,
+        };
 
-  const resetFilters = () => {
-    const emptyFilters = {
-      tipe: 'all',
-      lokasi: '',
-      hargaMin: '',
-      hargaMax: '',
-      fasilitas: '',
-      tersedia: '',
-    };
-    setFilters(emptyFilters);
-    syncToUrl(emptyFilters);
-  };
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
+
+        const shouldDebounce = DEBOUNCED_FIELDS.has(key) && !immediate;
+        if (shouldDebounce) {
+          debounceTimerRef.current = setTimeout(() => {
+            setIsLoading(true);
+            setQueryFilters(updated);
+            syncToUrl(updated);
+          }, 300);
+        } else {
+          setIsLoading(true);
+          setQueryFilters(updated);
+          syncToUrl(updated);
+        }
+
+        return updated;
+      });
+    },
+    [syncToUrl]
+  );
+
+  const resetFilters = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    setIsLoading(true);
+    setFilters(EMPTY_FILTERS);
+    setQueryFilters(EMPTY_FILTERS);
+    syncToUrl(EMPTY_FILTERS);
+  }, [syncToUrl]);
 
   return {
     kosList,

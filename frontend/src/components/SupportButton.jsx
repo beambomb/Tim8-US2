@@ -6,14 +6,14 @@ export default function SupportButton() {
       <button
         type="button"
         onClick={() => alert("Layanan Bantuan & Chat Customer Support CariKos")}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[#1D4ED8] hover:bg-[#1E40AF] text-white shadow-xl shadow-[#1D4ED8]/30 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer border border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#1D4ED8] hover:bg-[#1E40AF] text-white flex items-center justify-center transition-[background-color,transform] duration-300 hover:scale-110 active:scale-95 cursor-pointer border-2 border-[#FFFFFF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
         title="Bantuan & Dukungan"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          className="w-7 h-7"
+          className="w-6 h-6 sm:w-7 sm:h-7"
         >
           <path
             fillRule="evenodd"

@@ -16,7 +16,6 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,7 +28,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 .hero-marquee-viewport {
@@ -59,7 +58,7 @@ body {
   }
 
   .hero-marquee-mask {
-    mask-image: linear-gradient(
+    mask-image: linear-gradient( /* taste-skill-ignore: CSS alpha fade mask for marquee edge fading */
       to right,
       transparent 0,
       #000 24px,

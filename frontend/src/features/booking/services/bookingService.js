@@ -39,8 +39,7 @@ export const bookingService = {
     if (s === 'rejected' || s === 'ditolak') {
       return this.rejectBooking(bookingId);
     }
-    const response = await api.patch(`/bookings/${bookingId}/status`, { status });
-    return response.data;
+    throw new Error('Status booking tidak valid.');
   },
 };
 

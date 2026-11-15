@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ownerService } from '../services/ownerService';
+import { useOwnerKosForm } from '../hooks/useOwnerKosForm';
 
 const AVAILABLE_FACILITIES = [
   'WiFi Cepat',
@@ -28,230 +27,90 @@ const PRESET_COORDINATES = [
   { name: 'Kaliurang (Dekat UII)', lat: -7.687, lng: 110.413 },
 ];
 
-export default function OwnerKosForm({ initialData = null, isEdit = false }) {
+export default function OwnerKosForm({
+  kosId = null,
+  initialData = null,
+  isEdit = false,
+  controller = null,
+}) {
   const router = useRouter();
-
-  // Form Fields State
-  const [formData, setFormData] = useState({
-    nama: initialData?.nama || '',
-    harga: initialData?.harga || '',
-    lokasi: initialData?.lokasi || '',
-    latitude: initialData?.latitude !== undefined ? initialData.latitude : -7.766,
-    longitude: initialData?.longitude !== undefined ? initialData.longitude : 110.374,
-    tipe: initialData?.tipe || 'Putra',
-    jumlahKamar: initialData?.jumlahKamar || '',
-    jumlahKamarTersedia:
-      initialData?.jumlahKamarTersedia !== undefined ? initialData.jumlahKamarTersedia : '',
-    fasilitas: initialData?.fasilitas || [],
-    fotoUrls: initialData?.fotoUrls || [],
+  const internalForm = useOwnerKosForm({
+    kosId,
+    initialData,
+    isEdit,
+    skipInitialFetch: Boolean(controller),
   });
+  const form = controller || internalForm;
 
-  // Local pending file uploads: { file, previewUrl }
-  const [pendingFiles, setPendingFiles] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [formError, setFormError] = useState(null);
-  const [formSuccess, setFormSuccess] = useState(null);
-
-  // Field change handler
-  const handleChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  // Facility toggle handler
-  const handleFacilityToggle = (facilityName) => {
-    setFormData((prev) => {
-      const exists = prev.fasilitas.includes(facilityName);
-      return {
-        ...prev,
-        fasilitas: exists
-          ? prev.fasilitas.filter((f) => f !== facilityName)
-          : [...prev.fasilitas, facilityName],
-      };
-    });
-  };
-
-  // Preset coordinate selector
-  const handlePresetCoords = (preset) => {
-    setFormData((prev) => ({
-      ...prev,
-      latitude: preset.lat,
-      longitude: preset.lng,
-    }));
-  };
-
-  // Dropzone file selection handler
-  const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-
-    const totalAllowed = 5 - (formData.fotoUrls.length + pendingFiles.length);
-    if (totalAllowed <= 0) {
-      setFormError('Maksimal foto yang diperbolehkan adalah 5 foto.');
-      return;
-    }
-
-    const validFiles = files.slice(0, totalAllowed).filter((file) => {
-      if (!file.type.startsWith('image/')) {
-        setFormError('Hanya file gambar (JPG, PNG, WebP) yang diperbolehkan.');
-        return false;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        setFormError('Ukuran setiap file gambar maksimal 5 MB.');
-        return false;
-      }
-      return true;
-    });
-
-    const newPending = validFiles.map((file) => ({
-      file,
-      previewUrl: URL.createObjectURL(file),
-    }));
-
-    setPendingFiles((prev) => [...prev, ...newPending]);
-    setFormError(null);
-  };
-
-  // Remove local pending file preview
-  const handleRemovePending = (index) => {
-    setPendingFiles((prev) => {
-      const target = prev[index];
-      if (target?.previewUrl) {
-        URL.revokeObjectURL(target.previewUrl);
-      }
-      return prev.filter((_, i) => i !== index);
-    });
-  };
-
-  // Remove already saved photo URL
-  const handleRemoveSavedPhoto = (urlToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      fotoUrls: prev.fotoUrls.filter((url) => url !== urlToRemove),
-    }));
-  };
-
-  // Form submission handler
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormError(null);
-    setFormSuccess(null);
-
-    // Frontend Validations
-    if (!formData.nama.trim()) {
-      setFormError('Nama kos wajib diisi.');
-      return;
-    }
-    if (!formData.harga || Number(formData.harga) <= 0) {
-      setFormError('Harga sewa bulanan harus berupa angka valid di atas 0.');
-      return;
-    }
-    if (!formData.lokasi.trim()) {
-      setFormError('Alamat lokasi kos wajib diisi.');
-      return;
-    }
-    if (formData.latitude === '' || formData.longitude === '') {
-      setFormError('Koordinat latitude dan longitude wajib diisi.');
-      return;
-    }
-    if (!formData.jumlahKamar || Number(formData.jumlahKamar) <= 0) {
-      setFormError('Jumlah kamar total harus berupa angka minimal 1.');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      let finalFotoUrls = [...formData.fotoUrls];
-
-      // 1. Upload pending files if any
-      if (pendingFiles.length > 0) {
-        setIsUploading(true);
-        const filesToUpload = pendingFiles.map((p) => p.file);
-        try {
-          const uploadRes = await ownerService.uploadImages(filesToUpload);
-          if (uploadRes.data?.urls) {
-            finalFotoUrls = [...finalFotoUrls, ...uploadRes.data.urls];
-          }
-        } catch (uploadErr) {
-          console.warn('Upload Cloudinary gagal, melanjutkan proses dengan foto yang ada:', uploadErr);
-        } finally {
-          setIsUploading(false);
-        }
-      }
-
-      // 2. Prepare payload
-      const payload = {
-        nama: formData.nama.trim(),
-        harga: Number(formData.harga),
-        lokasi: formData.lokasi.trim(),
-        latitude: Number(formData.latitude),
-        longitude: Number(formData.longitude),
-        tipe: formData.tipe,
-        fasilitas: formData.fasilitas,
-        jumlahKamar: Number(formData.jumlahKamar),
-        fotoUrls: finalFotoUrls,
-      };
-
-      if (isEdit) {
-        if (formData.jumlahKamarTersedia !== '') {
-          payload.jumlahKamarTersedia = Number(formData.jumlahKamarTersedia);
-        }
-        await ownerService.updateKos(initialData._id, payload);
-        setFormSuccess('Data kos berhasil diperbarui.');
-      } else {
-        await ownerService.createKos(payload);
-        setFormSuccess('Kos baru berhasil diajukan untuk verifikasi.');
-      }
-
-      // Redirect after brief delay
-      setTimeout(() => {
-        router.push('/owner/kos');
-      }, 1000);
-    } catch (err) {
-      setFormError(
-        err.response?.data?.message || 'Terjadi kesalahan saat menyimpan data properti kos.'
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    formData,
+    pendingFiles,
+    isDragging,
+    isSubmitting,
+    isUploading,
+    formError,
+    formSuccess,
+    setFormError,
+    handleChange,
+    handleFacilityToggle,
+    handlePresetCoords,
+    handleFileSelect,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleRemovePending,
+    handleRemoveSavedPhoto,
+    handleSubmit,
+  } = form;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6 text-[#F1F5F9]">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 text-[#0F172A]">
       {/* Alert Notices */}
       {formError && (
-        <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between">
+        <div
+          role="alert"
+          className="p-4 rounded-lg bg-[#FFEDEA] border border-[#FECACA] text-[#831C1E] text-xs flex items-center justify-between gap-3"
+        >
           <span>{formError}</span>
           <button
             type="button"
             onClick={() => setFormError(null)}
-            className="text-slate-400 hover:text-white"
+            aria-label="Tutup pesan galat"
+            className="p-1 rounded hover:bg-[#FECACA]/50 text-[#831C1E] transition-colors cursor-pointer shrink-0"
           >
-            x
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
       )}
 
       {formSuccess && (
-        <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between">
+        <div
+          role="status"
+          className="p-4 rounded-lg bg-[#DCFAE5] border border-[#A7F3D0] text-[#04250E] text-xs flex items-center justify-between"
+        >
           <span>{formSuccess} Mengalihkan ke inventaris...</span>
         </div>
       )}
 
       {/* Section 1: Informasi Dasar */}
-      <div className="rounded-xl bg-[#141D30] border border-slate-800 p-6 flex flex-col gap-5">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-slate-300 pb-3 border-b border-slate-800">
-          Informasi Utama Properti
+      <div className="rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] p-6 flex flex-col gap-5">
+        <h2 className="text-base font-semibold text-[#0F172A] pb-3 border-b border-[#E2E8F0]">
+          Informasi utama properti
         </h2>
 
         {/* Nama Kos */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="kos-nama" className="text-xs font-medium text-[#94A3B8]">
-            Nama Kos <span className="text-rose-400">*</span>
+          <label htmlFor="kos-nama" className="text-xs font-medium text-[#475569]">
+            Nama kos <span className="text-[#C4242A]">*</span>
           </label>
           <input
             id="kos-nama"
@@ -260,21 +119,21 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
             placeholder="Contoh: Kos Pogung Asri Jaya"
             value={formData.nama}
             onChange={(e) => handleChange('nama', e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-lg bg-[#0A0F1D] border border-slate-700 text-sm text-[#F1F5F9] focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
           />
         </div>
 
         {/* Grid: Tipe Kos & Harga Sewa */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="kos-tipe" className="text-xs font-medium text-[#94A3B8]">
-              Tipe Kos <span className="text-rose-400">*</span>
+            <label htmlFor="kos-tipe" className="text-xs font-medium text-[#475569]">
+              Tipe kos <span className="text-[#C4242A]">*</span>
             </label>
             <select
               id="kos-tipe"
               value={formData.tipe}
               onChange={(e) => handleChange('tipe', e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0A0F1D] border border-slate-700 text-sm text-[#F1F5F9] focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-sm text-[#0F172A] focus:outline-none focus:border-[var(--accent)] transition-colors"
             >
               <option value="Putra">Putra</option>
               <option value="Putri">Putri</option>
@@ -283,19 +142,19 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="kos-harga" className="text-xs font-medium text-[#94A3B8]">
-              Harga Sewa per Bulan (Rp) <span className="text-rose-400">*</span>
+            <label htmlFor="kos-harga" className="text-xs font-medium text-[#475569]">
+              Harga sewa per bulan (Rp) <span className="text-[#C4242A]">*</span>
             </label>
             <input
               id="kos-harga"
               type="number"
               required
-              min="100000"
-              step="50000"
+              min="1"
+              step="any"
               placeholder="Contoh: 950000"
               value={formData.harga}
               onChange={(e) => handleChange('harga', e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0A0F1D] border border-slate-700 text-sm text-[#F1F5F9] font-mono tabular-nums focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-sm text-[#0F172A] tabular-nums placeholder-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
             />
           </div>
         </div>
@@ -303,8 +162,8 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
         {/* Grid: Kapasitas Kamar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="kos-kamar-total" className="text-xs font-medium text-[#94A3B8]">
-              Total Jumlah Kamar Kapasitas <span className="text-rose-400">*</span>
+            <label htmlFor="kos-kamar-total" className="text-xs font-medium text-[#475569]">
+              Total jumlah kamar kapasitas <span className="text-[#C4242A]">*</span>
             </label>
             <input
               id="kos-kamar-total"
@@ -314,14 +173,14 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
               placeholder="Contoh: 10"
               value={formData.jumlahKamar}
               onChange={(e) => handleChange('jumlahKamar', e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0A0F1D] border border-slate-700 text-sm text-[#F1F5F9] font-mono tabular-nums focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-sm text-[#0F172A] tabular-nums placeholder-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
             />
           </div>
 
           {isEdit && (
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="kos-kamar-tersedia" className="text-xs font-medium text-[#94A3B8]">
-                Kamar Siap Huni Saat Ini
+              <label htmlFor="kos-kamar-tersedia" className="text-xs font-medium text-[#475569]">
+                Kamar siap huni saat ini
               </label>
               <input
                 id="kos-kamar-tersedia"
@@ -331,7 +190,7 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
                 placeholder="Jumlah kamar kosong"
                 value={formData.jumlahKamarTersedia}
                 onChange={(e) => handleChange('jumlahKamarTersedia', e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0A0F1D] border border-slate-700 text-sm text-[#F1F5F9] font-mono tabular-nums focus:outline-none focus:border-emerald-500 transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-sm text-[#0F172A] tabular-nums placeholder-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
               />
             </div>
           )}
@@ -339,14 +198,14 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
       </div>
 
       {/* Section 2: Lokasi & Geospasial */}
-      <div className="rounded-xl bg-[#141D30] border border-slate-800 p-6 flex flex-col gap-5">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-slate-300 pb-3 border-b border-slate-800">
-          Lokasi & Koordinat Peta
+      <div className="rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] p-6 flex flex-col gap-5">
+        <h2 className="text-base font-semibold text-[#0F172A] pb-3 border-b border-[#E2E8F0]">
+          Lokasi dan koordinat peta
         </h2>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="kos-lokasi" className="text-xs font-medium text-[#94A3B8]">
-            Alamat Lengkap / Area Kos <span className="text-rose-400">*</span>
+          <label htmlFor="kos-lokasi" className="text-xs font-medium text-[#475569]">
+            Alamat lengkap atau area kos <span className="text-[#C4242A]">*</span>
           </label>
           <input
             id="kos-lokasi"
@@ -355,14 +214,14 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
             placeholder="Contoh: Jl. Pogung Dalangan No. 45, Mlati, Sleman, Yogyakarta"
             value={formData.lokasi}
             onChange={(e) => handleChange('lokasi', e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-lg bg-[#0A0F1D] border border-slate-700 text-sm text-[#F1F5F9] focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full px-3.5 py-2.5 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
           />
         </div>
 
         {/* Quick coordinate presets */}
         <div className="flex flex-col gap-1.5">
-          <span className="text-[11px] text-[#94A3B8]">
-            Gunakan Preset Koordinat Cepat (Yogyakarta):
+          <span className="text-xs text-[#475569]">
+            Gunakan preset koordinat cepat (Yogyakarta):
           </span>
           <div className="flex flex-wrap gap-2">
             {PRESET_COORDINATES.map((p) => (
@@ -370,7 +229,7 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
                 key={p.name}
                 type="button"
                 onClick={() => handlePresetCoords(p)}
-                className="px-2.5 py-1 rounded text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition-colors"
+                className="px-2.5 py-1.5 rounded-lg text-xs bg-[#EEF2F7] hover:bg-[#E2E8F0] text-[#0F172A] border border-[#E2E8F0] transition-colors cursor-pointer"
               >
                 {p.name}
               </button>
@@ -380,43 +239,43 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="kos-lat" className="text-xs font-medium text-[#94A3B8]">
-              Latitude <span className="text-rose-400">*</span>
+            <label htmlFor="kos-lat" className="text-xs font-medium text-[#475569]">
+              Latitude <span className="text-[#C4242A]">*</span>
             </label>
             <input
               id="kos-lat"
               type="number"
-              step="0.000001"
+              step="any"
               required
               placeholder="-7.766000"
               value={formData.latitude}
               onChange={(e) => handleChange('latitude', e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0A0F1D] border border-slate-700 text-sm text-[#F1F5F9] font-mono tabular-nums focus:outline-none focus:border-emerald-500"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-sm text-[#0F172A] tabular-nums placeholder-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="kos-lng" className="text-xs font-medium text-[#94A3B8]">
-              Longitude <span className="text-rose-400">*</span>
+            <label htmlFor="kos-lng" className="text-xs font-medium text-[#475569]">
+              Longitude <span className="text-[#C4242A]">*</span>
             </label>
             <input
               id="kos-lng"
               type="number"
-              step="0.000001"
+              step="any"
               required
               placeholder="110.374000"
               value={formData.longitude}
               onChange={(e) => handleChange('longitude', e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0A0F1D] border border-slate-700 text-sm text-[#F1F5F9] font-mono tabular-nums focus:outline-none focus:border-emerald-500"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-sm text-[#0F172A] tabular-nums placeholder-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
             />
           </div>
         </div>
       </div>
 
       {/* Section 3: Fasilitas Kos */}
-      <div className="rounded-xl bg-[#141D30] border border-slate-800 p-6 flex flex-col gap-4">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-slate-300 pb-3 border-b border-slate-800">
-          Daftar Fasilitas Tersedia
+      <div className="rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] p-6 flex flex-col gap-4">
+        <h2 className="text-base font-semibold text-[#0F172A] pb-3 border-b border-[#E2E8F0]">
+          Daftar fasilitas tersedia
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -427,15 +286,15 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
                 key={facility}
                 className={`flex items-center gap-2.5 p-2.5 rounded-lg border cursor-pointer text-xs transition-colors ${
                   isChecked
-                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                    : 'bg-[#0A0F1D] text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                    ? 'bg-[#EFF6FF] text-[#1E40AF] border-[#BFDBFE] font-medium'
+                    : 'bg-[#F5F7FA] text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1] hover:text-[#0F172A]'
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => handleFacilityToggle(facility)}
-                  className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500 accent-emerald-500"
+                  className="w-3.5 h-3.5 rounded border-[#CBD5E1] bg-white text-[var(--accent)] focus:ring-[var(--accent)] accent-[var(--accent)]"
                 />
                 <span className="truncate">{facility}</span>
               </label>
@@ -444,19 +303,26 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
         </div>
       </div>
 
-      {/* Section 4: Foto Properti (Multi-Image Dropzone) */}
-      <div className="rounded-xl bg-[#141D30] border border-slate-800 p-6 flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+      {/* Section 4: Foto Properti (Multi-Image Dropzone with Drag & Drop) */}
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`rounded-xl bg-[#FFFFFF] border p-6 flex flex-col gap-4 transition-colors ${
+          isDragging ? 'border-[var(--accent)] bg-[#EFF6FF]/40' : 'border-[#E2E8F0]'
+        }`}
+      >
+        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
           <div>
-            <h2 className="text-sm font-semibold tracking-wide uppercase text-slate-300">
-              Galeri Foto Properti
+            <h2 className="text-base font-semibold text-[#0F172A]">
+              Galeri foto properti
             </h2>
-            <p className="text-xs text-[#94A3B8] mt-0.5">
-              Unggah hingga 5 foto berformat JPG/PNG/WebP (maks. 5MB per file)
+            <p className="text-xs text-[#475569] mt-0.5">
+              Klik atau seret hingga 5 foto berformat JPG, PNG, atau WebP (maks. 5 MB per file)
             </p>
           </div>
-          <span className="text-xs font-mono text-emerald-400">
-            {formData.fotoUrls.length + pendingFiles.length} / 5 Foto
+          <span className="text-xs font-medium text-[#0F172A] tabular-nums shrink-0 ml-3">
+            {formData.fotoUrls.length + pendingFiles.length} / 5 foto
           </span>
         </div>
 
@@ -466,17 +332,27 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
           {formData.fotoUrls.map((url, idx) => (
             <div
               key={`saved-${idx}`}
-              className="relative aspect-video rounded-lg overflow-hidden bg-slate-900 border border-slate-700 group"
+              className="relative aspect-video rounded-lg overflow-hidden bg-[#EEF2F7] border border-[#E2E8F0] group"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt={`Foto kos ${idx + 1}`} className="w-full h-full object-cover" />
               <button
                 type="button"
                 onClick={() => handleRemoveSavedPhoto(url)}
-                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-600/90 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label={`Hapus foto kos ${idx + 1}`}
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-[#C4242A] text-white flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
                 title="Hapus foto ini"
               >
-                x
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
           ))}
@@ -485,7 +361,7 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
           {pendingFiles.map((p, idx) => (
             <div
               key={`pending-${idx}`}
-              className="relative aspect-video rounded-lg overflow-hidden bg-slate-900 border border-emerald-500/40 group"
+              className="relative aspect-video rounded-lg overflow-hidden bg-[#EEF2F7] border border-[var(--accent)] group"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -493,27 +369,55 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
                 alt={`Preview baru ${idx + 1}`}
                 className="w-full h-full object-cover"
               />
-              <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[10px] bg-[#0A0F1D]/80 text-emerald-300">
+              <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#0F172A] text-white">
                 Siap Unggah
               </span>
               <button
                 type="button"
                 onClick={() => handleRemovePending(idx)}
-                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-600/90 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label={`Batalkan foto baru ${idx + 1}`}
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-[#C4242A] text-white flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
                 title="Batalkan foto ini"
               >
-                x
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
           ))}
 
-          {/* Upload Button Tile */}
+          {/* Upload Button & Drag-and-Drop Tile */}
           {formData.fotoUrls.length + pendingFiles.length < 5 && (
-            <label className="relative aspect-video rounded-lg border-2 border-dashed border-slate-700 hover:border-emerald-500/50 bg-[#0A0F1D] flex flex-col items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-emerald-400 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.5v15m7.5-7.5h-15" />
+            <label
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`relative aspect-video rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors px-2 text-center ${
+                isDragging
+                  ? 'border-[var(--accent)] bg-[#EFF6FF] text-[var(--accent)]'
+                  : 'border-[#CBD5E1] hover:border-[var(--accent)] bg-[#F5F7FA] text-[#475569] hover:text-[var(--accent)]'
+              }`}
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.75}
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
-              <span className="text-[11px] font-medium">Tambah Foto</span>
+              <span className="text-[11px] font-medium">
+                {isDragging ? 'Lepas foto di sini' : 'Tambah atau Seret Foto'}
+              </span>
               <input
                 type="file"
                 multiple
@@ -532,7 +436,7 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
           type="button"
           onClick={() => router.push('/owner/kos')}
           disabled={isSubmitting}
-          className="px-5 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:bg-[#141D30] border border-slate-700 transition-colors"
+          className="px-5 py-2.5 rounded-lg text-xs font-semibold bg-[#FFFFFF] text-[#0F172A] hover:bg-[#EEF2F7] border border-[#CBD5E1] transition-colors cursor-pointer disabled:opacity-50"
         >
           Batal
         </button>
@@ -540,10 +444,10 @@ export default function OwnerKosForm({ initialData = null, isEdit = false }) {
         <button
           type="submit"
           disabled={isSubmitting || isUploading}
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold bg-[#10B981] text-[#0A0F1D] hover:bg-[#059669] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isSubmitting && (
-            <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+            <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" aria-hidden="true">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>

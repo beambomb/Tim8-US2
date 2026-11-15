@@ -13,13 +13,14 @@ export function useBookings() {
 
   const fetchBookingsData = useCallback(async () => {
     if (!isAuthenticated || user?.role !== "PENCARI_KOS") {
+      setBookings([]);
       setIsLoading(false);
       return;
     }
 
     try {
       const res = await bookingService.getMyBookings();
-      setBookings(res?.data || []);
+      setBookings(Array.isArray(res?.data) ? res.data : []);
       setError(null);
     } catch (err) {
       setError(err.response?.data?.message || "Gagal memuat riwayat booking.");
@@ -33,14 +34,17 @@ export function useBookings() {
 
     const execute = async () => {
       if (!isAuthenticated || user?.role !== "PENCARI_KOS") {
-        setIsLoading(false);
+        if (!ignore) {
+          setBookings([]);
+          setIsLoading(false);
+        }
         return;
       }
 
       try {
         const res = await bookingService.getMyBookings();
         if (!ignore) {
-          setBookings(res?.data || []);
+          setBookings(Array.isArray(res?.data) ? res.data : []);
           setError(null);
         }
       } catch (err) {

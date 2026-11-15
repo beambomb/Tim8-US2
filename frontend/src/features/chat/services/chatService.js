@@ -11,9 +11,24 @@ export const chatService = {
     return response.data;
   },
 
-  async sendMessageHttp(receiverId, message) {
-    const response = await api.post('/chat/send', { receiverId, message });
+  async getKosContext(kosId) {
+    if (!kosId) return null;
+    const response = await api.get(`/kos/${kosId}`);
     return response.data;
+  },
+
+  async sendMessage(receiverId, message, kosId = null) {
+    const payload = {
+      receiverId,
+      pesan: message,
+      ...(kosId ? { kosId } : {}),
+    };
+    const response = await api.post('/chat/send', payload);
+    return response.data;
+  },
+
+  async sendMessageHttp(receiverId, message, kosId = null) {
+    return this.sendMessage(receiverId, message, kosId);
   },
 
   async getNotifications() {

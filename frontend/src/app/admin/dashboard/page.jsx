@@ -1,12 +1,148 @@
 "use client";
-import {useEffect,useState} from "react";
+
 import Link from "next/link";
 import AdminShell from "@/components/admin/AdminShell";
-import {Panel,Loading,Alert,Button,errorText} from "@/components/admin/UI";
-import {adminService} from "@/features/admin/services/adminService";
-export default function Dashboard(){const [data,setData]=useState(null);const [loading,setLoading]=useState(true);const [error,setError]=useState("");
- const load=async()=>{setLoading(true);setError("");try{setData((await adminService.getStats()).data)}catch(e){setError(errorText(e))}finally{setLoading(false)}};
- useEffect(()=>{load()},[]);
- const cards=data?[{name:"Total pengguna",value:data.users?.total},{name:"Pencari kos",value:data.users?.pencari},{name:"Pemilik kos",value:data.users?.pemilik},{name:"Administrator",value:data.users?.admin},{name:"Total properti",value:data.kos?.total},{name:"Menunggu verifikasi",value:data.kos?.pending},{name:"Disetujui",value:data.kos?.approved},{name:"Ditolak",value:data.kos?.rejected}]:[];
- return <AdminShell title="Dashboard Administrator" subtitle="Pantau aktivitas pengguna dan status verifikasi kos secara langsung."><div className="flex justify-end mb-4"><Button variant="outline" onClick={load} disabled={loading}>Muat ulang</Button></div>{error&&<Alert>{error}</Alert>}{loading?<Loading/>:data?<><div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{cards.map((c,i)=><Panel key={c.name}><p className="text-sm text-slate-500">{c.name}</p><p className={`mt-3 text-3xl font-extrabold ${i===5?"text-amber-600":"text-blue-800"}`}>{c.value??0}</p></Panel>)}</div><div className="grid sm:grid-cols-2 gap-4 mt-6"><Link href="/admin/submissions" className="rounded-2xl bg-blue-700 text-white p-6 hover:bg-blue-800"><h2 className="text-xl font-bold">Verifikasi pengajuan →</h2><p className="mt-2 text-blue-100">Tinjau {data.kos?.pending??0} pengajuan yang menunggu keputusan.</p></Link><Link href="/admin/users" className="rounded-2xl bg-slate-900 text-white p-6 hover:bg-slate-800"><h2 className="text-xl font-bold">Kelola pengguna →</h2><p className="mt-2 text-slate-200">Lihat akun dan atur peran pengguna.</p></Link></div></>:!error&&<p>Data tidak tersedia.</p>}</AdminShell>;
+import { Panel, Loading, Alert, Button } from "@/components/admin/UI";
+import { useAdminDashboard } from "@/features/admin/hooks/useAdminDashboard";
+
+function ArrowRightIcon() {
+  return (
+    <svg
+      className="w-4 h-4 shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+      />
+    </svg>
+  );
+}
+
+function MetricGroup({ title, items }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-base font-semibold text-[#0F172A]">{title}</h2>
+      <div className="rounded-xl border border-[#E2E8F0] bg-[#E2E8F0] overflow-hidden grid grid-cols-2 lg:grid-cols-4 gap-px">
+        {items.map((item) => (
+          <div key={item.name} className="bg-[#FFFFFF] p-5">
+            <p className="text-sm text-[#475569]">{item.name}</p>
+            <p
+              className={`mt-2 text-2xl font-bold tabular-nums ${
+                item.warning ? "text-[#B45309]" : "text-[#0F172A]"
+              }`}
+            >
+              {item.value ?? 0}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default function Dashboard() {
+  const { data, loading, error, refetch } = useAdminDashboard();
+
+  const pendingCount = data?.kos?.pending ?? 0;
+
+  const userMetrics = data
+    ? [
+        { name: "Total pengguna", value: data.users?.total },
+        { name: "Pencari kos", value: data.users?.pencari },
+        { name: "Pemilik kos", value: data.users?.pemilik },
+        { name: "Administrator", value: data.users?.admin },
+      ]
+    : [];
+
+  const propertyMetrics = data
+    ? [
+        { name: "Total properti", value: data.kos?.total },
+        {
+          name: "Menunggu verifikasi",
+          value: pendingCount,
+          warning: pendingCount > 0,
+        },
+        { name: "Disetujui", value: data.kos?.approved },
+        { name: "Ditolak", value: data.kos?.rejected },
+      ]
+    : [];
+
+  return (
+    <AdminShell
+      title="Dashboard Administrator"
+      subtitle="Pantau aktivitas pengguna dan status verifikasi kos secara langsung."
+    >
+      <div className="flex justify-end mb-4">
+        <Button variant="outline" onClick={refetch} disabled={loading}>
+          Muat ulang
+        </Button>
+      </div>
+
+      {error && (
+        <div className="mb-4">
+          <Alert>{error}</Alert>
+        </div>
+      )}
+
+      {loading ? (
+        <Loading />
+      ) : data ? (
+        <div className="space-y-6">
+          <MetricGroup title="Statistik Pengguna" items={userMetrics} />
+          <MetricGroup title="Status Properti" items={propertyMetrics} />
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Link
+              href="/admin/submissions"
+              className="group rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-5 text-[#0F172A] hover:border-[#CBD5E1] transition-colors flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2"
+            >
+              <div>
+                <h2 className="text-base font-semibold text-[#0F172A]">
+                  Verifikasi pengajuan kos
+                </h2>
+                <p className="mt-1.5 text-sm text-[#475569] tabular-nums">
+                  Tinjau {pendingCount} pengajuan yang menunggu keputusan.
+                </p>
+              </div>
+              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1D4ED8] group-hover:text-[#1E40AF]">
+                <span>Buka antrean verifikasi</span>
+                <ArrowRightIcon />
+              </span>
+            </Link>
+
+            <Link
+              href="/admin/users"
+              className="group rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-5 text-[#0F172A] hover:border-[#CBD5E1] transition-colors flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2"
+            >
+              <div>
+                <h2 className="text-base font-semibold text-[#0F172A]">
+                  Kelola akun pengguna
+                </h2>
+                <p className="mt-1.5 text-sm text-[#475569] tabular-nums">
+                  Lihat {data.users?.total ?? 0} akun terdaftar dan atur peran
+                  pengguna.
+                </p>
+              </div>
+              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1D4ED8] group-hover:text-[#1E40AF]">
+                <span>Buka daftar pengguna</span>
+                <ArrowRightIcon />
+              </span>
+            </Link>
+          </div>
+        </div>
+      ) : (
+        !error && (
+          <Panel>
+            <p className="text-sm text-[#475569]">Data tidak tersedia.</p>
+          </Panel>
+        )
+      )}
+    </AdminShell>
+  );
 }

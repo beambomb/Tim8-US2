@@ -12,13 +12,14 @@ export function useFavorites() {
 
   const fetchFavoritesData = useCallback(async () => {
     if (!isAuthenticated || user?.role !== "PENCARI_KOS") {
+      setFavorites([]);
       setIsLoading(false);
       return;
     }
 
     try {
       const res = await kosService.getFavorites();
-      setFavorites(res?.data || []);
+      setFavorites(Array.isArray(res?.data) ? res.data : []);
       setError(null);
     } catch (err) {
       setError(err.response?.data?.message || "Gagal memuat daftar favorit.");
@@ -32,14 +33,17 @@ export function useFavorites() {
 
     const execute = async () => {
       if (!isAuthenticated || user?.role !== "PENCARI_KOS") {
-        setIsLoading(false);
+        if (!ignore) {
+          setFavorites([]);
+          setIsLoading(false);
+        }
         return;
       }
 
       try {
         const res = await kosService.getFavorites();
         if (!ignore) {
-          setFavorites(res?.data || []);
+          setFavorites(Array.isArray(res?.data) ? res.data : []);
           setError(null);
         }
       } catch (err) {
@@ -65,50 +69,72 @@ export function useFavorites() {
     await fetchFavoritesData();
   }, [fetchFavoritesData]);
 
-  // Optimistic remove dari daftar favorit
-  const handleRemoveFavorite = async (kosId, favoriteRecordId) => {
-    const previousList = [...favorites];
-    setFavorites((prev) =>
-      prev.filter(
-        (item) =>
-          item._id !== favoriteRecordId &&
-          (item.kosId?._id || item.kosId) !== kosId
-      )
-    );
+  const isKosFavorited = useCallback(
+    (kosId) =>
+      Boolean(kosId) &&
+      favorites.some(
+        (f) => String(f.kosId?._id || f.kosId) === String(kosId)
+      ),
+    [favorites]
+  );
 
-    try {
-      await kosService.removeFavorite(kosId);
-    } catch (err) {
-      setFavorites(previousList);
-      alert(err.response?.data?.message || "Gagal menghapus dari favorit.");
-    }
-  };
+  // Optimistic remove dari daftar favorit
+  const handleRemoveFavorite = useCallback(
+    async (kosId, favoriteRecordId) => {
+      const previousList = [...favorites];
+      setFavorites((prev) =>
+        prev.filter((item) => {
+          if (favoriteRecordId && item._id === favoriteRecordId) return false;
+          const itemKosId = item.kosId?._id || item.kosId;
+          if (kosId && itemKosId && String(itemKosId) === String(kosId)) {
+            return false;
+          }
+          return true;
+        })
+      );
+
+      try {
+        await kosService.removeFavorite(favoriteRecordId || kosId);
+      } catch (err) {
+        setFavorites(previousList);
+        alert(err.response?.data?.message || "Gagal menghapus dari favorit.");
+      }
+    },
+    [favorites]
+  );
 
   // Toggle favorite helper
-  const handleToggleFavorite = async (kosId) => {
-    const existing = favorites.find(
-      (f) => (f.kosId?._id || f.kosId) === kosId
-    );
-    if (existing) {
-      return handleRemoveFavorite(kosId, existing._id);
-    }
-
-    try {
-      const res = await kosService.addFavorite(kosId);
-      if (res?.data) {
-        setFavorites((prev) => [res.data, ...prev]);
-      } else {
-        refetch();
+  const handleToggleFavorite = useCallback(
+    async (kosId) => {
+      if (!isAuthenticated || user?.role !== "PENCARI_KOS" || !kosId) {
+        return false;
       }
-    } catch (err) {
-      alert(err.response?.data?.message || "Gagal menambahkan ke favorit.");
-    }
-  };
+
+      const existing = favorites.find(
+        (f) => String(f.kosId?._id || f.kosId) === String(kosId)
+      );
+      if (existing) {
+        await handleRemoveFavorite(kosId, existing._id);
+        return false;
+      }
+
+      try {
+        await kosService.addFavorite(kosId);
+        await fetchFavoritesData();
+        return true;
+      } catch (err) {
+        alert(err.response?.data?.message || "Gagal menambahkan ke favorit.");
+        return false;
+      }
+    },
+    [isAuthenticated, user, favorites, handleRemoveFavorite, fetchFavoritesData]
+  );
 
   return {
     favorites,
     isLoading,
     error,
+    isKosFavorited,
     handleRemoveFavorite,
     handleToggleFavorite,
     refetch,

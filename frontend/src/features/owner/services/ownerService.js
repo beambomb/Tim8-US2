@@ -46,27 +46,46 @@ export const ownerService = {
   },
 
   async updateBookingStatus(bookingId, status) {
-    const response = await api.patch(`/bookings/${bookingId}/status`, { status });
-    return response.data;
+    const normalized = String(status || '').trim().toUpperCase();
+    if (
+      normalized === 'APPROVED' ||
+      normalized === 'DISETUJUI' ||
+      normalized === 'APPROVE'
+    ) {
+      const response = await api.patch(`/bookings/${bookingId}/approve`);
+      return response.data;
+    }
+    if (
+      normalized === 'REJECTED' ||
+      normalized === 'DITOLAK' ||
+      normalized === 'REJECT'
+    ) {
+      const response = await api.patch(`/bookings/${bookingId}/reject`);
+      return response.data;
+    }
+    throw new Error(
+      'Status booking tidak valid. Gunakan APPROVED/DISETUJUI atau REJECTED/DITOLAK.'
+    );
   },
 
   /**
    * Upload multiple photos to Cloudinary via backend endpoint POST /api/owner/upload
-   * Multer middleware on backend uses field name: 'images' (max 5)
+   * Multer middleware on backend uses field name: 'images' (max 5).
+   * Let browser/Axios set multipart Content-Type and boundary automatically.
    * @param {File[]|FileList|File} files
    */
   async uploadImages(files) {
     const formData = new FormData();
-    const fileList = Array.isArray(files) ? files : files instanceof FileList ? Array.from(files) : [files];
+    const fileList = Array.isArray(files)
+      ? files
+      : files instanceof FileList
+      ? Array.from(files)
+      : [files];
     fileList.forEach((file) => {
       formData.append('images', file);
     });
 
-    const response = await api.post('/owner/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post('/owner/upload', formData);
     return response.data;
   },
 
