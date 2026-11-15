@@ -56,19 +56,13 @@ export default function FeaturedCatalog({ favorites, toggleFavorite }) {
         ))}
       </div>
 
-      {/* Browse Full Catalog & Nearby CTAs */}
-      <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3" data-reveal="0">
+      {/* Browse Full Catalog CTA */}
+      <div className="mt-10 flex justify-center" data-reveal="0">
         <Link
           href="/kos"
           className="w-full sm:w-auto text-center px-6 py-3 rounded-full text-sm font-semibold bg-[#1D4ED8] text-white hover:bg-[#1E40AF] transition-colors"
         >
-          Lihat Semua Katalog Kos
-        </Link>
-        <Link
-          href="/kos?campus=UGM&radius=5"
-          className="w-full sm:w-auto text-center px-6 py-3 rounded-full text-sm font-semibold bg-[#EEF2F7] text-[#0F172A] hover:text-[#1D4ED8] hover:bg-[#E2E8F0] transition-colors"
-        >
-          Cari Kos Dekat Kampus
+          Katalog Kos
         </Link>
       </div>
     </section>

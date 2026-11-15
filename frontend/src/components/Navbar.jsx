@@ -6,10 +6,6 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import NavbarNotifications from "./layout/NavbarNotifications";
 
-const PUBLIC_NAV_LINKS = [
-  { label: "Cari Kos", href: "/kos" },
-];
-
 const ROLE_LABELS = {
   ADMIN: "Administrator",
   PEMILIK_KOS: "Pemilik Kos",
@@ -18,24 +14,26 @@ const ROLE_LABELS = {
 
 function getPrimaryNavLinks(role, isAuthenticated) {
   if (!isAuthenticated) {
-    return PUBLIC_NAV_LINKS;
+    return [];
   }
   if (role === "PEMILIK_KOS") {
     return [
-      ...PUBLIC_NAV_LINKS,
       { label: "Portal Pemilik", href: "/owner/dashboard" },
+      { label: "Kos Saya", href: "/owner/kos" },
+      { label: "Booking", href: "/owner/bookings" },
       { label: "Pesan", href: "/chat" },
     ];
   }
   if (role === "ADMIN") {
     return [
-      ...PUBLIC_NAV_LINKS,
       { label: "Panel Admin", href: "/admin/dashboard" },
       { label: "Verifikasi", href: "/admin/submissions" },
+      { label: "Pengguna", href: "/admin/users" },
+      { label: "Pesan", href: "/chat" },
     ];
   }
   return [
-    ...PUBLIC_NAV_LINKS,
+    { label: "Katalog Kos", href: "/kos" },
     { label: "Favorit", href: "/favorites" },
     { label: "Booking", href: "/bookings" },
     { label: "Pesan", href: "/chat" },
@@ -45,16 +43,14 @@ function getPrimaryNavLinks(role, isAuthenticated) {
 function getRoleAccountLinks(role) {
   if (role === "PEMILIK_KOS") {
     return [
-      { label: "Inventaris Kos Saya", href: "/owner/kos" },
       { label: "Tambah Kos Baru", href: "/owner/kos/tambah" },
-      { label: "Booking Masuk", href: "/owner/bookings" },
+      { label: "Katalog Kos Publik", href: "/kos" },
     ];
   }
 
   if (role === "ADMIN") {
     return [
-      { label: "Manajemen Pengguna", href: "/admin/users" },
-      { label: "Kotak Pesan", href: "/chat" },
+      { label: "Katalog Kos Publik", href: "/kos" },
     ];
   }
 
@@ -119,9 +115,6 @@ function NavbarContent() {
     if (!pathname || href.startsWith("/#")) {
       return false;
     }
-    if (href === "/kos" || href === "/owner/kos") {
-      return pathname === href;
-    }
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
@@ -153,28 +146,30 @@ function NavbarContent() {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav aria-label="Utama" className="hidden sm:block">
-          <ul className="flex items-center gap-4 md:gap-7 text-xs md:text-sm font-medium">
-            {centerNavLinks.map((item) => {
-              const active = isActiveRoute(item.href);
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    aria-current={active ? "page" : undefined}
-                    className={`inline-flex items-center min-h-[28px] py-1.5 border-b-2 whitespace-nowrap transition-colors ${FOCUS_OUTLINE_CLASS} ${
-                      active
-                        ? "text-[#1D4ED8] border-[#1D4ED8] font-semibold"
-                        : "text-[#475569] border-transparent hover:text-[#0F172A]"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        {centerNavLinks.length > 0 && (
+          <nav aria-label="Utama" className="hidden sm:block">
+            <ul className="flex items-center gap-4 md:gap-7 text-xs md:text-sm font-medium">
+              {centerNavLinks.map((item) => {
+                const active = isActiveRoute(item.href);
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      className={`inline-flex items-center min-h-[28px] py-1.5 border-b-2 whitespace-nowrap transition-colors ${FOCUS_OUTLINE_CLASS} ${
+                        active
+                          ? "text-[#1D4ED8] border-[#1D4ED8] font-semibold"
+                          : "text-[#475569] border-transparent hover:text-[#0F172A]"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        )}
 
         {/* Right Actions (Desktop + Mobile Notification Bell) */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -368,15 +363,26 @@ function NavbarContent() {
             })}
 
             {!showAuthenticatedUI && (
-              <li>
-                <Link
-                  href="/#pemilik"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-1.5 border-l-2 border-transparent pl-3 text-[#475569] hover:text-[#0F172A] transition-colors ${FOCUS_OUTLINE_CLASS}`}
-                >
-                  Untuk Pemilik
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    href="/kos"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block py-1.5 border-l-2 border-transparent pl-3 text-[#475569] hover:text-[#0F172A] transition-colors ${FOCUS_OUTLINE_CLASS}`}
+                  >
+                    Katalog Kos
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/#pemilik"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block py-1.5 border-l-2 border-transparent pl-3 text-[#475569] hover:text-[#0F172A] transition-colors ${FOCUS_OUTLINE_CLASS}`}
+                  >
+                    Untuk Pemilik
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
 
