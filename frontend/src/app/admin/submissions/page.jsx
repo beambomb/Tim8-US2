@@ -1,23 +1,11 @@
-import PlaceholderPage from "../../../components/ui/PlaceholderPage";
-
-export const metadata = {
-  title: "Verifikasi Kos - CariKos Admin",
-};
-
-export default function AdminSubmissionsPage() {
-  return (
-    <PlaceholderPage
-      title="Audit & Verifikasi Pengajuan Kos Masuk"
-      route="/admin/submissions"
-      assignedTo="Anggota 1"
-      domain="Portal Administrator"
-      endpoints={[
-        "GET /api/admin/submissions",
-        "GET /api/admin/submissions/:id",
-        "PATCH /api/admin/submissions/:id/approve",
-        "PATCH /api/admin/submissions/:id/reject",
-      ]}
-      description="Tabel antrean pengajuan properti kos berstatus Pending. Dilengkapi modal tinjau berkas/foto/alamat, tombol persetujuan (Approve) untuk publikasi langsung, dan tombol penolakan (Reject) yang mewajibkan input alasanPenolakan."
-    />
-  );
+"use client";
+import {useState} from "react";
+import AdminShell from "@/components/admin/AdminShell";
+import {Panel,Loading,Alert,Button,errorText} from "@/components/admin/UI";
+import {useAdminSubmissions} from "@/features/admin/hooks/useAdminSubmissions";
+import {adminService} from "@/features/admin/services/adminService";
+export default function Submissions(){const {submissions,isLoading,error,actionLoadingId,refetch,approveKos,rejectKos}=useAdminSubmissions();const [selected,setSelected]=useState(null);const [detailLoading,setDetailLoading]=useState(false);const [reason,setReason]=useState("");const [message,setMessage]=useState("");const [actionError,setActionError]=useState("");
+ const open=async id=>{setSelected(null);setDetailLoading(true);setActionError("");setReason("");try{setSelected((await adminService.getSubmissionDetail(id)).data)}catch(e){setActionError(errorText(e))}finally{setDetailLoading(false)}};
+ const decide=async type=>{if(!selected)return;if(type==="approve"&&!window.confirm(`Setujui kos ${selected.nama}?`))return;const result=type==="approve"?await approveKos(selected._id):await rejectKos(selected._id,reason);if(result.success){setMessage(type==="approve"?"Pengajuan berhasil disetujui.":"Pengajuan berhasil ditolak.");setSelected(null);setActionError("");}else setActionError(result.error);};
+ return <AdminShell title="Verifikasi Pengajuan Kos" subtitle="Periksa informasi kos sebelum menerima atau menolak pengajuan."><div className="flex justify-between items-center mb-4"><p className="text-sm text-slate-600">{submissions.length} pengajuan menunggu</p><Button variant="outline" onClick={refetch}>Muat ulang</Button></div>{message&&<div className="mb-4"><Alert type="success">{message}</Alert></div>}{(error||actionError)&&<div className="mb-4"><Alert>{error||actionError}</Alert></div>}{isLoading?<Loading/>:submissions.length===0?<Panel>Belum ada pengajuan kos yang menunggu verifikasi.</Panel>:<div className="grid gap-4">{submissions.map(k=><Panel key={k._id}><div className="flex flex-wrap justify-between items-start gap-4"><div><span className="text-xs font-semibold text-amber-700 bg-amber-50 rounded-full px-3 py-1">Pending</span><h2 className="text-lg font-bold mt-3">{k.nama}</h2><p className="text-sm text-slate-600 mt-1">{k.lokasi} · {k.tipe}</p><p className="text-sm text-slate-500 mt-1">Pemilik: {k.ownerId?.nama||"Tidak diketahui"}</p><p className="font-semibold text-blue-800 mt-2">Rp {Number(k.harga||0).toLocaleString("id-ID")}/bulan</p></div><Button onClick={()=>open(k._id)}>Tinjau pengajuan</Button></div></Panel>)}</div>}{detailLoading&&<Loading/>}{selected&&<div className="fixed inset-0 z-50 bg-slate-950/60 p-4 grid place-items-center" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null)}}><section role="dialog" aria-modal="true" aria-label="Detail pengajuan kos" className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"><div className="flex justify-between gap-3"><h2 className="text-2xl font-bold">{selected.nama}</h2><button aria-label="Tutup detail" onClick={()=>setSelected(null)} className="text-xl">✕</button></div><p className="mt-2 text-slate-600">{selected.lokasi}</p><div className="grid grid-cols-2 gap-3 mt-5 text-sm"><p><b>Harga:</b> Rp {Number(selected.harga||0).toLocaleString("id-ID")}</p><p><b>Tipe:</b> {selected.tipe}</p><p><b>Jumlah kamar:</b> {selected.jumlahKamar}</p><p><b>Tersedia:</b> {selected.jumlahKamarTersedia}</p><p><b>Pemilik:</b> {selected.ownerId?.nama||"-"}</p><p><b>Email:</b> {selected.ownerId?.email||"-"}</p></div><p className="mt-4 text-sm"><b>Fasilitas:</b> {selected.fasilitas?.join(", ")||"Tidak dicantumkan"}</p><h3 className="font-semibold mt-5">Foto properti</h3><div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">{selected.fotoUrls?.length?selected.fotoUrls.map((url,i)=><a href={url} target="_blank" rel="noopener noreferrer" key={i}><img src={url} alt={`Foto kos ${i+1}`} className="w-full h-32 object-cover rounded-xl border"/></a>):<p className="text-slate-500 text-sm">Tidak ada foto.</p>}</div><label className="block font-semibold text-sm mt-6">Alasan penolakan<textarea className="mt-2 w-full rounded-xl border border-slate-300 p-3 font-normal" rows={3} value={reason} onChange={e=>setReason(e.target.value)} placeholder="Wajib diisi jika pengajuan ditolak"/></label>{actionError&&<div className="mt-3"><Alert>{actionError}</Alert></div>}<div className="flex flex-wrap justify-end gap-3 mt-5"><Button variant="outline" onClick={()=>setSelected(null)}>Batal</Button><Button variant="danger" disabled={!!actionLoadingId||!reason.trim()} onClick={()=>decide("reject")}>Tolak pengajuan</Button><Button disabled={!!actionLoadingId} onClick={()=>decide("approve")}>Setujui kos</Button></div></section></div>}</AdminShell>;
 }

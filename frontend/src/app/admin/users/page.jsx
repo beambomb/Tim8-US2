@@ -1,18 +1,12 @@
-import PlaceholderPage from "../../../components/ui/PlaceholderPage";
-
-export const metadata = {
-  title: "Manajemen Pengguna - CariKos Admin",
-};
-
-export default function AdminUsersPage() {
-  return (
-    <PlaceholderPage
-      title="Master Data & Manajemen Pengguna"
-      route="/admin/users"
-      assignedTo="Anggota 1"
-      domain="Portal Administrator"
-      endpoints={["GET /api/admin/users", "PATCH /api/admin/users/:id/role"]}
-      description="Tabel master data seluruh akun pengguna CariKos: ID, nama lengkap, email, nomor HP, role aktif, dan tanggal registrasi. Memuat fitur pencarian cepat nama/email serta dropdown mutasi role (Pencari Kos, Pemilik Kos, Admin) dengan dialog konfirmasi."
-    />
-  );
+"use client";
+import {useEffect,useMemo,useState} from "react";
+import AdminShell from "@/components/admin/AdminShell";
+import {Panel,Loading,Alert,Button,roleLabel,errorText} from "@/components/admin/UI";
+import {adminService} from "@/features/admin/services/adminService";
+import {useAuth} from "@/context/AuthContext";
+export default function Users(){const {user}=useAuth();const [users,setUsers]=useState([]);const [loading,setLoading]=useState(true);const [busy,setBusy]=useState("");const [query,setQuery]=useState("");const [error,setError]=useState("");const [message,setMessage]=useState("");
+ const load=async()=>{setLoading(true);setError("");try{setUsers((await adminService.getUsers()).data||[])}catch(e){setError(errorText(e))}finally{setLoading(false)}};useEffect(()=>{load()},[]);
+ const filtered=useMemo(()=>users.filter(u=>`${u.nama} ${u.email}`.toLowerCase().includes(query.toLowerCase())),[users,query]);
+ const update=async(u,role)=>{if(role===u.role)return;if(!window.confirm(`Ubah role ${u.nama} menjadi ${roleLabel[role]}?`))return;setBusy(u._id);setError("");setMessage("");try{const res=await adminService.updateUserRole(u._id,role);setUsers(old=>old.map(item=>item._id===u._id?res.data:item));setMessage(`Role ${u.nama} berhasil diperbarui.`)}catch(e){setError(errorText(e))}finally{setBusy("")}};
+ return <AdminShell title="Manajemen Pengguna" subtitle="Cari akun dan ubah peran pengguna yang terdaftar."><div className="flex flex-wrap justify-between gap-3 mb-4"><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Cari nama atau email..." aria-label="Cari pengguna" className="rounded-xl border border-slate-300 px-4 py-2 w-full sm:w-80"/><Button variant="outline" onClick={load}>Muat ulang</Button></div>{error&&<div className="mb-4"><Alert>{error}</Alert></div>}{message&&<div className="mb-4"><Alert type="success">{message}</Alert></div>}{loading?<Loading/>:<Panel className="overflow-x-auto"><table className="w-full text-sm text-left"><thead><tr className="border-b border-slate-200 text-slate-500"><th className="py-3 pr-4">Pengguna</th><th className="py-3 pr-4">Nomor HP</th><th className="py-3 pr-4">Terdaftar</th><th className="py-3">Role</th></tr></thead><tbody>{filtered.map(u=><tr key={u._id} className="border-b border-slate-100"><td className="py-4 pr-4"><p className="font-semibold">{u.nama}</p><p className="text-slate-500">{u.email}</p></td><td className="py-4 pr-4">{u.noHp||"-"}</td><td className="py-4 pr-4 whitespace-nowrap">{u.createdAt?new Date(u.createdAt).toLocaleDateString("id-ID"):"-"}</td><td className="py-4"><select aria-label={`Role ${u.nama}`} value={u.role} disabled={busy===u._id||String(u._id)===String(user?._id||user?.id)} onChange={e=>update(u,e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 bg-white"><option value="PENCARI_KOS">Pencari Kos</option><option value="PEMILIK_KOS">Pemilik Kos</option><option value="ADMIN">Administrator</option></select>{String(u._id)===String(user?._id||user?.id)&&<p className="text-xs text-slate-500 mt-1">Akun Anda</p>}</td></tr>)}</tbody></table>{!filtered.length&&<p className="text-center py-8 text-slate-500">Tidak ada pengguna yang cocok.</p>}<p className="text-xs text-slate-500 mt-4">Menampilkan {filtered.length} dari {users.length} akun.</p></Panel>}</AdminShell>;
 }
