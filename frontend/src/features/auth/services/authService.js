@@ -15,4 +15,14 @@ export const authService = {
     const response = await api.get('/auth/me');
     return response.data;
   },
+
+  async saveCampus(campus) {
+    const response = await api.post('/auth/campuses', campus);
+    return response.data;
+  },
+
+  async removeCampus(campusId) {
+    const response = await api.delete(`/auth/campuses/${encodeURIComponent(campusId)}`);
+    return response.data;
+  },
 };

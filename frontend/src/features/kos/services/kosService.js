@@ -20,6 +20,14 @@ export const kosService = {
     return response.data;
   },
 
+  async searchCampuses(query = '') {
+    const trimmed = String(query || '').trim();
+    const response = await api.get('/kos/campuses', {
+      params: trimmed ? { q: trimmed } : {},
+    });
+    return response.data;
+  },
+
   async getFavorites() {
     const response = await api.get('/favorites');
     return response.data;
