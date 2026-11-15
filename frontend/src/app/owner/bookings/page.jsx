@@ -3,6 +3,8 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import RefreshButton from "@/components/ui/RefreshButton";
+import PortalPageHeader from "@/components/portal/PortalPageHeader";
+import { Alert, Badge, Button } from "@/components/portal/PortalUI";
 import { useOwnerBookings } from "@/features/owner/hooks/useOwnerBookings";
 import { useAuth } from "@/context/AuthContext";
 
@@ -65,16 +67,16 @@ export default function OwnerBookingsPage() {
     }
   };
 
-  const getStatusBadgeClass = (status) => {
+  const getStatusBadgeVariant = (status) => {
     switch (status) {
       case "DISETUJUI":
-        return "bg-[#DCFAE5] text-[#04250E] border border-[#BBF7D0]";
+        return "success";
       case "DITOLAK":
-        return "bg-[#FFEDEA] text-[#831C1E] border border-[#FECACA]";
+        return "danger";
       case "DIBATALKAN":
-        return "bg-[#EEF2F7] text-[#475569] border border-[#E2E8F0]";
+        return "neutral";
       default:
-        return "bg-[#FFFBEB] text-[#92400E] border border-[#FDE68A]";
+        return "warning";
     }
   };
 
@@ -144,7 +146,7 @@ export default function OwnerBookingsPage() {
           </p>
           <Link
             href="/auth/login"
-            className="mt-5 inline-block rounded-lg bg-[#1D4ED8] px-5 py-2.5 text-xs font-semibold text-white hover:bg-[#1E40AF] transition-colors"
+            className="mt-5 inline-block rounded-lg bg-[var(--accent)] px-5 py-2.5 text-xs font-semibold text-white hover:bg-[var(--accent-hover)] transition-colors"
           >
             Login Pemilik Kos
           </Link>
@@ -155,33 +157,24 @@ export default function OwnerBookingsPage() {
 
   return (
     <div className="flex flex-col gap-6 text-[#0F172A]">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
-            Permohonan Booking Masuk
-          </h1>
-          <p className="mt-1 text-sm text-[#475569] tabular-nums">
-            {counts.PENDING > 0
-              ? `${counts.PENDING} permohonan menunggu konfirmasi dari total ${counts.ALL} pengajuan.`
-              : `Seluruh ${counts.ALL} permohonan booking telah ditinjau.`}
-          </p>
-        </div>
+      <PortalPageHeader
+        title="Permohonan Booking Masuk"
+        subtitle={
+          counts.PENDING > 0
+            ? `${counts.PENDING} permohonan menunggu konfirmasi dari total ${counts.ALL} pengajuan.`
+            : `Seluruh ${counts.ALL} permohonan booking telah ditinjau.`
+        }
+        actions={
+          <RefreshButton
+            onClick={refetch}
+            isLoading={isLoading}
+            label="Segarkan antrean booking"
+            variant="app"
+          />
+        }
+      />
 
-        <RefreshButton
-          onClick={refetch}
-          isLoading={isLoading}
-          label="Segarkan antrean booking"
-          variant="app"
-          className="self-start sm:self-auto"
-        />
-      </div>
-
-      {error && (
-        <div className="rounded-xl border border-[#FECACA] bg-[#FFEDEA] p-4 text-xs font-medium text-[#831C1E]">
-          {error}
-        </div>
-      )}
+      {error && <Alert>{error}</Alert>}
 
       {/* Underline Tabs Filter Status */}
       <div className="flex gap-1 overflow-x-auto border-b border-[#E2E8F0]">
@@ -195,7 +188,7 @@ export default function OwnerBookingsPage() {
               onClick={() => setActiveTab(tab.key)}
               className={`flex items-center gap-2 px-3.5 py-2.5 text-xs whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                 isActive
-                  ? "border-[#1D4ED8] text-[#0F172A] font-semibold"
+                  ? "border-[var(--accent)] text-[#0F172A] font-semibold"
                   : "border-transparent text-[#475569] hover:text-[#0F172A]"
               }`}
             >
@@ -203,7 +196,7 @@ export default function OwnerBookingsPage() {
               <span
                 className={`px-2 py-0.5 rounded-full text-xs tabular-nums ${
                   isActive
-                    ? "bg-[#EFF6FF] text-[#1D4ED8] font-semibold"
+                    ? "bg-[#EFF6FF] text-[var(--accent)] font-semibold"
                     : "bg-[#EEF2F7] text-[#475569]"
                 }`}
               >
@@ -244,18 +237,14 @@ export default function OwnerBookingsPage() {
                 {/* Identitas Properti, Penyewa & Detail Sewa */}
                 <div className="min-w-0 flex-1 space-y-2.5">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${getStatusBadgeClass(
-                        status
-                      )}`}
-                    >
+                    <Badge variant={getStatusBadgeVariant(status)}>
                       {getStatusLabel(status)}
-                    </span>
+                    </Badge>
 
                     {kosId ? (
                       <Link
                         href={`/kos/${kosId}`}
-                        className="text-sm font-semibold text-[#0F172A] hover:text-[#1D4ED8] transition-colors truncate"
+                        className="text-sm font-semibold text-[#0F172A] hover:text-[var(--accent)] transition-colors truncate"
                       >
                         {kos.nama || "Properti Kos"}
                       </Link>
@@ -287,7 +276,7 @@ export default function OwnerBookingsPage() {
                     {tenantId && (
                       <Link
                         href={`/chat/${tenantId}?kosId=${kosId || ""}`}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#1D4ED8] hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent)] hover:underline"
                       >
                         <svg
                           className="w-3.5 h-3.5"
@@ -345,11 +334,10 @@ export default function OwnerBookingsPage() {
                   <div className="flex items-center gap-2">
                     {status === "PENDING" ? (
                       <>
-                        <button
-                          type="button"
+                        <Button
+                          size="sm"
                           disabled={isProcessing}
                           onClick={() => handleApprove(booking._id)}
-                          className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold bg-[#1D4ED8] text-white hover:bg-[#1E40AF] disabled:opacity-50 transition-colors cursor-pointer"
                         >
                           <svg
                             className="w-3.5 h-3.5"
@@ -366,12 +354,12 @@ export default function OwnerBookingsPage() {
                             />
                           </svg>
                           <span>{isProcessing ? "Memproses..." : "Setujui"}</span>
-                        </button>
-                        <button
-                          type="button"
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="dangerOutline"
                           disabled={isProcessing}
                           onClick={() => handleReject(booking._id)}
-                          className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold text-[#831C1E] bg-[#FFFFFF] border border-[#FECACA] hover:bg-[#FFEDEA] disabled:opacity-50 transition-colors cursor-pointer"
                         >
                           <svg
                             className="w-3.5 h-3.5"
@@ -388,7 +376,7 @@ export default function OwnerBookingsPage() {
                             />
                           </svg>
                           <span>Tolak</span>
-                        </button>
+                        </Button>
                       </>
                     ) : status === "DISETUJUI" ? (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#247B50]">

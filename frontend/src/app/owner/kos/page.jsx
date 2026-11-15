@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import RefreshButton from '@/components/ui/RefreshButton';
+import PortalPageHeader from '@/components/portal/PortalPageHeader';
+import { Alert } from '@/components/portal/PortalUI';
 import { useOwnerKos } from '@/features/owner/hooks/useOwnerKos';
 import OwnerKosTable from '@/features/owner/components/OwnerKosTable';
 
@@ -40,49 +42,39 @@ export default function OwnerKosManagementPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#0F172A]">
-            Inventaris dan Manajemen Properti Kos
-          </h1>
-          <p className="mt-1 text-sm text-[#475569]">
-            Perbarui kuota kamar secara instan, pantau status kurasi tim verifikator, dan kelola listing properti.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 shrink-0">
-          <RefreshButton
-            onClick={refetch}
-            isLoading={isLoading}
-            label="Segarkan daftar kos"
-            variant="app"
-          />
-          <Link
-            href="/owner/kos/tambah"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              aria-hidden="true"
+      <PortalPageHeader
+        title="Inventaris dan Manajemen Properti Kos"
+        subtitle="Perbarui kuota kamar secara instan, pantau status kurasi tim verifikator, dan kelola listing properti."
+        actions={
+          <>
+            <RefreshButton
+              onClick={refetch}
+              isLoading={isLoading}
+              label="Segarkan daftar kos"
+              variant="app"
+            />
+            <Link
+              href="/owner/kos/tambah"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            <span>Tambah Kos Baru</span>
-          </Link>
-        </div>
-      </div>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span>Tambah Kos Baru</span>
+            </Link>
+          </>
+        }
+      />
 
       {/* Error Alert */}
-      {error && (
-        <div className="p-4 rounded-xl bg-[#FFEDEA] border border-[#FECACA] text-[#831C1E] text-xs">
-          {error}
-        </div>
-      )}
+      {error && <Alert>{error}</Alert>}
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-[#E2E8F0] pb-3">
@@ -108,7 +100,7 @@ export default function OwnerKosManagementPage() {
               <span
                 className={`px-1.5 py-0.5 rounded text-[11px] tabular-nums ${
                   isActive
-                    ? 'bg-[#EFF6FF] text-[#1E40AF] font-semibold'
+                    ? 'bg-[#EFF6FF] text-[var(--accent)] font-semibold'
                     : 'bg-[#EEF2F7] text-[#475569]'
                 }`}
               >
