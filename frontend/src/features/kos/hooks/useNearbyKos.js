@@ -1,68 +1,51 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { authService } from '@/features/auth/services/authService';
 import { kosService } from '../services/kosService';
+import {
+  DEFAULT_CAMPUS,
+  POPULAR_CAMPUS_PRESETS,
+  mergeWithDefaultCampus,
+  loadGuestCampuses,
+  saveGuestCampuses,
+} from '../utils/campusStorage';
 
-export const CAMPUS_PRESETS = {
-  UGM: {
-    id: 'UGM',
-    nama: 'UGM (Universitas Gadjah Mada)',
-    kota: 'Sleman / Yogyakarta',
-    latitude: -7.7713,
-    longitude: 110.3775,
-  },
-  UNY: {
-    id: 'UNY',
-    nama: 'UNY (Universitas Negeri Yogyakarta)',
-    kota: 'Yogyakarta',
-    latitude: -7.7749,
-    longitude: 110.3867,
-  },
-  UPN: {
-    id: 'UPN',
-    nama: 'UPN "Veteran" Yogyakarta',
-    kota: 'Sleman',
-    latitude: -7.7618,
-    longitude: 110.4087,
-  },
-  UII: {
-    id: 'UII',
-    nama: 'UII Kampus Terpadu',
-    kota: 'Kaliurang, Sleman',
-    latitude: -7.6878,
-    longitude: 110.4137,
-  },
-  ITB: {
-    id: 'ITB',
-    nama: 'ITB (Institut Teknologi Bandung)',
-    kota: 'Bandung',
-    latitude: -6.8915,
-    longitude: 107.6107,
-  },
-  UI: {
-    id: 'UI',
-    nama: 'UI (Universitas Indonesia)',
-    kota: 'Depok',
-    latitude: -6.3653,
-    longitude: 106.8286,
-  },
-};
+export const CAMPUS_PRESETS = Object.fromEntries(
+  POPULAR_CAMPUS_PRESETS.map((item) => [item.id, item])
+);
+
+function getDistanceMeters(kos) {
+  if (kos?.jarakMeter !== undefined && kos?.jarakMeter !== null) {
+    return Number(kos.jarakMeter);
+  }
+  if (kos?.jarakKm !== undefined && kos?.jarakKm !== null) {
+    return Number(kos.jarakKm) * 1000;
+  }
+  return Number.POSITIVE_INFINITY;
+}
 
 /**
  * Custom Hook for Geospatial Nearby Kos Search
- * Interacts with GET /api/kos/nearby
+ * Starts with UGM by default, supports user-saved custom campuses & instant result comparison.
  */
 export function useNearbyKos() {
-  const [selectedPreset, setSelectedPreset] = useState('UGM');
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+
+  const [campuses, setCampuses] = useState([DEFAULT_CAMPUS]);
+  const [selectedPreset, setSelectedPreset] = useState(DEFAULT_CAMPUS.id);
   const [coords, setCoords] = useState({
-    latitude: CAMPUS_PRESETS.UGM.latitude,
-    longitude: CAMPUS_PRESETS.UGM.longitude,
-    label: CAMPUS_PRESETS.UGM.nama,
+    latitude: DEFAULT_CAMPUS.latitude,
+    longitude: DEFAULT_CAMPUS.longitude,
+    label: DEFAULT_CAMPUS.shortName,
+    fullLabel: DEFAULT_CAMPUS.nama,
   });
   const [radiusKm, setRadiusKmState] = useState(5);
   const [debouncedRadiusKm, setDebouncedRadiusKm] = useState(5);
+  const [sortBy, setSortBy] = useState('nearest');
+  const [tipeFilter, setTipeFilter] = useState('all');
   const [kosList, setKosList] = useState([]);
-  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isLocating, setIsLocating] = useState(false);
   const [error, setError] = useState(null);
@@ -77,6 +60,18 @@ export function useNearbyKos() {
       }
     };
   }, []);
+
+  // Hydrate saved campuses from user profile or guest localStorage
+  useEffect(() => {
+    if (authLoading) return;
+    queueMicrotask(() => {
+      if (isAuthenticated && Array.isArray(user?.savedCampuses)) {
+        setCampuses(mergeWithDefaultCampus(user.savedCampuses));
+      } else {
+        setCampuses(mergeWithDefaultCampus(loadGuestCampuses()));
+      }
+    });
+  }, [authLoading, isAuthenticated, user?.savedCampuses]);
 
   // Update radius immediately for slider feedback, debounce query trigger by 300ms
   const setRadiusKm = useCallback((nextRadius, immediate = false) => {
@@ -116,7 +111,6 @@ export function useNearbyKos() {
         );
         if (!ignore) {
           setKosList(result.data || []);
-          setTotal(result.total || (result.data ? result.data.length : 0));
           setError(null);
         }
       } catch (err) {
@@ -152,7 +146,6 @@ export function useNearbyKos() {
         debouncedRadiusKm
       );
       setKosList(result.data || []);
-      setTotal(result.total || (result.data ? result.data.length : 0));
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -164,20 +157,108 @@ export function useNearbyKos() {
     }
   }, [coords.latitude, coords.longitude, debouncedRadiusKm]);
 
-  // Handler for university preset selection
-  const selectCampusPreset = useCallback((presetKey) => {
-    const preset = CAMPUS_PRESETS[presetKey];
-    if (preset) {
+  const selectCampusPreset = useCallback(
+    (campusId) => {
+      const target =
+        campuses.find((item) => item.id === campusId) || CAMPUS_PRESETS[campusId];
+      if (!target) return;
+
       setIsLoading(true);
-      setSelectedPreset(presetKey);
+      setSelectedPreset(target.id);
       setLocationSource('preset');
       setCoords({
-        latitude: preset.latitude,
-        longitude: preset.longitude,
-        label: preset.nama,
+        latitude: Number(target.latitude),
+        longitude: Number(target.longitude),
+        label: target.shortName || target.nama,
+        fullLabel: target.nama,
       });
-    }
-  }, []);
+    },
+    [campuses]
+  );
+
+  const addCampus = useCallback(
+    async (campus) => {
+      if (!campus?.id) return;
+
+      const normalized = {
+        id: String(campus.id),
+        shortName: String(campus.shortName || campus.nama),
+        nama: String(campus.nama || campus.shortName),
+        kota: String(campus.kota || ''),
+        latitude: Number(campus.latitude),
+        longitude: Number(campus.longitude),
+        source: campus.source || 'nominatim',
+      };
+
+      setCampuses((prev) => {
+        const next = mergeWithDefaultCampus([...prev, normalized]);
+        if (!isAuthenticated) {
+          saveGuestCampuses(next);
+        }
+        return next;
+      });
+
+      setIsLoading(true);
+      setSelectedPreset(normalized.id);
+      setLocationSource('preset');
+      setCoords({
+        latitude: normalized.latitude,
+        longitude: normalized.longitude,
+        label: normalized.shortName,
+        fullLabel: normalized.nama,
+      });
+
+      if (isAuthenticated && normalized.id !== DEFAULT_CAMPUS.id) {
+        try {
+          const res = await authService.saveCampus(normalized);
+          if (Array.isArray(res?.savedCampuses)) {
+            setCampuses(mergeWithDefaultCampus(res.savedCampuses));
+          }
+        } catch {
+          // Abaikan error penyimpanan server; pilihan tetap aktif di sesi saat ini
+        }
+      }
+    },
+    [isAuthenticated]
+  );
+
+  const removeCampus = useCallback(
+    async (campusId) => {
+      if (!campusId || campusId === DEFAULT_CAMPUS.id) return;
+
+      setCampuses((prev) => {
+        const next = prev.filter((item) => item.id !== campusId);
+        if (!isAuthenticated) {
+          saveGuestCampuses(next);
+        }
+        return next;
+      });
+
+      if (selectedPreset === campusId) {
+        setIsLoading(true);
+        setSelectedPreset(DEFAULT_CAMPUS.id);
+        setLocationSource('preset');
+        setCoords({
+          latitude: DEFAULT_CAMPUS.latitude,
+          longitude: DEFAULT_CAMPUS.longitude,
+          label: DEFAULT_CAMPUS.shortName,
+          fullLabel: DEFAULT_CAMPUS.nama,
+        });
+      }
+
+      if (isAuthenticated) {
+        try {
+          const res = await authService.removeCampus(campusId);
+          if (Array.isArray(res?.savedCampuses)) {
+            setCampuses(mergeWithDefaultCampus(res.savedCampuses));
+          }
+        } catch {
+          // Abaikan error penghapusan server
+        }
+      }
+    },
+    [isAuthenticated, selectedPreset]
+  );
 
   // Handler for browser GPS geolocation
   const detectLocation = useCallback(() => {
@@ -194,21 +275,22 @@ export function useNearbyKos() {
         setIsLocating(false);
         setIsLoading(true);
         const { latitude, longitude } = position.coords;
-        setSelectedPreset('custom');
+        setSelectedPreset('gps');
         setLocationSource('gps');
         setCoords({
           latitude: Number(latitude.toFixed(6)),
           longitude: Number(longitude.toFixed(6)),
-          label: 'Koordinat GPS Anda Saat Ini',
+          label: 'Lokasi Anda',
+          fullLabel: 'Lokasi GPS Perangkat',
         });
       },
       (geoError) => {
         setIsLocating(false);
         let msg = 'Gagal mendeteksi lokasi otomatis.';
         if (geoError.code === geoError.PERMISSION_DENIED) {
-          msg = 'Izin akses lokasi ditolak oleh browser. Silakan pilih kampus dari daftar preset.';
+          msg = 'Izin akses lokasi ditolak oleh browser. Silakan pilih kampus dari daftar.';
         } else if (geoError.code === geoError.TIMEOUT) {
-          msg = 'Waktu deteksi lokasi habis. Silakan coba lagi atau gunakan preset kampus.';
+          msg = 'Waktu deteksi lokasi habis. Silakan coba lagi atau pilih kampus.';
         }
         setError(msg);
       },
@@ -220,19 +302,52 @@ export function useNearbyKos() {
     );
   }, []);
 
+  const visibleKosList = useMemo(() => {
+    const filtered =
+      tipeFilter === 'all'
+        ? kosList
+        : kosList.filter(
+            (item) => (item.tipe || '').toLowerCase() === tipeFilter.toLowerCase()
+          );
+
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+      if (sortBy === 'price-asc') {
+        return Number(a.harga || 0) - Number(b.harga || 0);
+      }
+      if (sortBy === 'price-desc') {
+        return Number(b.harga || 0) - Number(a.harga || 0);
+      }
+      if (sortBy === 'rooms-desc') {
+        return Number(b.jumlahKamarTersedia || 0) - Number(a.jumlahKamarTersedia || 0);
+      }
+      return getDistanceMeters(a) - getDistanceMeters(b);
+    });
+
+    return sorted;
+  }, [kosList, sortBy, tipeFilter]);
+
   return {
-    kosList,
-    total,
+    kosList: visibleKosList,
+    rawTotal: kosList.length,
+    total: visibleKosList.length,
     isLoading,
     isLocating,
     error,
     coords,
     radiusKm,
+    sortBy,
+    setSortBy,
+    tipeFilter,
+    setTipeFilter,
     selectedPreset,
     locationSource,
-    presets: CAMPUS_PRESETS,
+    campuses,
+    popularPresets: POPULAR_CAMPUS_PRESETS,
     setRadiusKm,
     selectCampusPreset,
+    addCampus,
+    removeCampus,
     detectLocation,
     refetch,
   };
