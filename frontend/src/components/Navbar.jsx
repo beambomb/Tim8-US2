@@ -9,36 +9,61 @@ import NavbarNotifications from "./layout/NavbarNotifications";
 const PUBLIC_NAV_LINKS = [
   { label: "Katalog Kos", href: "/kos" },
   { label: "Kos Terdekat", href: "/kos/nearby" },
-  { label: "Keunggulan", href: "/#keunggulan" },
 ];
+
+const ROLE_LABELS = {
+  ADMIN: "Administrator",
+  PEMILIK_KOS: "Pemilik Kos",
+  PENCARI_KOS: "Pencari Kos",
+};
+
+function getPrimaryNavLinks(role, isAuthenticated) {
+  if (!isAuthenticated) {
+    return PUBLIC_NAV_LINKS;
+  }
+  if (role === "PEMILIK_KOS") {
+    return [
+      ...PUBLIC_NAV_LINKS,
+      { label: "Portal Pemilik", href: "/owner/dashboard" },
+      { label: "Pesan", href: "/chat" },
+    ];
+  }
+  if (role === "ADMIN") {
+    return [
+      ...PUBLIC_NAV_LINKS,
+      { label: "Panel Admin", href: "/admin/dashboard" },
+      { label: "Verifikasi", href: "/admin/submissions" },
+    ];
+  }
+  return [
+    ...PUBLIC_NAV_LINKS,
+    { label: "Favorit", href: "/favorites" },
+    { label: "Booking", href: "/bookings" },
+    { label: "Pesan", href: "/chat" },
+  ];
+}
 
 function getRoleAccountLinks(role) {
   if (role === "PEMILIK_KOS") {
     return [
-      { label: "Dashboard Pemilik", href: "/owner/dashboard" },
       { label: "Inventaris Kos Saya", href: "/owner/kos" },
       { label: "Tambah Kos Baru", href: "/owner/kos/tambah" },
-      { label: "Kotak Pesan", href: "/chat" },
+      { label: "Booking Masuk", href: "/owner/bookings" },
     ];
   }
 
   if (role === "ADMIN") {
     return [
-      { label: "Dashboard Admin", href: "/admin/dashboard" },
-      { label: "Verifikasi Pengajuan", href: "/admin/submissions" },
+      { label: "Manajemen Pengguna", href: "/admin/users" },
       { label: "Kotak Pesan", href: "/chat" },
     ];
   }
 
-  return [
-    { label: "Kos Favorit Saya", href: "/favorites" },
-    { label: "Riwayat Booking", href: "/bookings" },
-    { label: "Kotak Pesan", href: "/chat" },
-  ];
+  return [];
 }
 
 const FOCUS_OUTLINE_CLASS =
-  "focus-visible:outline-2 focus-visible:outline-[#1D4ED8] focus-visible:outline-offset-2";
+  "focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2";
 
 function NavbarContent() {
   const pathname = usePathname();
@@ -85,12 +110,7 @@ function NavbarContent() {
 
   const showAuthenticatedUI = !loading && isAuthenticated && Boolean(user);
 
-  const centerNavLinks = [...PUBLIC_NAV_LINKS];
-  if (showAuthenticatedUI && user.role === "PEMILIK_KOS") {
-    centerNavLinks.push({ label: "Portal Pemilik", href: "/owner/dashboard" });
-  } else if (showAuthenticatedUI && user.role === "ADMIN") {
-    centerNavLinks.push({ label: "Panel Admin", href: "/admin/dashboard" });
-  }
+  const centerNavLinks = getPrimaryNavLinks(user?.role, showAuthenticatedUI);
 
   const accountLinks = showAuthenticatedUI
     ? getRoleAccountLinks(user.role)
@@ -209,31 +229,36 @@ function NavbarContent() {
                       <p className="text-[11px] text-[#475569] truncate">
                         {user.email}
                       </p>
+                      <span className="inline-block mt-1 text-[11px] font-medium text-[var(--accent)]">
+                        {ROLE_LABELS[user.role] || user.role}
+                      </span>
                     </div>
 
-                    <nav aria-label="Akun" className="py-1">
-                      <ul className="flex flex-col">
-                        {accountLinks.map((item) => {
-                          const active = isActiveRoute(item.href);
-                          return (
-                            <li key={item.href}>
-                              <Link
-                                href={item.href}
-                                aria-current={active ? "page" : undefined}
-                                onClick={() => setAccountMenuOpen(false)}
-                                className={`block px-3.5 py-2 border-l-2 transition-colors ${FOCUS_OUTLINE_CLASS} ${
-                                  active
-                                    ? "text-[#1D4ED8] border-[#1D4ED8] bg-[#EFF6FF] font-semibold"
-                                    : "text-[#475569] border-transparent hover:bg-[#F5F7FA] hover:text-[#0F172A]"
-                                }`}
-                              >
-                                {item.label}
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </nav>
+                    {accountLinks.length > 0 && (
+                      <nav aria-label="Akun" className="py-1 border-b border-[#E2E8F0]">
+                        <ul className="flex flex-col">
+                          {accountLinks.map((item) => {
+                            const active = isActiveRoute(item.href);
+                            return (
+                              <li key={item.href}>
+                                <Link
+                                  href={item.href}
+                                  aria-current={active ? "page" : undefined}
+                                  onClick={() => setAccountMenuOpen(false)}
+                                  className={`block px-3.5 py-2 border-l-2 transition-colors ${FOCUS_OUTLINE_CLASS} ${
+                                    active
+                                      ? "text-[var(--accent)] border-[var(--accent)] bg-[#EFF6FF] font-semibold"
+                                      : "text-[#475569] border-transparent hover:bg-[#F5F7FA] hover:text-[#0F172A]"
+                                  }`}
+                                >
+                                  {item.label}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </nav>
+                    )}
 
                     <div className="mt-1.5 pt-1.5 px-1.5">
                       <button
@@ -365,27 +390,29 @@ function NavbarContent() {
                     {user.nama || user.email}
                   </strong>
                 </div>
-                <ul className="flex flex-col gap-1.5">
-                  {accountLinks.map((item) => {
-                    const active = isActiveRoute(item.href);
-                    return (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          aria-current={active ? "page" : undefined}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={`block py-1.5 border-l-2 pl-3 text-sm transition-colors ${FOCUS_OUTLINE_CLASS} ${
-                            active
-                              ? "text-[#1D4ED8] border-[#1D4ED8] font-semibold"
-                              : "text-[#475569] border-transparent hover:text-[#0F172A]"
-                          }`}
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
+                {accountLinks.length > 0 && (
+                  <ul className="flex flex-col gap-1.5">
+                    {accountLinks.map((item) => {
+                      const active = isActiveRoute(item.href);
+                      return (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            aria-current={active ? "page" : undefined}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={`block py-1.5 border-l-2 pl-3 text-sm transition-colors ${FOCUS_OUTLINE_CLASS} ${
+                              active
+                                ? "text-[var(--accent)] border-[var(--accent)] font-semibold"
+                                : "text-[#475569] border-transparent hover:text-[#0F172A]"
+                            }`}
+                          >
+                            {item.label}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
                 <button
                   type="button"
                   onClick={() => {
