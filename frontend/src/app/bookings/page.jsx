@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import RefreshButton from "@/components/ui/RefreshButton";
 import { useBookings } from "@/features/booking/hooks/useBookings";
 import { useAuth } from "@/context/AuthContext";
 
@@ -114,13 +115,13 @@ export default function MyBookingsPage() {
             </div>
 
             {isAuthenticated && (
-              <button
-                type="button"
+              <RefreshButton
                 onClick={refetch}
-                className="self-start sm:self-auto px-4 py-2 rounded-xl text-[13px] font-semibold text-[#1D4ED8] bg-[#EFF6FF] hover:bg-[#DBEAFE] transition-colors cursor-pointer"
-              >
-                Segarkan Data
-              </button>
+                isLoading={isLoading}
+                label="Segarkan data booking"
+                variant="public"
+                className="self-start sm:self-auto"
+              />
             )}
           </div>
 

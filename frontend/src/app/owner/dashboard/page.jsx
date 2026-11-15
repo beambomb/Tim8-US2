@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import RefreshButton from '@/components/ui/RefreshButton';
 import { useOwnerDashboard } from '@/features/owner/hooks/useOwnerDashboard';
 import OwnerMetricsGrid from '@/features/owner/components/OwnerMetricsGrid';
 
@@ -22,13 +23,12 @@ export default function OwnerDashboardPage() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <button
-            type="button"
+          <RefreshButton
             onClick={refetch}
-            className="px-3.5 py-2 rounded-lg text-xs font-medium text-[#0F172A] bg-[#FFFFFF] border border-[#CBD5E1] hover:bg-[#EEF2F7] transition-colors cursor-pointer"
-          >
-            Segarkan Data
-          </button>
+            isLoading={isLoading}
+            label="Segarkan data dashboard"
+            variant="app"
+          />
           <Link
             href="/owner/kos/tambah"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors"
