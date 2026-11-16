@@ -59,7 +59,8 @@ export default function SupportButton() {
         return;
       }
       setOpen(false);
-      router.push(`/chat/${adminId}?topic=support`);
+      const chatBasePath = user?.role === 'PEMILIK_KOS' ? '/owner/chat' : '/chat';
+      router.push(`${chatBasePath}/${adminId}?topic=support`);
     } catch (err) {
       setSupportError(
         err.response?.data?.message ||
@@ -153,7 +154,7 @@ export default function SupportButton() {
             </button>
           ) : isAdmin ? (
             <Link
-              href="/chat"
+              href="/admin/chat"
               onClick={() => setOpen(false)}
               className="w-full py-2.5 px-4 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-xs font-semibold text-center transition-colors"
             >

@@ -39,6 +39,27 @@ export const fetchAllUsers = async () => {
     return await User.find().select('-password');
 };
 
+export const fetchAllKos = async (filters = {}) => {
+    const query = {};
+    if (filters.status) {
+        query.statusVerifikasi = filters.status;
+    }
+    if (filters.tipe) {
+        query.tipe = filters.tipe;
+    }
+    if (filters.search && String(filters.search).trim()) {
+        const escapedSearch = String(filters.search)
+            .trim()
+            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escapedSearch, 'i');
+        query.$or = [{ nama: regex }, { lokasi: regex }];
+    }
+
+    return await Kos.find(query)
+        .populate('ownerId', 'nama email noHp')
+        .sort({ createdAt: -1 });
+};
+
 export const fetchAdminStats = async () => {
     const [
         totalUsers,

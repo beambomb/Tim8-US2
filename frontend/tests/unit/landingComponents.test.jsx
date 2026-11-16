@@ -76,7 +76,7 @@ describe("FaqSection and SupportButton component tests", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bantuan & Dukungan" }));
     expect(screen.getByRole("link", { name: "Buka Kotak Pesan Masuk" })).toHaveAttribute(
       "href",
-      "/chat"
+      "/admin/chat"
     );
 
     useAuth.mockReturnValue({
@@ -94,6 +94,20 @@ describe("FaqSection and SupportButton component tests", () => {
 
     await waitFor(() =>
       expect(mockPush).toHaveBeenCalledWith("/chat/admin-42?topic=support")
+    );
+
+    useAuth.mockReturnValue({
+      user: { _id: "o1", role: "PEMILIK_KOS" },
+      isAuthenticated: true,
+      loading: false,
+    });
+
+    rerender(<SupportButton />);
+    fireEvent.click(screen.getByRole("button", { name: "Bantuan & Dukungan" }));
+    fireEvent.click(screen.getByRole("button", { name: /Chat Admin Support Sekarang/i }));
+
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith("/owner/chat/admin-42?topic=support")
     );
   });
 

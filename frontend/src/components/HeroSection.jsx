@@ -65,7 +65,7 @@ function RoleAdaptiveCTA({ isAuthenticated, user }) {
             href="/admin/dashboard"
             className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#1D4ED8] hover:bg-[#1E40AF] active:scale-[0.97] text-white transition-[background-color,transform] touch-manipulation focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
           >
-            <span>Buka Panel Admin</span>
+            <span>Buka Portal Admin</span>
             <svg
               aria-hidden="true"
               className="w-4 h-4"

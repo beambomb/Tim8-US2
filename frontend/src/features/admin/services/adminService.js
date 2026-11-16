@@ -31,6 +31,11 @@ export const adminService = {
     return response.data;
   },
 
+  async getAllKos(params = {}) {
+    const response = await api.get('/admin/kos', { params });
+    return response.data;
+  },
+
   async updateUserRole(userId, role) {
     const response = await api.patch(`/admin/users/${userId}/role`, { role });
     return response.data;

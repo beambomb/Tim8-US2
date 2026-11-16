@@ -6,6 +6,7 @@ import {
     rejectSubmission,
     updateUserRole,
     getAllUsers,
+    getAllKos,
     getAdminStats,
 } from '../controllers/adminController.js';
 import { verifyToken, authorizeRoles } from '../middleware/authMiddleware.js';
@@ -21,6 +22,9 @@ router.get('/stats', getAdminStats);
 // Manajemen Data Pengguna
 router.get('/users', getAllUsers);
 router.patch('/users/:id/role', updateUserRole);
+
+// Daftar Seluruh Kos Terdaftar
+router.get('/kos', getAllKos);
 
 // Verifikasi Pengajuan Kos
 router.get('/submissions', getPendingSubmissions);

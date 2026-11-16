@@ -74,6 +74,7 @@ describe("Navbar role navigation, account popover, and mobile drawer tests", () 
     expect(screen.getByRole("link", { name: "Portal Pemilik" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Kos Saya" })).toHaveAttribute("href", "/owner/kos");
     expect(screen.getByRole("link", { name: "Booking" })).toHaveAttribute("href", "/owner/bookings");
+    expect(screen.getByRole("link", { name: "Pesan" })).toHaveAttribute("href", "/owner/chat");
 
     const accountBtn = screen.getByRole("button", { name: /Pak Budi/i });
     fireEvent.click(accountBtn);
@@ -97,9 +98,10 @@ describe("Navbar role navigation, account popover, and mobile drawer tests", () 
 
     render(<Navbar />);
 
-    expect(screen.getByRole("link", { name: "Panel Admin" })).toHaveAttribute("href", "/admin/dashboard");
+    expect(screen.getByRole("link", { name: "Portal Admin" })).toHaveAttribute("href", "/admin/dashboard");
     expect(screen.getByRole("link", { name: "Verifikasi" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Pengguna" })).toHaveAttribute("href", "/admin/users");
+    expect(screen.getByRole("link", { name: "Pesan" })).toHaveAttribute("href", "/admin/chat");
 
     const mobileToggle = screen.getByRole("button", { name: "Buka Menu" });
     fireEvent.click(mobileToggle);

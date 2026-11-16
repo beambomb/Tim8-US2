@@ -21,15 +21,15 @@ function getPrimaryNavLinks(role, isAuthenticated) {
       { label: "Portal Pemilik", href: "/owner/dashboard" },
       { label: "Kos Saya", href: "/owner/kos" },
       { label: "Booking", href: "/owner/bookings" },
-      { label: "Pesan", href: "/chat" },
+      { label: "Pesan", href: "/owner/chat" },
     ];
   }
   if (role === "ADMIN") {
     return [
-      { label: "Panel Admin", href: "/admin/dashboard" },
+      { label: "Portal Admin", href: "/admin/dashboard" },
       { label: "Verifikasi", href: "/admin/submissions" },
       { label: "Pengguna", href: "/admin/users" },
-      { label: "Pesan", href: "/chat" },
+      { label: "Pesan", href: "/admin/chat" },
     ];
   }
   return [

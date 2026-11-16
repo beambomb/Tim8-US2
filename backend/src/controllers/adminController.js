@@ -92,6 +92,16 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
+export const getAllKos = async (req, res) => {
+    try {
+        const { status, tipe, search } = req.query || {};
+        const kosList = await adminService.fetchAllKos({ status, tipe, search });
+        res.status(200).json({ success: true, total: kosList.length, data: kosList });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 export const getAdminStats = async (req, res) => {
     try {
         const stats = await adminService.fetchAdminStats();

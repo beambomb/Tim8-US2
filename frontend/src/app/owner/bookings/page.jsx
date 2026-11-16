@@ -275,7 +275,7 @@ export default function OwnerBookingsPage() {
                     </span>
                     {tenantId && (
                       <Link
-                        href={`/chat/${tenantId}?kosId=${kosId || ""}`}
+                        href={`/owner/chat/${tenantId}?kosId=${kosId || ""}`}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent)] hover:underline"
                       >
                         <svg
