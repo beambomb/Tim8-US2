@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import Notification from '../models/Notification.js';
+import User from '../models/User.js';
+import { isEmailConfigured, sendNotificationEmail } from './emailService.js';
 
 export const createNotificationService = async (io, { userId, judul, pesan, tipe, metadata }) => {
   if (!userId || !judul || !pesan) {
@@ -16,6 +18,23 @@ export const createNotificationService = async (io, { userId, judul, pesan, tipe
 
   if (io) {
     io.to(userId.toString()).emit('notification', notification);
+  }
+
+  if (isEmailConfigured()) {
+    try {
+      const recipient = await User.findById(userId).select('nama email');
+      if (recipient?.email) {
+        await sendNotificationEmail({
+          to: recipient.email,
+          recipientName: recipient.nama,
+          judul,
+          pesan,
+          tipe: tipe || 'SYSTEM',
+        });
+      }
+    } catch (err) {
+      console.warn('[email] Gagal mengirim email notifikasi:', err.message);
+    }
   }
 
   return notification;
