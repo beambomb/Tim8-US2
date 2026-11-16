@@ -141,6 +141,37 @@ export function useOwnerKosForm({
     });
   }, []);
 
+  const handleAddCustomFacility = useCallback(
+    (rawLabel) => {
+      const cleaned = String(rawLabel || '')
+        .trim()
+        .replace(/\s+/g, ' ');
+      if (!cleaned) {
+        return { added: false, error: 'Nama fasilitas tambahan tidak boleh kosong.' };
+      }
+      if (cleaned.length > 40) {
+        return { added: false, error: 'Nama fasilitas maksimal 40 karakter.' };
+      }
+
+      const duplicate = formData.fasilitas.some(
+        (item) => item.toLowerCase() === cleaned.toLowerCase()
+      );
+      if (duplicate) {
+        return { added: false, error: `Fasilitas "${cleaned}" sudah dipilih.` };
+      }
+      if (formData.fasilitas.length >= 25) {
+        return { added: false, error: 'Maksimal 25 fasilitas per properti kos.' };
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        fasilitas: [...prev.fasilitas, cleaned],
+      }));
+      return { added: true, value: cleaned };
+    },
+    [formData.fasilitas]
+  );
+
   const handlePresetCoords = useCallback((preset) => {
     setFormData((prev) => ({
       ...prev,
@@ -379,6 +410,7 @@ export function useOwnerKosForm({
     setFormError,
     handleChange,
     handleFacilityToggle,
+    handleAddCustomFacility,
     handlePresetCoords,
     handleFileSelect,
     handleDragOver,

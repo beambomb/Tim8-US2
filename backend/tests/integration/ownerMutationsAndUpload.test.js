@@ -28,6 +28,7 @@ describe("ownerRoutes mutations and image upload HTTP integration tests", () => 
         latitude: this.latitude,
         longitude: this.longitude,
         tipe: this.tipe,
+        fasilitas: this.fasilitas,
         jumlahKamar: this.jumlahKamar,
         jumlahKamarTersedia: this.jumlahKamarTersedia,
         statusVerifikasi: this.statusVerifikasi,
@@ -83,13 +84,14 @@ describe("ownerRoutes mutations and image upload HTTP integration tests", () => 
           longitude: 110.374,
           tipe: "Putri",
           jumlahKamar: 8,
-          fasilitas: ["WiFi Cepat"],
+          fasilitas: ["  WiFi Cepat  ", "wifi cepat", "Balkon Pribadi", "   "],
           fotoUrls: ["https://example.com/1.jpg"],
         }),
       });
       const createBody = await createRes.json();
       assert.equal(createRes.status, 201);
       assert.equal(createBody.data.statusVerifikasi, "Pending");
+      assert.deepEqual(createBody.data.fasilitas, ["WiFi Cepat", "Balkon Pribadi"]);
 
       const updateRes = await fetch(`${server.baseUrl}/api/owner/kos/${kosId}`, {
         method: "PUT",

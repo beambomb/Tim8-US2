@@ -1,25 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useOwnerKosForm } from '../hooks/useOwnerKosForm';
+import { AVAILABLE_FACILITIES } from '@/features/kos/constants/facilities';
 import KosMapPicker from './KosMapPicker';
-
-const AVAILABLE_FACILITIES = [
-  'WiFi Cepat',
-  'AC',
-  'Kamar Mandi Dalam',
-  'Kasur Springbed',
-  'Lemari Pakaian',
-  'Meja Belajar',
-  'Parkir Motor',
-  'Parkir Mobil',
-  'Dapur Bersama',
-  'CCTV 24 Jam',
-  'Keamanan 24 Jam',
-  'Mesin Cuci Bersama',
-  'Water Heater',
-  'Listrik Termasuk',
-];
 
 const PRESET_COORDINATES = [
   { name: 'Pogung (Dekat UGM)', lat: -7.766, lng: 110.374 },
@@ -54,6 +39,7 @@ export default function OwnerKosForm({
     setFormError,
     handleChange,
     handleFacilityToggle,
+    handleAddCustomFacility,
     handlePresetCoords,
     handleFileSelect,
     handleDragOver,
@@ -63,6 +49,48 @@ export default function OwnerKosForm({
     handleRemoveSavedPhoto,
     handleSubmit,
   } = form;
+
+  const [customFacilityInput, setCustomFacilityInput] = useState('');
+  const [customFacilityError, setCustomFacilityError] = useState('');
+
+  const customFacilities = (formData.fasilitas || []).filter(
+    (item) => !AVAILABLE_FACILITIES.includes(item)
+  );
+
+  const onAddCustomFacility = () => {
+    const cleaned = customFacilityInput.trim().replace(/\s+/g, ' ');
+    if (!cleaned) {
+      setCustomFacilityError('Nama fasilitas tambahan tidak boleh kosong.');
+      return;
+    }
+
+    const matchingPreset = AVAILABLE_FACILITIES.find(
+      (preset) => preset.toLowerCase() === cleaned.toLowerCase()
+    );
+    if (matchingPreset) {
+      if (!formData.fasilitas.includes(matchingPreset)) {
+        handleFacilityToggle(matchingPreset);
+        setCustomFacilityInput('');
+        setCustomFacilityError('');
+        return;
+      }
+      setCustomFacilityError(`Fasilitas "${matchingPreset}" sudah dipilih.`);
+      return;
+    }
+
+    if (handleAddCustomFacility) {
+      const res = handleAddCustomFacility(cleaned);
+      if (!res?.added) {
+        setCustomFacilityError(res?.error || 'Gagal menambahkan fasilitas.');
+        return;
+      }
+    } else if (!formData.fasilitas.includes(cleaned)) {
+      handleFacilityToggle(cleaned);
+    }
+
+    setCustomFacilityInput('');
+    setCustomFacilityError('');
+  };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6 text-[#0F172A]">
@@ -309,6 +337,79 @@ export default function OwnerKosForm({
               </label>
             );
           })}
+        </div>
+
+        <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2.5">
+          <label
+            htmlFor="custom-facility-input"
+            className="text-xs font-medium text-[#475569]"
+          >
+            Fasilitas tambahan lainnya (opsional)
+          </label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              id="custom-facility-input"
+              type="text"
+              maxLength={40}
+              value={customFacilityInput}
+              onChange={(e) => {
+                setCustomFacilityInput(e.target.value);
+                if (customFacilityError) setCustomFacilityError('');
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  onAddCustomFacility();
+                }
+              }}
+              placeholder="Contoh: Balkon Pribadi, Smart Lock, Dispenser"
+              className="flex-1 px-3.5 py-2 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-xs text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[var(--accent)] transition-colors"
+            />
+            <button
+              type="button"
+              onClick={onAddCustomFacility}
+              className="px-4 py-2 rounded-lg text-xs font-semibold bg-[#EEF2F7] hover:bg-[#E2E8F0] text-[#0F172A] border border-[#CBD5E1] transition-colors cursor-pointer shrink-0"
+            >
+              + Tambah Fasilitas
+            </button>
+          </div>
+          {customFacilityError && (
+            <p className="text-xs text-[#991B1B]" role="alert">
+              {customFacilityError}
+            </p>
+          )}
+          {customFacilities.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-1">
+              {customFacilities.map((facility) => (
+                <span
+                  key={facility}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-1 text-xs font-medium text-[#1E40AF]"
+                >
+                  <span>{facility}</span>
+                  <button
+                    type="button"
+                    aria-label={`Hapus fasilitas ${facility}`}
+                    onClick={() => handleFacilityToggle(facility)}
+                    className="rounded-full p-0.5 hover:bg-[#DBEAFE] text-[#1E40AF] cursor-pointer"
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <p className="text-[11px] text-[#64748B]">
+            Kriteria fasilitas tambahan tetap diverifikasi admin. Pengajuan dapat ditolak beserta catatan perbaikan jika ada fasilitas yang dinilai tidak wajar atau tidak sesuai.
+          </p>
         </div>
       </div>
 

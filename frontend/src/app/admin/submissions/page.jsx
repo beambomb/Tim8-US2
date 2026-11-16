@@ -12,6 +12,15 @@ import {
   Modal,
 } from "@/components/admin/UI";
 import { useAdminSubmissions } from "@/features/admin/hooks/useAdminSubmissions";
+import { AVAILABLE_FACILITIES } from "@/features/kos/constants/facilities";
+
+const STANDARD_FACILITIES = new Set(AVAILABLE_FACILITIES);
+
+const REJECT_NOTE_TEMPLATES = [
+  "Kriteria/fasilitas tambahan tidak masuk akal atau tidak sesuai standar kos",
+  "Foto properti kurang jelas atau belum menunjukkan kondisi kamar",
+  "Alamat atau titik koordinat peta belum akurat",
+];
 
 function formatDate(value) {
   if (!value) return null;
@@ -244,16 +253,28 @@ export default function Submissions() {
                 </div>
               </dl>
 
-              <p className="mt-4 text-sm text-[#0F172A]">
-                <span className="font-semibold">Fasilitas:</span>{" "}
+              <div className="mt-4">
+                <p className="text-sm font-semibold text-[#0F172A]">Fasilitas:</p>
                 {selected.fasilitas?.length ? (
-                  <span className="text-[#475569]">
-                    {selected.fasilitas.join(", ")}
-                  </span>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selected.fasilitas.map((item) => {
+                      const isCustom = !STANDARD_FACILITIES.has(item);
+                      return (
+                        <Badge
+                          key={item}
+                          variant={isCustom ? "info" : "neutral"}
+                        >
+                          {isCustom ? `${item} (Tambahan)` : item}
+                        </Badge>
+                      );
+                    })}
+                  </div>
                 ) : (
-                  <span className="text-[#64748B]">Tidak dicantumkan</span>
+                  <p className="mt-1 text-sm text-[#64748B]">
+                    Tidak dicantumkan
+                  </p>
                 )}
-              </p>
+              </div>
 
               <h3 className="text-sm font-semibold text-[#0F172A] mt-5">
                 Foto properti
@@ -281,15 +302,32 @@ export default function Submissions() {
               </div>
 
               <label className="block text-sm font-semibold text-[#0F172A] mt-6">
-                Alasan penolakan
+                Alasan penolakan (catatan untuk pemilik)
                 <textarea
                   className="mt-2 w-full rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] p-3 text-sm font-normal text-[#0F172A] placeholder:text-[#64748B] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 transition-colors"
                   rows={3}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Wajib diisi jika pengajuan ditolak"
+                  placeholder="Wajib diisi jika ditolak (contoh: kriteria fasilitas A tidak masuk akal / perlu diperbaiki)"
                 />
               </label>
+
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {REJECT_NOTE_TEMPLATES.map((template) => (
+                  <button
+                    key={template}
+                    type="button"
+                    onClick={() =>
+                      setReason((prev) =>
+                        prev.trim() ? `${prev.trim()}; ${template}` : template
+                      )
+                    }
+                    className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] hover:bg-[#EEF2F7] px-2.5 py-1 text-[11px] text-[#475569] transition-colors cursor-pointer"
+                  >
+                    + {template}
+                  </button>
+                ))}
+              </div>
 
               {actionError && (
                 <div className="mt-3">

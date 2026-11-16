@@ -1,6 +1,22 @@
 import Kos from '../models/Kos.js';
 import { cascadeDeleteKosRecords } from './deletionService.js';
 
+function normalizeFacilities(list) {
+    if (!Array.isArray(list)) return list;
+    const seen = new Set();
+    const result = [];
+    for (const raw of list) {
+        const cleaned = String(raw || '').trim().replace(/\s+/g, ' ');
+        if (!cleaned) continue;
+        const normalizedKey = cleaned.toLowerCase();
+        if (seen.has(normalizedKey)) continue;
+        seen.add(normalizedKey);
+        result.push(cleaned.slice(0, 40));
+        if (result.length >= 25) break;
+    }
+    return result;
+}
+
 export const getOwnerKosService = async (ownerId) => {
     return await Kos.find({ ownerId });
 };
@@ -8,6 +24,9 @@ export const getOwnerKosService = async (ownerId) => {
 export const createKosService = async (ownerId, data) => {
     const newKos = new Kos({
         ...data,
+        ...(data.fasilitas !== undefined
+            ? { fasilitas: normalizeFacilities(data.fasilitas) }
+            : {}),
         ownerId,
         jumlahKamarTersedia: data.jumlahKamar,
         statusVerifikasi: 'Pending'
@@ -16,9 +35,13 @@ export const createKosService = async (ownerId, data) => {
 };
 
 export const updateKosService = async (ownerId, kosId, data) => {
+    const payload =
+        data?.fasilitas !== undefined
+            ? { ...data, fasilitas: normalizeFacilities(data.fasilitas) }
+            : data;
     return await Kos.findOneAndUpdate(
         { _id: kosId, ownerId },
-        { $set: data },
+        { $set: payload },
         { new: true }
     );
 };

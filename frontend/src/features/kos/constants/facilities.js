@@ -1,0 +1,16 @@
+export const AVAILABLE_FACILITIES = [
+  'WiFi Cepat',
+  'AC',
+  'Kamar Mandi Dalam',
+  'Kasur Springbed',
+  'Lemari Pakaian',
+  'Meja Belajar',
+  'Parkir Motor',
+  'Parkir Mobil',
+  'Dapur Bersama',
+  'CCTV 24 Jam',
+  'Keamanan 24 Jam',
+  'Mesin Cuci Bersama',
+  'Water Heater',
+  'Listrik Termasuk',
+];

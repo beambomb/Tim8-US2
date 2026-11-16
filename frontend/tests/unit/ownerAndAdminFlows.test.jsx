@@ -10,7 +10,9 @@ import { useAdminSubmissions } from "@/features/admin/hooks/useAdminSubmissions"
 import { useAdminUsers } from "@/features/admin/hooks/useAdminUsers";
 import { useAdminKos } from "@/features/admin/hooks/useAdminKos";
 import AdminKosPage from "@/app/admin/kos/page";
+import SubmissionsPage from "@/app/admin/submissions/page";
 import KosMapPicker from "@/features/owner/components/KosMapPicker";
+import OwnerKosForm from "@/features/owner/components/OwnerKosForm";
 import { ownerService } from "@/features/owner/services/ownerService";
 import { adminService } from "@/features/admin/services/adminService";
 import { useAuth } from "@/context/AuthContext";
@@ -341,5 +343,55 @@ describe("Owner and Admin dashboard UI & hook flows", () => {
     await waitFor(() =>
       expect(onChangeCoords).toHaveBeenCalledWith(-7.801234, 110.391234)
     );
+  });
+
+  it("OwnerKosForm lets owners add custom facilities and AdminSubmissions highlights them with quick reject notes", async () => {
+    const { result: formHook } = renderHook(() => useOwnerKosForm());
+    let addRes;
+    act(() => {
+      addRes = formHook.current.handleAddCustomFacility("  Balkon Pribadi  ");
+    });
+    expect(addRes).toEqual({ added: true, value: "Balkon Pribadi" });
+    expect(formHook.current.formData.fasilitas).toContain("Balkon Pribadi");
+
+    act(() => {
+      addRes = formHook.current.handleAddCustomFacility("balkon pribadi");
+    });
+    expect(addRes.added).toBe(false);
+
+    render(<OwnerKosForm />);
+    const input = screen.getByLabelText(/Fasilitas tambahan lainnya/i);
+    fireEvent.change(input, { target: { value: "Smart Lock" } });
+    fireEvent.click(screen.getByRole("button", { name: "+ Tambah Fasilitas" }));
+    expect(screen.getByText("Smart Lock")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Hapus fasilitas Smart Lock" }));
+    expect(screen.queryByText("Smart Lock")).not.toBeInTheDocument();
+
+    vi.spyOn(adminService, "getSubmissions").mockResolvedValue({
+      data: [{ _id: "sub-9", nama: "Kos Baru", lokasi: "Sleman", tipe: "Putra", harga: 1000000 }],
+    });
+    vi.spyOn(adminService, "getSubmissionDetail").mockResolvedValue({
+      data: {
+        _id: "sub-9",
+        nama: "Kos Baru",
+        lokasi: "Sleman",
+        tipe: "Putra",
+        harga: 1000000,
+        fasilitas: ["AC", "Balkon Pribadi"],
+      },
+    });
+
+    render(<SubmissionsPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Tinjau pengajuan" }));
+    expect(await screen.findByText("Balkon Pribadi (Tambahan)")).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "+ Kriteria/fasilitas tambahan tidak masuk akal atau tidak sesuai standar kos",
+      })
+    );
+    expect(
+      screen.getByPlaceholderText(/Wajib diisi jika ditolak/i)
+    ).toHaveValue("Kriteria/fasilitas tambahan tidak masuk akal atau tidak sesuai standar kos");
   });
 });
