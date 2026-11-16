@@ -127,10 +127,12 @@ describe("frontend feature services unit tests", () => {
     await adminService.approveSubmission("k5");
     await adminService.rejectSubmission("k5", "Foto buram");
     await adminService.getUsers();
+    await adminService.getAllKos({ status: "Approved" });
     await adminService.updateUserRole("u5", "PEMILIK_KOS");
 
     expect(api.get).toHaveBeenCalledWith("/admin/stats");
     expect(api.get).toHaveBeenCalledWith("/admin/submissions/k5");
+    expect(api.get).toHaveBeenCalledWith("/admin/kos", { params: { status: "Approved" } });
     expect(api.patch).toHaveBeenCalledWith("/admin/submissions/k5/approve");
     expect(api.patch).toHaveBeenCalledWith("/admin/submissions/k5/reject", { alasanPenolakan: "Foto buram" });
     expect(api.patch).toHaveBeenCalledWith("/admin/users/u5/role", { role: "PEMILIK_KOS" });
