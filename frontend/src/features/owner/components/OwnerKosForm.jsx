@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useOwnerKosForm } from '../hooks/useOwnerKosForm';
+import KosMapPicker from './KosMapPicker';
 
 const AVAILABLE_FACILITIES = [
   'WiFi Cepat',
@@ -236,6 +237,14 @@ export default function OwnerKosForm({
             ))}
           </div>
         </div>
+
+        {/* Interactive OpenStreetMap Pin Picker */}
+        <KosMapPicker
+          latitude={formData.latitude}
+          longitude={formData.longitude}
+          addressQuery={formData.lokasi}
+          onChangeCoords={(lat, lng) => handlePresetCoords({ lat, lng })}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
