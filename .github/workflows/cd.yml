@@ -83,7 +83,7 @@ jobs:
         run: node --test tests/e2e/*.e2e.test.mjs
 
   deploy-backend:
-    name: Deploy Backend (Railway / Render Webhook)
+    name: Deploy Backend (Hugging Face / Railway / Render)
     needs: deploy-guard
     environment: ${{ needs.deploy-guard.outputs.target_environment }}
     runs-on: ubuntu-latest
@@ -93,17 +93,30 @@ jobs:
 
       - name: Validate Backend Deploy Secret & Trigger Deploy
         env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
           RAILWAY_HOOK: ${{ secrets.RAILWAY_DEPLOY_WEBHOOK_URL }}
           RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          if [ -n "$RAILWAY_HOOK" ]; then
+          if [ -n "$HF_TOKEN" ] && [ -n "$HF_SPACE_REPO" ]; then
+            echo "Deploying backend to Hugging Face Space ($HF_SPACE_REPO)..."
+            DEPLOY_DIR=$(mktemp -d)
+            cp -R backend/. "$DEPLOY_DIR"/
+            rm -rf "$DEPLOY_DIR/node_modules" "$DEPLOY_DIR/tests" "$DEPLOY_DIR"/.env*
+            git -C "$DEPLOY_DIR" init -b main
+            git -C "$DEPLOY_DIR" config user.name "github-actions[bot]"
+            git -C "$DEPLOY_DIR" config user.email "github-actions[bot]@users.noreply.github.com"
+            git -C "$DEPLOY_DIR" add -A
+            git -C "$DEPLOY_DIR" commit -m "chore(deploy): sync backend (${GITHUB_SHA::7})"
+            git -C "$DEPLOY_DIR" push --force "https://hf:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO}" main
+          elif [ -n "$RAILWAY_HOOK" ]; then
             echo "Triggering Railway backend deployment..."
             curl --fail --show-error -sS -X POST "$RAILWAY_HOOK"
           elif [ -n "$RENDER_HOOK" ]; then
             echo "Triggering Render backend deployment..."
             curl --fail --show-error -sS -X POST "$RENDER_HOOK"
           else
-            echo "::error::RAILWAY_DEPLOY_WEBHOOK_URL atau RENDER_DEPLOY_HOOK_URL belum dikonfigurasi di GitHub Environment/Repository Secrets."
+            echo "::error::Set (HF_TOKEN + HF_SPACE_REPO), RAILWAY_DEPLOY_WEBHOOK_URL, atau RENDER_DEPLOY_HOOK_URL di GitHub Secrets."
             exit 1
           fi
 
