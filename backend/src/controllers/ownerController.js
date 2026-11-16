@@ -1,5 +1,5 @@
 import * as ownerService from '../services/ownerService.js';
-import { uploadMultipleFiles } from '../services/uploadService.js';
+import { uploadMultipleFiles, deleteCloudinaryImages } from '../services/uploadService.js';
 
 export const getOwnerKos = async (req, res) => {
   try {
@@ -172,6 +172,8 @@ export const deleteKosImage = async (req, res) => {
     if (!updatedKos) {
       return res.status(404).json({ success: false, message: 'Kos tidak ditemukan atau tidak memiliki akses' });
     }
+
+    await deleteCloudinaryImages([imageUrl]);
 
     res.status(200).json({
       success: true,

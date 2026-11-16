@@ -6,6 +6,7 @@ import {
   Panel,
   Loading,
   Alert,
+  Button,
   roleLabel,
 } from "@/components/admin/UI";
 import { useAuth } from "@/context/AuthContext";
@@ -35,6 +36,7 @@ export default function Users() {
     message,
     refetch,
     updateRole,
+    deleteUser,
   } = useAdminUsers();
 
   const handleRoleChange = async (targetUser, nextRole) => {
@@ -47,6 +49,17 @@ export default function Users() {
       return;
     }
     await updateRole(targetUser, nextRole);
+  };
+
+  const handleDeleteUser = async (targetUser) => {
+    if (
+      !window.confirm(
+        `Hapus pengguna ${targetUser.nama} (${targetUser.email})?\n\nSeluruh riwayat chat, notifikasi, booking, ulasan, favorit, dan properti kos milik pengguna ini juga akan dihapus permanen.`
+      )
+    ) {
+      return;
+    }
+    await deleteUser(targetUser);
   };
 
   return (
@@ -95,7 +108,8 @@ export default function Users() {
                 <th className="py-3 pr-4 font-medium">Pengguna</th>
                 <th className="py-3 pr-4 font-medium">Nomor HP</th>
                 <th className="py-3 pr-4 font-medium">Terdaftar</th>
-                <th className="py-3 font-medium">Role</th>
+                <th className="py-3 pr-4 font-medium">Role</th>
+                <th className="py-3 font-medium text-right">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -131,7 +145,7 @@ export default function Users() {
                         <span className="text-[#64748B]">-</span>
                       )}
                     </td>
-                    <td className="py-4">
+                    <td className="py-4 pr-4">
                       <select
                         aria-label={`Role ${u.nama}`}
                         value={u.role}
@@ -146,6 +160,17 @@ export default function Users() {
                       {isSelf && (
                         <p className="text-xs text-[#475569] mt-1">Akun Anda</p>
                       )}
+                    </td>
+                    <td className="py-4 text-right whitespace-nowrap">
+                      <Button
+                        variant="dangerOutline"
+                        size="sm"
+                        aria-label={`Hapus ${u.nama}`}
+                        disabled={busy === u._id || isSelf}
+                        onClick={() => handleDeleteUser(u)}
+                      >
+                        {busy === u._id ? "Menghapus..." : "Hapus"}
+                      </Button>
                     </td>
                   </tr>
                 );

@@ -1,5 +1,9 @@
 import Kos from '../models/Kos.js';
 import User from '../models/User.js';
+import {
+    cascadeDeleteKosRecords,
+    cascadeDeleteUserById,
+} from './deletionService.js';
 
 export const fetchPendingSubmissions = async () => {
     return await Kos.find({ statusVerifikasi: 'Pending' })
@@ -58,6 +62,17 @@ export const fetchAllKos = async (filters = {}) => {
     return await Kos.find(query)
         .populate('ownerId', 'nama email noHp')
         .sort({ createdAt: -1 });
+};
+
+export const deleteKosById = async (id) => {
+    const deletedKos = await Kos.findByIdAndDelete(id);
+    if (!deletedKos) return null;
+    await cascadeDeleteKosRecords(deletedKos);
+    return deletedKos;
+};
+
+export const deleteUserById = async (id) => {
+    return await cascadeDeleteUserById(id);
 };
 
 export const fetchAdminStats = async () => {

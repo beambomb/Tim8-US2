@@ -88,6 +88,28 @@ export function useAdminUsers() {
     }
   }, []);
 
+  const deleteUser = useCallback(async (targetUser) => {
+    if (!targetUser?._id) {
+      return { success: false };
+    }
+    setBusy(targetUser._id);
+    setError("");
+    setMessage("");
+    try {
+      await adminService.deleteUser(targetUser._id);
+      setUsers((old) => old.filter((item) => item._id !== targetUser._id));
+      setMessage(
+        `Pengguna ${targetUser.nama} beserta seluruh chat dan data terkait berhasil dihapus.`
+      );
+      return { success: true };
+    } catch (err) {
+      setError(getErrorMessage(err, "Gagal menghapus pengguna."));
+      return { success: false };
+    } finally {
+      setBusy("");
+    }
+  }, []);
+
   return {
     users,
     filtered,
@@ -99,5 +121,6 @@ export function useAdminUsers() {
     message,
     refetch,
     updateRole,
+    deleteUser,
   };
 }

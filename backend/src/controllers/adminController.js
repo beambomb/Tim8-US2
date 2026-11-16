@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import * as adminService from '../services/adminService.js';
 import { createNotificationService } from '../services/notificationService.js';
 
@@ -97,6 +98,48 @@ export const getAllKos = async (req, res) => {
         const { status, tipe, search } = req.query || {};
         const kosList = await adminService.fetchAllKos({ status, tipe, search });
         res.status(200).json({ success: true, total: kosList.length, data: kosList });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const deleteKos = async (req, res) => {
+    try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'ID kos tidak valid' });
+        }
+        const deleted = await adminService.deleteKosById(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Kos beserta data dan foto terkait berhasil dihapus',
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const deleteUser = async (req, res) => {
+    try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'ID pengguna tidak valid' });
+        }
+        if (String(req.params.id) === String(req.user?.id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Tidak dapat menghapus akun Anda sendiri',
+            });
+        }
+        const deleted = await adminService.deleteUserById(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan' });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Pengguna beserta seluruh chat dan data terkait berhasil dihapus',
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

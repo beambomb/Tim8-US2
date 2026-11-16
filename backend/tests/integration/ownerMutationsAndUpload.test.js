@@ -4,7 +4,12 @@ import { PassThrough } from "node:stream";
 import mongoose from "mongoose";
 import cloudinary from "../../config/cloudinary.js";
 import { createApp } from "../../src/app.js";
+import Booking from "../../src/models/Booking.js";
+import Favorite from "../../src/models/Favorite.js";
 import Kos from "../../src/models/Kos.js";
+import Message from "../../src/models/Message.js";
+import Notification from "../../src/models/Notification.js";
+import Review from "../../src/models/Review.js";
 import { startTestServer, signTestToken } from "../helpers/httpHelper.js";
 
 describe("ownerRoutes mutations and image upload HTTP integration tests", () => {
@@ -42,7 +47,15 @@ describe("ownerRoutes mutations and image upload HTTP integration tests", () => 
         alasanPenolakan: null,
       }),
     }));
-    t.mock.method(Kos, "findOneAndDelete", async () => ({ _id: kosId }));
+    t.mock.method(Kos, "findOneAndDelete", async () => ({
+      _id: kosId,
+      fotoUrls: [],
+    }));
+    t.mock.method(Booking, "deleteMany", async () => ({ deletedCount: 1 }));
+    t.mock.method(Review, "deleteMany", async () => ({ deletedCount: 0 }));
+    t.mock.method(Favorite, "deleteMany", async () => ({ deletedCount: 1 }));
+    t.mock.method(Notification, "deleteMany", async () => ({ deletedCount: 0 }));
+    t.mock.method(Message, "updateMany", async () => ({ modifiedCount: 0 }));
 
     const server = await startTestServer(createApp());
     try {

@@ -129,6 +129,8 @@ describe("frontend feature services unit tests", () => {
     await adminService.getUsers();
     await adminService.getAllKos({ status: "Approved" });
     await adminService.updateUserRole("u5", "PEMILIK_KOS");
+    await adminService.deleteUser("u5");
+    await adminService.deleteKos("k5");
 
     expect(api.get).toHaveBeenCalledWith("/admin/stats");
     expect(api.get).toHaveBeenCalledWith("/admin/submissions/k5");
@@ -136,6 +138,8 @@ describe("frontend feature services unit tests", () => {
     expect(api.patch).toHaveBeenCalledWith("/admin/submissions/k5/approve");
     expect(api.patch).toHaveBeenCalledWith("/admin/submissions/k5/reject", { alasanPenolakan: "Foto buram" });
     expect(api.patch).toHaveBeenCalledWith("/admin/users/u5/role", { role: "PEMILIK_KOS" });
+    expect(api.delete).toHaveBeenCalledWith("/admin/users/u5");
+    expect(api.delete).toHaveBeenCalledWith("/admin/kos/k5");
 
     await reviewService.getReviews("k5");
     await reviewService.submitReview("k5", { rating: 5, komentar: "Top" });

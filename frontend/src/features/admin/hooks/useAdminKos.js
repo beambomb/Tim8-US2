@@ -16,7 +16,9 @@ export function useAdminKos() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [tipeFilter, setTipeFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState("");
   const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
@@ -100,6 +102,27 @@ export function useAdminKos() {
     setSelected(null);
   }, []);
 
+  const deleteKos = useCallback(async (targetKos) => {
+    if (!targetKos?._id) return { success: false };
+    setDeletingId(targetKos._id);
+    setError("");
+    setActionMessage("");
+    try {
+      await adminService.deleteKos(targetKos._id);
+      setKosList((old) => old.filter((item) => item._id !== targetKos._id));
+      setSelected((prev) => (prev?._id === targetKos._id ? null : prev));
+      setActionMessage(
+        `Kos ${targetKos.nama} beserta booking, ulasan, favorit, notifikasi, dan foto terkait berhasil dihapus.`
+      );
+      return { success: true };
+    } catch (err) {
+      setError(getErrorMessage(err, "Gagal menghapus properti kos."));
+      return { success: false };
+    } finally {
+      setDeletingId("");
+    }
+  }, []);
+
   return {
     kosList,
     filtered,
@@ -111,10 +134,13 @@ export function useAdminKos() {
     tipeFilter,
     setTipeFilter,
     loading,
+    deletingId,
     error,
+    actionMessage,
     selected,
     refetch,
     openDetail,
     closeDetail,
+    deleteKos,
   };
 }

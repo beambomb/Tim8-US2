@@ -6,6 +6,9 @@ import Kos from "../../src/models/Kos.js";
 import User from "../../src/models/User.js";
 import Favorite from "../../src/models/Favorite.js";
 import Notification from "../../src/models/Notification.js";
+import Booking from "../../src/models/Booking.js";
+import Message from "../../src/models/Message.js";
+import Review from "../../src/models/Review.js";
 import { startTestServer, signTestToken } from "../helpers/httpHelper.js";
 
 describe("adminRoutes, favoriteRoutes, and notificationRoutes integration tests", () => {
@@ -146,6 +149,38 @@ describe("adminRoutes, favoriteRoutes, and notificationRoutes integration tests"
       assert.equal(capturedKosQuery.statusVerifikasi, "Approved");
       assert.equal(capturedKosQuery.tipe, "Putri");
       assert.equal(Array.isArray(capturedKosQuery.$or), true);
+
+      t.mock.method(Kos, "findByIdAndDelete", async () => ({ _id: kosId, fotoUrls: [] }));
+      t.mock.method(Booking, "deleteMany", async () => ({ deletedCount: 1 }));
+      t.mock.method(Review, "deleteMany", async () => ({ deletedCount: 1 }));
+      t.mock.method(Favorite, "deleteMany", async () => ({ deletedCount: 1 }));
+      t.mock.method(Notification, "deleteMany", async () => ({ deletedCount: 1 }));
+      t.mock.method(Message, "updateMany", async () => ({ modifiedCount: 1 }));
+
+      const deleteKosRes = await fetch(`${server.baseUrl}/api/admin/kos/${kosId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      assert.equal(deleteKosRes.status, 200);
+
+      const selfDeleteRes = await fetch(`${server.baseUrl}/api/admin/users/admin-1`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      assert.equal(selfDeleteRes.status, 400);
+
+      t.mock.method(User, "findById", () => ({
+        select: async () => ({ _id: userId, nama: "User Hapus", email: "hapus@mail.com" }),
+      }));
+      t.mock.method(Kos, "find", async () => []);
+      t.mock.method(Message, "deleteMany", async () => ({ deletedCount: 3 }));
+      t.mock.method(User, "findByIdAndDelete", async () => ({ _id: userId }));
+
+      const deleteUserRes = await fetch(`${server.baseUrl}/api/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      assert.equal(deleteUserRes.status, 200);
     } finally {
       await server.close();
     }

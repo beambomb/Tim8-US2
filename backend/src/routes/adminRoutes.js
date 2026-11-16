@@ -7,6 +7,8 @@ import {
     updateUserRole,
     getAllUsers,
     getAllKos,
+    deleteKos,
+    deleteUser,
     getAdminStats,
 } from '../controllers/adminController.js';
 import { verifyToken, authorizeRoles } from '../middleware/authMiddleware.js';
@@ -22,9 +24,11 @@ router.get('/stats', getAdminStats);
 // Manajemen Data Pengguna
 router.get('/users', getAllUsers);
 router.patch('/users/:id/role', updateUserRole);
+router.delete('/users/:id', deleteUser);
 
 // Daftar Seluruh Kos Terdaftar
 router.get('/kos', getAllKos);
+router.delete('/kos/:id', deleteKos);
 
 // Verifikasi Pengajuan Kos
 router.get('/submissions', getPendingSubmissions);

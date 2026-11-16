@@ -40,4 +40,14 @@ export const adminService = {
     const response = await api.patch(`/admin/users/${userId}/role`, { role });
     return response.data;
   },
+
+  async deleteUser(userId) {
+    const response = await api.delete(`/admin/users/${userId}`);
+    return response.data;
+  },
+
+  async deleteKos(kosId) {
+    const response = await api.delete(`/admin/kos/${kosId}`);
+    return response.data;
+  },
 };

@@ -1,4 +1,5 @@
 import Kos from '../models/Kos.js';
+import { cascadeDeleteKosRecords } from './deletionService.js';
 
 export const getOwnerKosService = async (ownerId) => {
     return await Kos.find({ ownerId });
@@ -23,7 +24,10 @@ export const updateKosService = async (ownerId, kosId, data) => {
 };
 
 export const deleteKosService = async (ownerId, kosId) => {
-    return await Kos.findOneAndDelete({ _id: kosId, ownerId });
+    const deletedKos = await Kos.findOneAndDelete({ _id: kosId, ownerId });
+    if (!deletedKos) return null;
+    await cascadeDeleteKosRecords(deletedKos);
+    return deletedKos;
 };
 
 export const updateAvailabilityService = async (ownerId, kosId, jumlahKamarTersedia) => {

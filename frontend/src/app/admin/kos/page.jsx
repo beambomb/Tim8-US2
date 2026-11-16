@@ -57,12 +57,27 @@ export default function AdminKosPage() {
     tipeFilter,
     setTipeFilter,
     loading,
+    deletingId,
     error,
+    actionMessage,
     selected,
     refetch,
     openDetail,
     closeDetail,
+    deleteKos,
   } = useAdminKos();
+
+  const handleDeleteKos = async (targetKos) => {
+    if (!targetKos) return;
+    if (
+      !window.confirm(
+        `Hapus properti ${targetKos.nama}?\n\nSeluruh booking, ulasan, favorit, notifikasi, dan foto Cloudinary milik kos ini juga akan dihapus permanen.`
+      )
+    ) {
+      return;
+    }
+    await deleteKos(targetKos);
+  };
 
   const detailMeta = getVerificationMeta(selected?.statusVerifikasi);
   const detailCreatedAt = formatDate(selected?.createdAt);
@@ -142,6 +157,12 @@ export default function AdminKosPage() {
           </span>
         </div>
       </div>
+
+      {actionMessage && (
+        <div className="mb-4">
+          <Alert type="success">{actionMessage}</Alert>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4">
@@ -382,6 +403,13 @@ export default function AdminKosPage() {
                   Lihat halaman publik
                 </Link>
               )}
+              <Button
+                variant="danger"
+                disabled={deletingId === selected._id}
+                onClick={() => handleDeleteKos(selected)}
+              >
+                {deletingId === selected._id ? "Menghapus..." : "Hapus kos"}
+              </Button>
               <Button variant="outline" onClick={closeDetail}>
                 Tutup
               </Button>

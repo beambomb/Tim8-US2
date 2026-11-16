@@ -10,6 +10,7 @@ import { useAdminSubmissions } from "@/features/admin/hooks/useAdminSubmissions"
 import { useAdminUsers } from "@/features/admin/hooks/useAdminUsers";
 import { useAdminKos } from "@/features/admin/hooks/useAdminKos";
 import AdminKosPage from "@/app/admin/kos/page";
+import KosMapPicker from "@/features/owner/components/KosMapPicker";
 import { ownerService } from "@/features/owner/services/ownerService";
 import { adminService } from "@/features/admin/services/adminService";
 import { useAuth } from "@/context/AuthContext";
@@ -245,9 +246,15 @@ describe("Owner and Admin dashboard UI & hook flows", () => {
       );
     });
     expect(usersHook.current.users[0].role).toBe("PEMILIK_KOS");
+
+    vi.spyOn(adminService, "deleteUser").mockResolvedValue({ success: true });
+    await act(async () => {
+      await usersHook.current.deleteUser({ _id: "u-2", nama: "Sinta" });
+    });
+    expect(usersHook.current.users.some((u) => u._id === "u-2")).toBe(false);
   });
 
-  it("AdminKosPage and useAdminKos list all registered kos, filter by status/query, and show detail modal", async () => {
+  it("AdminKosPage and useAdminKos list all registered kos, filter, inspect detail, and delete kos", async () => {
     vi.spyOn(adminService, "getAllKos").mockResolvedValue({
       data: [
         {
@@ -276,6 +283,8 @@ describe("Owner and Admin dashboard UI & hook flows", () => {
         },
       ],
     });
+    vi.spyOn(adminService, "deleteKos").mockResolvedValue({ success: true });
+    vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const { result: kosHook } = renderHook(() => useAdminKos());
     await waitFor(() => expect(kosHook.current.loading).toBe(false));
@@ -286,6 +295,11 @@ describe("Owner and Admin dashboard UI & hook flows", () => {
     });
     expect(kosHook.current.filtered).toHaveLength(1);
     expect(kosHook.current.filtered[0].nama).toBe("Kos Sentosa");
+
+    await act(async () => {
+      await kosHook.current.deleteKos({ _id: "kos-2", nama: "Kos Sentosa" });
+    });
+    expect(kosHook.current.kosList.some((k) => k._id === "kos-2")).toBe(false);
 
     render(<AdminKosPage />);
     expect(await screen.findByText("Kos Harmoni")).toBeInTheDocument();
@@ -302,6 +316,30 @@ describe("Owner and Admin dashboard UI & hook flows", () => {
     expect(screen.getByRole("link", { name: "Chat pemilik" })).toHaveAttribute(
       "href",
       "/admin/chat/own-1?kosId=kos-1"
+    );
+  });
+
+  it("KosMapPicker searches address via Nominatim and invokes coordinate callback", async () => {
+    const onChangeCoords = vi.fn();
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => [{ lat: "-7.801234", lon: "110.391234" }],
+    });
+
+    render(
+      <KosMapPicker
+        latitude={-7.766}
+        longitude={110.374}
+        addressQuery="Jl. Warungboto No. 1"
+        onChangeCoords={onChangeCoords}
+      />
+    );
+
+    expect(screen.getByLabelText("Peta interaktif pilih lokasi kos")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cocokkan Alamat" }));
+
+    await waitFor(() =>
+      expect(onChangeCoords).toHaveBeenCalledWith(-7.801234, 110.391234)
     );
   });
 });
