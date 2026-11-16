@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import mongoose from "mongoose";
+import { getCorsOptions } from "./config/env.js";
 
 // Routes
 import ownerRoutes from "./routes/ownerRoutes.js";
@@ -20,7 +22,7 @@ export function createApp() {
 
   // Middlewares
   app.use(helmet());
-  app.use(cors());
+  app.use(cors(getCorsOptions()));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
@@ -40,6 +42,16 @@ export function createApp() {
     res.json({
       success: true,
       message: "API CariKos & Chat Real-Time berhasil berjalan!",
+    });
+  });
+
+  app.get("/api/health", (req, res) => {
+    const dbReady = mongoose.connection.readyState === 1;
+    res.status(200).json({
+      success: true,
+      status: "ok",
+      uptime: Math.round(process.uptime()),
+      database: dbReady ? "connected" : "disconnected",
     });
   });
 

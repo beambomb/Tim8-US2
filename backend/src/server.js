@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import dotenv from "dotenv";
 import connectDB from "../config/db.js";
 import { createApp } from "./app.js";
+import { getCorsOptions, validateRuntimeEnv } from "./config/env.js";
 
 // Service
 import { saveMessageService } from "./services/chatService.js";
@@ -14,10 +15,7 @@ const server = http.createServer(app);
 
 // Inisialisasi Socket.IO
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
+  cors: getCorsOptions(),
 });
 
 app.set("io", io);
@@ -66,7 +64,8 @@ io.on("connection", (socket) => {
   });
 });
 
-// Hubungkan database terlebih dahulu, baru jalankan server
+// Validasi environment & hubungkan database terlebih dahulu, baru jalankan server
+validateRuntimeEnv();
 await connectDB();
 
 server.listen(PORT, () => {

@@ -20,6 +20,49 @@ describe("backend app base HTTP integration tests", () => {
     }
   });
 
+  it("GET /api/health returns structured server and database status", async () => {
+    const server = await startTestServer(createApp());
+    try {
+      const response = await fetch(`${server.baseUrl}/api/health`);
+      const body = await response.json();
+
+      assert.equal(response.status, 200);
+      assert.equal(body.success, true);
+      assert.equal(body.status, "ok");
+      assert.match(body.database, /^(connected|disconnected)$/);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("CORS_ORIGIN allowlist permits allowed origin and blocks disallowed origin with 403", async () => {
+    const prevCors = process.env.CORS_ORIGIN;
+    process.env.CORS_ORIGIN = "https://carikos.vercel.app";
+
+    const server = await startTestServer(createApp());
+    try {
+      const allowedRes = await fetch(`${server.baseUrl}/api/health`, {
+        headers: { Origin: "https://carikos.vercel.app" },
+      });
+      assert.equal(allowedRes.status, 200);
+      assert.equal(
+        allowedRes.headers.get("access-control-allow-origin"),
+        "https://carikos.vercel.app"
+      );
+
+      const blockedRes = await fetch(`${server.baseUrl}/api/health`, {
+        headers: { Origin: "https://untrusted.example.com" },
+      });
+      const blockedBody = await blockedRes.json();
+      assert.equal(blockedRes.status, 403);
+      assert.equal(blockedBody.success, false);
+    } finally {
+      await server.close();
+      if (prevCors === undefined) delete process.env.CORS_ORIGIN;
+      else process.env.CORS_ORIGIN = prevCors;
+    }
+  });
+
   it("GET unknown endpoint returns structured 404 JSON", async () => {
     const server = await startTestServer(createApp());
     try {

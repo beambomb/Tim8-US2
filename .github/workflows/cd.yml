@@ -1,8 +1,7 @@
 name: CariKos Continuous Deployment (CD)
 
-# Continuous Deployment is intentionally guarded:
-# Automatic deployment directly on every push is disabled while features are under active development.
-# Deployment can be triggered manually via workflow_dispatch or automatically when a verified release tag (v*.*.*) is pushed.
+# Continuous Deployment dipicu secara manual via workflow_dispatch (staging/production)
+# atau otomatis ketika release tag (v*.*.*) di-push ke repository.
 
 on:
   workflow_dispatch:
@@ -23,25 +22,117 @@ on:
     tags:
       - 'v*.*.*'
 
+concurrency:
+  group: cd-${{ github.event.inputs.target_environment || 'production' }}
+  cancel-in-progress: false
+
 jobs:
   deploy-guard:
-    name: Deployment Gatekeeper & Validation
+    name: Deployment Gatekeeper & Full Test Verification
+    runs-on: ubuntu-latest
+    outputs:
+      target_environment: ${{ steps.ctx.outputs.target_env }}
+      is_production: ${{ steps.ctx.outputs.is_prod }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Determine Target Environment
+        id: ctx
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/v* ]]; then
+            TARGET_ENV="production"
+          else
+            TARGET_ENV="${{ github.event.inputs.target_environment || 'staging' }}"
+          fi
+          echo "target_env=${TARGET_ENV}" >> "$GITHUB_OUTPUT"
+          if [[ "${TARGET_ENV}" == "production" ]]; then
+            echo "is_prod=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prod=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Target Environment: ${TARGET_ENV}"
+
+      - name: Setup Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Backend & Frontend Dependencies
+        run: |
+          npm ci --prefix backend
+          npm ci --prefix frontend
+
+      - name: Verify Backend Syntax & Tests
+        working-directory: ./backend
+        run: |
+          for file in $(find src -name "*.js"); do
+            node --check "$file"
+          done
+          npm test
+
+      - name: Verify Frontend Tests & Lint
+        working-directory: ./frontend
+        run: |
+          npm test
+          npm run lint
+
+      - name: Run Full-Stack E2E Tests
+        run: node --test tests/e2e/*.e2e.test.mjs
+
+  deploy-backend:
+    name: Deploy Backend (Railway / Render Webhook)
+    needs: deploy-guard
+    environment: ${{ needs.deploy-guard.outputs.target_environment }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Log Deployment Context
+      - name: Validate Backend Deploy Secret & Trigger Deploy
+        env:
+          RAILWAY_HOOK: ${{ secrets.RAILWAY_DEPLOY_WEBHOOK_URL }}
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          echo "Triggered by: ${{ github.actor }}"
-          echo "Event: ${{ github.event_name }}"
-          echo "Ref: ${{ github.ref }}"
-          echo "Target Environment: ${{ github.event.inputs.target_environment || 'production (tag release)' }}"
-          echo "Deployment safety checks passed."
+          if [ -n "$RAILWAY_HOOK" ]; then
+            echo "Triggering Railway backend deployment..."
+            curl --fail --show-error -sS -X POST "$RAILWAY_HOOK"
+          elif [ -n "$RENDER_HOOK" ]; then
+            echo "Triggering Render backend deployment..."
+            curl --fail --show-error -sS -X POST "$RENDER_HOOK"
+          else
+            echo "::error::RAILWAY_DEPLOY_WEBHOOK_URL atau RENDER_DEPLOY_HOOK_URL belum dikonfigurasi di GitHub Environment/Repository Secrets."
+            exit 1
+          fi
+
+      - name: Verify Live Backend Healthcheck (Optional)
+        env:
+          HEALTH_URL: ${{ secrets.BACKEND_HEALTHCHECK_URL }}
+        run: |
+          if [ -z "$HEALTH_URL" ]; then
+            echo "BACKEND_HEALTHCHECK_URL tidak diset; lewati post-deploy healthcheck."
+            exit 0
+          fi
+          TARGET="${HEALTH_URL%/}/api/health"
+          echo "Polling health endpoint: $TARGET"
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error "$TARGET"; then
+              echo ""
+              echo "Backend healthcheck OK pada percobaan ke-${attempt}."
+              exit 0
+            fi
+            echo "Menunggu backend siap (${attempt}/12)..."
+            sleep 10
+          done
+          echo "::error::Backend healthcheck gagal setelah 120 detik."
+          exit 1
 
   deploy-frontend:
-    name: Deploy Frontend (Vercel / Production Host)
-    needs: deploy-guard
+    name: Deploy Frontend (Vercel)
+    needs: [deploy-guard, deploy-backend]
+    environment: ${{ needs.deploy-guard.outputs.target_environment }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -50,56 +141,56 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20.x
+      - name: Setup Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build Verification
-        run: npm run build
+      - name: Validate Frontend Secrets & Public API URL
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api' }}
-          NEXT_PUBLIC_SOCKET_URL: ${{ secrets.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000' }}
-
-      - name: Deployment Execution
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         run: |
-          echo "Frontend build verified successfully."
-          echo "Deploying to hosting provider (e.g., Vercel, Netlify, or VPS)..."
-          # Example with Vercel CLI (uncomment when VERCEL_TOKEN and project ID are configured in repository secrets):
-          # npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::VERCEL_TOKEN, VERCEL_ORG_ID, dan VERCEL_PROJECT_ID wajib diset di GitHub Secrets."
+            exit 1
+          fi
+          if [ -z "$NEXT_PUBLIC_API_URL" ]; then
+            echo "::error::NEXT_PUBLIC_API_URL wajib diset di GitHub Secrets sebelum build deploy."
+            exit 1
+          fi
+          if [[ "$NEXT_PUBLIC_API_URL" == *"localhost"* || "$NEXT_PUBLIC_API_URL" == *"127.0.0.1"* ]]; then
+            echo "::error::NEXT_PUBLIC_API_URL tidak boleh mengarah ke localhost untuk deployment (${NEXT_PUBLIC_API_URL})."
+            exit 1
+          fi
 
-  deploy-backend:
-    name: Deploy Backend (Railway / Render / VPS)
-    needs: deploy-guard
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./backend
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Backend Syntax Verification
-        run: node --check src/server.js
-
-      - name: Deployment Execution
+      - name: Install Dependencies & Verify Next.js Build
         run: |
-          echo "Backend syntax verified successfully."
-          echo "Deploying to backend provider (e.g., Railway, Render, or Docker VPS)..."
-          # Example with Railway CLI or webhook trigger (uncomment when secrets are configured):
-          # curl -X POST ${{ secrets.RAILWAY_DEPLOY_WEBHOOK_URL }}
+          npm ci
+          npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_SOCKET_URL: ${{ secrets.NEXT_PUBLIC_SOCKET_URL }}
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_SOCKET_URL: ${{ secrets.NEXT_PUBLIC_SOCKET_URL }}
+          IS_PROD: ${{ needs.deploy-guard.outputs.is_production }}
+        run: |
+          if [ "$IS_PROD" = "true" ]; then
+            npx vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+            npx vercel build --prod --token="$VERCEL_TOKEN"
+            npx vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+          else
+            npx vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+            npx vercel build --token="$VERCEL_TOKEN"
+            npx vercel deploy --prebuilt --token="$VERCEL_TOKEN"
+          fi

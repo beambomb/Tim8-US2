@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { getJwtSecret } from "../config/env.js";
 
 export const verifyToken = (req, res, next) => {
   let token;
@@ -8,11 +9,11 @@ export const verifyToken = (req, res, next) => {
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
+    const jwtSecret = getJwtSecret();
     try {
       // Memisahkan kata 'Bearer' dan mengambil tokennya saja
       token = req.headers.authorization.split(" ")[1];
 
-      const jwtSecret = process.env.JWT_SECRET || "rahasia_jwt_carikos_123";
       const decoded = jwt.verify(token, jwtSecret);
 
       req.user = decoded;

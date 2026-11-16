@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { getJwtSecret } from "../config/env.js";
 
 export const register = async (req, res) => {
   try {
@@ -56,7 +57,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Kredensial tidak valid" });
     }
 
-    const jwtSecret = process.env.JWT_SECRET || "rahasia_jwt_carikos_123";
+    const jwtSecret = getJwtSecret();
     const token = jwt.sign({ id: user._id, role: user.role }, jwtSecret, {
       expiresIn: "1d",
     });
