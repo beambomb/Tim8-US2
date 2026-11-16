@@ -27,6 +27,8 @@ import {
 } from '../../src/services/deletionService.js';
 
 const ENV_KEYS = [
+  'BREVO_API_KEY',
+  'BREVO_SENDER_EMAIL',
   'SMTP_HOST',
   'SMTP_PORT',
   'SMTP_SECURE',
@@ -90,11 +92,42 @@ describe('emailService, cloudinary cleanup, and cascade deletion unit tests', ()
       tipe: 'BOOKING_STATUS',
     });
 
-    assert.deepEqual(sent, { sent: true, messageId: 'msg-123' });
+    assert.deepEqual(sent, { sent: true, messageId: 'msg-123', provider: 'smtp' });
     assert.equal(capturedMail.to, 'penerima@mail.com');
     assert.match(capturedMail.subject, /^\[CariKos\] Booking Disetujui/);
     assert.equal(capturedMail.html.includes('<script>'), false);
     assert.equal(capturedMail.html.includes('&lt;script&gt;'), true);
+
+    delete process.env.GMAIL_USER;
+    delete process.env.GMAIL_APP_PASSWORD;
+    process.env.BREVO_API_KEY = 'xkeysib-test-123';
+    process.env.BREVO_SENDER_EMAIL = 'CariKos <sender@carikos.id>';
+
+    let brevoFetchCall = null;
+    t.mock.method(globalThis, 'fetch', async (url, init) => {
+      brevoFetchCall = { url, init: { ...init, body: JSON.parse(init.body) } };
+      return new Response(JSON.stringify({ messageId: 'brevo-msg-1' }), { status: 201 });
+    });
+
+    const brevoSent = await sendNotificationEmail({
+      to: 'pencari@mail.com',
+      recipientName: 'Andi',
+      judul: 'Kos Disetujui',
+      pesan: 'Selamat bergabung.',
+      tipe: 'KOS_VERIFIKASI',
+    });
+
+    assert.deepEqual(brevoSent, {
+      sent: true,
+      messageId: 'brevo-msg-1',
+      provider: 'brevo-api',
+    });
+    assert.equal(brevoFetchCall.url, 'https://api.brevo.com/v3/smtp/email');
+    assert.equal(brevoFetchCall.init.headers['api-key'], 'xkeysib-test-123');
+    assert.deepEqual(brevoFetchCall.init.body.sender, {
+      name: 'CariKos',
+      email: 'sender@carikos.id',
+    });
   });
 
   it('createNotificationService sends email best-effort without failing when email throws', async (t) => {

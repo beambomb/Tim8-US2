@@ -12,11 +12,31 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function parseSender(rawFrom, fallbackName = 'CariKos') {
+  const trimmed = String(rawFrom || '').trim();
+  const match = trimmed.match(/^(.+?)\s*<([^>]+)>$/);
+  if (match) {
+    return {
+      name: match[1].replace(/^["']|["']$/g, '').trim() || fallbackName,
+      email: match[2].trim(),
+    };
+  }
+  return { name: fallbackName, email: trimmed };
+}
+
 /**
- * Resolve free/standard SMTP configuration from environment variables.
- * Supports any SMTP provider (Brevo free tier, Mailtrap, Resend SMTP, or Gmail App Password).
+ * Resolve email provider configuration from environment variables.
+ * Prefers Brevo HTTPS API (works on hosts blocking SMTP ports like Hugging Face Spaces)
+ * and falls back to standard SMTP (Brevo SMTP / Gmail App Password).
  */
 export function getEmailConfig() {
+  const brevoApiKey = (process.env.BREVO_API_KEY || '').trim();
+  const brevoSender = (
+    process.env.BREVO_SENDER_EMAIL ||
+    process.env.SMTP_FROM ||
+    process.env.SMTP_USER ||
+    ''
+  ).trim();
   const user = (process.env.SMTP_USER || process.env.GMAIL_USER || '').trim();
   const pass = (process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || '').trim();
   const host = (
@@ -30,12 +50,12 @@ export function getEmailConfig() {
       : port === 465;
   const from = (process.env.SMTP_FROM || user || 'noreply@carikos.local').trim();
 
-  return { host, port, secure, user, pass, from };
+  return { brevoApiKey, brevoSender, host, port, secure, user, pass, from };
 }
 
 export function isEmailConfigured() {
-  const { host, user, pass } = getEmailConfig();
-  return Boolean(host && user && pass);
+  const { brevoApiKey, brevoSender, host, user, pass } = getEmailConfig();
+  return Boolean((brevoApiKey && parseSender(brevoSender).email) || (host && user && pass));
 }
 
 export function resetEmailTransporter() {
@@ -63,8 +83,8 @@ function getTransporter(config) {
 }
 
 /**
- * Send a transactional notification email via configured SMTP transport.
- * Skips cleanly when SMTP credentials are not configured.
+ * Send a transactional notification email via Brevo HTTPS API or configured SMTP transport.
+ * Skips cleanly when email credentials are not configured.
  */
 export async function sendNotificationEmail({
   to,
@@ -78,7 +98,6 @@ export async function sendNotificationEmail({
   }
 
   const config = getEmailConfig();
-  const transporter = getTransporter(config);
   const greeting = recipientName ? `Halo ${recipientName},` : 'Halo,';
   const subject = `[CariKos] ${judul}`;
   const text = `${greeting}\n\n${pesan}\n\n--\nCariKos`;
@@ -93,6 +112,34 @@ export async function sendNotificationEmail({
     </div>
   `.trim();
 
+  if (config.brevoApiKey && parseSender(config.brevoSender).email) {
+    const sender = parseSender(config.brevoSender);
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': config.brevoApiKey,
+      },
+      body: JSON.stringify({
+        sender,
+        to: [{ email: to, name: recipientName || to }],
+        subject,
+        textContent: text,
+        htmlContent: html,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => '');
+      throw new Error(`Brevo API error (${response.status}): ${errorBody}`);
+    }
+
+    const result = await response.json().catch(() => ({}));
+    return { sent: true, messageId: result?.messageId || null, provider: 'brevo-api' };
+  }
+
+  const transporter = getTransporter(config);
   const info = await transporter.sendMail({
     from: config.from,
     to,
@@ -101,5 +148,5 @@ export async function sendNotificationEmail({
     html,
   });
 
-  return { sent: true, messageId: info?.messageId || null };
+  return { sent: true, messageId: info?.messageId || null, provider: 'smtp' };
 }
