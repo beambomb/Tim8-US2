@@ -10,6 +10,7 @@ import {
   approveBookingService,
   createBookingService,
 } from "../../src/services/bookingService.js";
+import { createReviewService } from "../../src/services/reviewService.js";
 import { startTestServer, signTestToken } from "../helpers/httpHelper.js";
 
 describe("Complex security & boundary edge-case tests", () => {
@@ -291,6 +292,32 @@ describe("Complex security & boundary edge-case tests", () => {
         }),
       });
       assert.equal(blankMsg.status, 400);
+
+      await assert.rejects(
+        () =>
+          createReviewService(adminId, new mongoose.Types.ObjectId().toString(), {
+            rating: 5,
+            komentar: "    ",
+          }),
+        (err) => err.statusCode === 400 && /wajib diisi/i.test(err.message)
+      );
+
+      const ownerToken = signTestToken({ id: adminId, role: "PEMILIK_KOS" });
+      const badUploadForm = new FormData();
+      badUploadForm.append(
+        "images",
+        new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" }),
+        "kamar.png"
+      );
+      const badUploadKosId = await fetch(
+        `${server.baseUrl}/api/owner/kos/invalid-id/images`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${ownerToken}` },
+          body: badUploadForm,
+        }
+      );
+      assert.equal(badUploadKosId.status, 400);
     } finally {
       await server.close();
     }

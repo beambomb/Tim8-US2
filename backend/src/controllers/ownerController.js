@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import * as ownerService from '../services/ownerService.js';
 import { uploadMultipleFiles, deleteCloudinaryImages } from '../services/uploadService.js';
 
@@ -153,6 +154,10 @@ export const uploadKosImages = async (req, res) => {
     const { id } = req.params;
     const files = req.files || (req.file ? [req.file] : []);
 
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'ID kos tidak valid' });
+    }
+
     if (!files || files.length === 0) {
       return res.status(400).json({ success: false, message: 'Tidak ada file gambar yang diunggah' });
     }
@@ -161,6 +166,7 @@ export const uploadKosImages = async (req, res) => {
     const updatedKos = await ownerService.addKosImagesService(ownerId, id, urls);
 
     if (!updatedKos) {
+      await deleteCloudinaryImages(urls).catch(() => {});
       return res.status(404).json({ success: false, message: 'Kos tidak ditemukan atau tidak memiliki akses' });
     }
 

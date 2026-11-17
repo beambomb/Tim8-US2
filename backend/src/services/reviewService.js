@@ -3,7 +3,8 @@ import Review from '../models/Review.js';
 import Kos from '../models/Kos.js';
 
 export const createReviewService = async (userId, kosId, { rating, komentar }) => {
-  if (!rating || !komentar) {
+  const trimmedComment = String(komentar || '').trim();
+  if (!rating || !trimmedComment) {
     const error = new Error('Rating dan komentar wajib diisi');
     error.statusCode = 400;
     throw error;
@@ -40,7 +41,7 @@ export const createReviewService = async (userId, kosId, { rating, komentar }) =
     userId,
     kosId,
     rating: numericRating,
-    komentar: komentar.trim(),
+    komentar: trimmedComment,
   });
 
   return await review.populate('userId', 'nama');
