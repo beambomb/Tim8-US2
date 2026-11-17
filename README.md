@@ -61,74 +61,96 @@ carikos/
 ├── CariKos.postman_collection.json
 ├── docs/
 │   ├── progress-be.md             # Status kelengkapan backend & endpoints
-│   └── progress-fe.md             # Status implementasi frontend per rute
+│   ├── progress-fe.md             # Status implementasi frontend per rute
+│   └── testing.md                 # Dokumentasi cakupan Unit, Integration, & E2E tests
 ├── pembagian-tugas.md             # Matriks distribusi tugas 4 anggota tim
 ├── backend/
 │   ├── config/
-│   │   ├── cloudinary.js
-│   │   └── db.js
+│   │   ├── cloudinary.js          # Inisialisasi SDK Cloudinary (cloud storage foto)
+│   │   └── db.js                  # Koneksi MongoDB Atlas via Mongoose
 │   ├── src/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── resetDatabase.js
-│   │   ├── seedAdmin.js
-│   │   └── server.js
+│   │   ├── config/
+│   │   │   └── env.js             # Validasi env vars (JWT secret guard, CORS allowlist)
+│   │   ├── controllers/           # HTTP Request/Response handler (9 controller)
+│   │   ├── middleware/            # verifyToken, authorizeRoles, & Multer upload filter
+│   │   ├── models/                # 7 Mongoose schema (User, Kos, Booking, Favorite, Review, Message, Notification)
+│   │   ├── routes/                # Definisi endpoint REST API & pemasangan middleware
+│   │   ├── services/              # Business logic murni, Haversine, Brevo email, Cloudinary & cascade delete
+│   │   ├── app.js                 # Konfigurasi Express app, Helmet, CORS, & routes (tanpa .listen)
+│   │   ├── server.js              # Entry point HTTP server + Socket.IO real-time rooms
+│   │   ├── seedAdmin.js           # CLI seeder akun Administrator awal
+│   │   ├── resetDatabase.js       # CLI reset koleksi database pengujian
+│   │   └── smokeCheck.js          # CLI uji koneksi live ke MongoDB Atlas & Cloudinary
+│   ├── tests/
+│   │   ├── helpers/httpHelper.js  # Helper test server HTTP
+│   │   ├── unit/                  # Unit tests terisolasi (node:test)
+│   │   └── integration/           # Integration tests HTTP routes & edge cases
+│   ├── Dockerfile                 # Containerisasi backend
 │   ├── .env.example
-│   ├── package.json
-│   └── package-lock.json
+│   └── package.json
 ├── frontend/
+│   ├── public/images/             # Aset gambar kamar lokal (fallback & landing)
 │   ├── src/
-│   │   ├── app/                   # Next.js App Router (21 route pages)
-│   │   │   ├── admin/             # Rute Admin (dashboard, submissions, users)
-│   │   │   ├── auth/              # Rute Login & Register
-│   │   │   ├── bookings/          # Rute Riwayat Booking Pencari
-│   │   │   ├── chat/              # Rute Percakapan Real-time
-│   │   │   ├── favorites/         # Rute Kos Favorit
-│   │   │   ├── kos/               # Rute Katalog, Detail, & Nearby
-│   │   │   ├── owner/             # Rute Dashboard & Kelola Kos Pemilik
-│   │   │   ├── layout.jsx
-│   │   │   └── page.jsx           # Landing page
-│   │   ├── components/            # Presentational UI Components
-│   │   │   ├── providers/         # AppProviders (Auth & Socket context)
-│   │   │   ├── ui/                # Reusable UI components
-│   │   │   ├── Footer.jsx
-│   │   │   ├── HeroSection.jsx
-│   │   │   └── Navbar.jsx
-│   │   ├── context/               # Global state contexts
-│   │   │   ├── AuthContext.jsx
-│   │   │   └── SocketContext.jsx
-│   │   ├── features/              # Separation of Concerns (Logic & Services)
-│   │   │   ├── admin/             # hooks/useAdminSubmissions.js & services/adminService.js
-│   │   │   ├── auth/              # hooks/useAuthForm.js & services/authService.js
-│   │   │   ├── booking/           # hooks/useBookings.js & services/bookingService.js
-│   │   │   ├── chat/              # hooks/useChat.js & services/chatService.js
-│   │   │   ├── kos/               # hooks/useKosList.js, useKosDetail.js & services/kosService.js
-│   │   │   └── owner/             # hooks/useOwnerKos.js, useOwnerBookings.js & services/ownerService.js
-│   │   └── lib/                   # Shared client utilities
-│   │       ├── api.js             # Axios client dengan Bearer Token interceptor
-│   │       ├── socket.js          # Singleton WebSocket Socket.IO client
-│   │       └── utils.js           # Currency formatter, date helpers, cn utility
-│   ├── .env.local.example
+│   │   ├── app/                   # Next.js App Router (26 rute halaman)
+│   │   │   ├── admin/             # Portal Admin (dashboard, submissions, kos, users, chat/[userId])
+│   │   │   ├── auth/              # Login & Register (/auth/login, /auth/register)
+│   │   │   ├── bookings/          # Riwayat & pembatalan booking Pencari Kos
+│   │   │   ├── chat/              # Inbox & ruang chat real-time Pencari Kos
+│   │   │   ├── favorites/         # Daftar kos favorit (wishlist)
+│   │   │   ├── kos/               # Katalog filter & geospasial, nearby redirect, detail kos/[id]
+│   │   │   ├── owner/             # Portal Pemilik (dashboard, kos, tambah, edit, bookings, chat/[userId])
+│   │   │   ├── icon.svg           # Favicon logo CariKos
+│   │   │   ├── layout.jsx         # Root layout + AppProviders
+│   │   │   └── page.jsx           # Beranda publik dinamis
+│   │   ├── components/            # Komponen UI lintas halaman (Navbar, Footer, HeroSection, HeroKosMarquee, SupportButton, PortalShell, ConfirmModal, NavbarNotifications)
+│   │   ├── context/               # Global React Context (AuthContext & SocketContext)
+│   │   ├── data/mockKos.js        # Quick tags & fallback data beranda
+│   │   ├── features/              # Modul Feature-Based (3-Layer per domain: admin, auth, booking, chat, kos, owner, review)
+│   │   └── lib/                   # Shared utilities (api.js Axios interceptor, socket.js singleton, utils.js)
+│   ├── tests/
+│   │   ├── helpers/               # Setup Vitest, jsdom, & alias resolver
+│   │   ├── unit/                  # Unit tests komponen, hooks, services, & utils
+│   │   └── integration/           # Integration tests UI & API interceptor
 │   ├── next.config.mjs
-│   ├── package.json
-│   └── package-lock.json
+│   ├── vitest.config.mjs
+│   └── package.json
+├── tests/e2e/                     # Full-stack End-to-End tests (booking journey & Socket.IO chat)
 ├── .gitignore
 └── README.md
 ```
 
+### Mengapa Struktur Kode Disusun Seperti Ini?
+
+1. **Monorepo Terpisah (`backend/` & `frontend/`)**:
+   - Memungkinkan deployment independen (**Frontend di Vercel**, **Backend di VPS**) tanpa saling mengunci dependensi, sekaligus menjaga kode API dan UI terisolasi jelas.
+2. **Backend 4 Layer (`routes -> controllers -> services -> models`) + Pemisahan `app.js` & `server.js`**:
+   - **`routes/`** hanya memetakan URL & memasang middleware keamanan (`verifyToken`, `authorizeRoles`, `upload`).
+   - **`controllers/`** hanya membaca input HTTP (`req.params`, `req.query`, `req.body`) dan memformat respons JSON.
+   - **`services/`** menyimpan seluruh aturan bisnis (rumus Haversine, booking atomik, *cascade deletion*, email Brevo, upload Cloudinary). Dengan memisahkan `services/`, logika bisnis bisa diuji lewat **Unit Test** tanpa menyalakan server HTTP dan dipakai ulang oleh REST API maupun Socket.IO.
+   - **`app.js` vs `server.js`**: `app.js` mengekspor instance Express tanpa memanggil `.listen()`, sehingga **Integration Test** dapat menjalankan server uji di port acak tanpa bentrok port.
+3. **Frontend Next.js App Router (`src/app/`) + Feature-Based 3-Layer (`src/features/<domain>/`)**:
+   - **`src/app/`** murni menangani *routing* dan tata letak halaman sehingga file `page.jsx` tetap tipis.
+   - **`src/features/<domain>/`** mengelompokkan `services/` (panggilan Axios), `hooks/` (state, validasi, Socket.IO), dan `components/` (UI spesifik fitur) per domain. Anggota tim dapat bekerja paralel tanpa sering bentrok (*merge conflict*).
+   - **Shared Portal & Chat (`PortalShell`, `ChatInboxView`, `ChatRoomView`, `ConfirmModal`)**: Portal Pemilik & Admin memakai shell yang sama, sedangkan chat di ketiga peran memakai komponen chat yang sama agar tidak ada duplikasi kode.
+
+## Pembagian Tugas Tim (Backend & Frontend)
+
+| Anggota | NIM | Fokus Backend (BE) | Fokus Frontend (FE) |
+|---|---|---|---|
+| **Johannes De Deo Dimas Aryobimo** | `24/540351/TK/59948` | **Analisis Kebutuhan**: Merancang skema data, logika pencarian & filter kos, kalkulasi jarak geospasial (Haversine + cache pencarian kampus), manajemen kos pemilik, upload/hapus foto Cloudinary, notifikasi email otomatis (Brevo), & *cascade deletion*. | **Anggota 2 (Beranda, Katalog, Peta & Portal Pemilik)**: Beranda dinamis, katalog & filter radius kampus, Portal Pemilik (dashboard, kelola kos, form tambah/edit + fasilitas kustom, pemilih peta Leaflet `KosMapPicker`), serta direktori `/admin/kos`. |
+| **Desi D Simamora** | `23/514990/TK/56564` | **Analisis Fitur**: Menyusun aturan hak akses 3 peran, sistem autentikasi JWT & bcrypt, simpan kampus acuan per akun (`savedCampuses`), middleware RBAC, serta logika Portal Admin (statistik, verifikasi kos, direktori kos, & manajemen pengguna). | **Anggota 1 (Auth, Sesi & Portal Admin)**: Klien API Axios terpusat, manajemen sesi login (`AuthContext`), halaman Masuk & Daftar, Portal Admin (dashboard, verifikasi kos + template alasan penolakan, manajemen pengguna), & `ConfirmModal` UI. |
+| **Bintang Daneswara** | `24/541599/TK/60084` | **Daftar API**: Menyusun kontrak spesifikasi endpoint REST API, logika pengajuan & pembatalan booking dengan pengurangan kuota kamar atomik, serta fitur wishlist kos favorit dengan proteksi anti-duplikasi. | **Anggota 3 (Detail Kos, Booking & Favorit)**: Halaman Detail Kos, modal pengajuan sewa (durasi fleksibel bulanan/tahunan + estimasi biaya), halaman Riwayat Booking pencari, kelola booking masuk pemilik, & halaman Favorit. |
+| **Javier Yazid Janadi** | `24/545752/TK/60737` | **Hasil Pemanggilan API**: Pengujian koleksi Postman, server WebSocket Socket.IO, penyimpanan riwayat obrolan & auto-routing bantuan Admin (`/api/chat/support`), sistem notifikasi in-app, serta rating bintang & ulasan kos. | **Anggota 4 (Chat Real-Time, Notifikasi & Review)**: Klien Socket.IO browser, tampilan obrolan lintas portal (`/chat`, `/owner/chat`, `/admin/chat`), tombol Pusat Bantuan (`SupportButton`), Admin chat initiator, lonceng notifikasi + badge/popup chat masuk, & komponen ulasan. |
+
 ## Teknologi yang Digunakan
 
-- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS v4, Axios, Socket.IO Client
-- **Backend:** Node.js, Express.js (ES Modules)
-- **Database:** MongoDB, Mongoose
+- **Frontend:** Next.js 16.4.5 (App Router, Turbopack), React 19.3.0, Tailwind CSS v4, Axios, Socket.IO Client, Leaflet + OpenStreetMap & Nominatim
+- **Backend:** Node.js 22.x, Express.js 5.2.1 (ES Modules)
+- **Database:** MongoDB Atlas, Mongoose 9.10.1
 - **Autentikasi & Keamanan:** JSON Web Token (JWT), bcrypt, Helmet, CORS
-- **Komunikasi Real-time:** Socket.IO (WebSocket)
-- **Media & Penyimpanan Berkas:** Cloudinary API, Multer
-- **DevOps & CI/CD:** GitHub Actions (Automated CI Pipeline & Guarded CD Release)
-- **Tools Pengembangan:** Git, Visual Studio Code, Postman Collection Runner
+- **Komunikasi Real-time:** Socket.IO 4.8.3 (WebSocket)
+- **Media & Email:** Cloudinary API, Multer, Brevo Transactional HTTPS API / Nodemailer
+- **Pengujian & DevOps:** `node:test`, Vitest, React Testing Library, ESLint, GitHub Actions CI/CD, Vercel (FE), Linux VPS + Caddy DuckDNS (BE)
 
 ## Daftar Endpoint API
 
@@ -138,11 +160,14 @@ carikos/
 | POST | /api/auth/register | Registrasi akun baru (Pencari Kos atau Pemilik Kos) | Publik |
 | POST | /api/auth/login | Autentikasi login dan penerbitan token JWT | Publik |
 | GET | /api/auth/me | Mendapatkan informasi profil akun yang sedang login | Authenticated |
+| POST | /api/auth/campuses | Menyimpan titik kampus acuan custom ke profil akun | Authenticated |
+| DELETE | /api/auth/campuses/:campusId | Menghapus titik kampus tersimpan dari profil akun | Authenticated |
 
 ### 2. Eksplorasi dan Pencari Kos
 | Method | Endpoint | Deskripsi | Akses |
 |---|---|---|---|
-| GET | /api/kos | Menampilkan seluruh kos terverifikasi dengan opsi filter | Publik |
+| GET | /api/kos | Menampilkan seluruh kos terverifikasi dengan opsi filter & radius | Publik |
+| GET | /api/kos/campuses | Pencarian lokasi kampus acuan via Nominatim + kamus singkatan & cache | Publik |
 | GET | /api/kos/:id | Menampilkan rincian detail data kos tertentu | Publik |
 | GET | /api/kos/nearby | Menampilkan daftar kos terdekat berdasarkan radius (Haversine) | Publik |
 | GET | /api/favorites | Menampilkan daftar kos favorit pengguna | Pencari Kos |
@@ -165,7 +190,8 @@ carikos/
 | POST | /api/owner/kos/:id/submit | Mengajukan kos ke Administrator untuk verifikasi | Pemilik Kos |
 | GET | /api/owner/kos/:id/status | Mengecek status verifikasi pengajuan kos beserta catatannya | Pemilik Kos |
 | GET | /api/bookings/owner | Melihat daftar permohonan booking yang masuk untuk kos miliknya | Pemilik Kos |
-| PATCH | /api/bookings/:id/status | Menyetujui atau menolak permohonan sewa kamar | Pemilik Kos |
+| PATCH | /api/bookings/:id/approve | Menyetujui permohonan sewa kamar (stok kamar berkurang atomik -1) | Pemilik Kos |
+| PATCH | /api/bookings/:id/reject | Menolak permohonan sewa kamar | Pemilik Kos |
 
 ### 4. Administrator
 | Method | Endpoint | Deskripsi | Akses |
@@ -174,14 +200,18 @@ carikos/
 | GET | /api/admin/submissions/:id | Melihat rincian kos yang diajukan untuk verifikasi | Administrator |
 | PATCH | /api/admin/submissions/:id/approve | Menyetujui pengajuan kos agar dipublikasikan | Administrator |
 | PATCH | /api/admin/submissions/:id/reject | Menolak pengajuan kos disertai alasan penolakan | Administrator |
+| GET | /api/admin/kos | Mengambil seluruh daftar kos lintas status dengan filter | Administrator |
+| DELETE | /api/admin/kos/:id | Menghapus properti kos beserta data terkait & foto Cloudinary | Administrator |
 | GET | /api/admin/users | Melihat seluruh data pengguna terdaftar pada sistem | Administrator |
 | PATCH | /api/admin/users/:id/role | Mengubah peran (role) pengguna | Administrator |
+| DELETE | /api/admin/users/:id | Menghapus pengguna beserta riwayat chat & data terkait | Administrator |
 | GET | /api/admin/stats | Mengambil data statistik dan metrik operasional sistem | Administrator |
 
 ### 5. Media, Percakapan, dan Notifikasi
 | Method | Endpoint | Deskripsi | Akses |
 |---|---|---|---|
-| POST | /api/upload | Mengunggah berkas gambar kos ke Cloudinary | Authenticated |
+| POST | /api/owner/upload | Mengunggah berkas gambar kos ke Cloudinary (maks. 5 file) | Pemilik Kos |
+| GET | /api/chat/support | Mengambil kontak akun Administrator untuk layanan bantuan | Authenticated |
 | GET | /api/chat/inbox | Mengambil daftar percakapan aktif pengguna | Authenticated |
 | GET | /api/chat/:userId | Mengambil riwayat pesan spesifik dengan pengguna tertentu | Authenticated |
 | POST | /api/chat/send | Mengirim pesan teks melalui protokol HTTP alternatif | Authenticated |
@@ -329,10 +359,10 @@ Pertanyaan krusial dalam pengembangan web berskala tim: **"Apakah kita harus lan
 
 > **Keputusan Arsitektur: Auto-deploy langsung ke lingkungan produksi (Production CD) TIDAK diaktifkan saat ini demi menjaga keamanan sistem.**
 
-#### Alasan Teknis Mengapa Auto-Deploy ke Produksi Belum Aman Saat Ini:
-1. **Fitur Frontend Masih Bertahap**: Sebanyak 21 rute frontend saat ini baru memiliki halaman placeholder interaktif yang sedang diimplementasikan secara paralel oleh 4 anggota. Auto-deploy ke domain produksi akan menampilkan halaman setengah jadi ke pengguna publik.
+#### Alasan Teknis Penerapan Guarded Production Deployment:
+1. **Validasi Pengujian Berlapis**: Seluruh **59 Backend Tests**, **50 Frontend Tests**, **2 Full-Stack E2E Suites**, dan **ESLint** wajib lulus di `deploy-guard` sebelum rilis produksi diizinkan.
 2. **Dinamika Skema & Basis Data**: Perubahan relasi data MongoDB atau seeder yang belum tervalidasi dapat merusak konsistensi data di database produksi.
-3. **Kerahasiaan Kredensial Produksi**: Akses ke layanan produksi pihak ketiga (Cloudinary credentials, MongoDB Atlas cluster produksi, JWT production secret) harus dijaga ketat agar tidak terpapar selama masa pengujian.
+3. **Kerahasiaan Kredensial Produksi**: Akses ke layanan produksi pihak ketiga (Cloudinary credentials, MongoDB Atlas cluster produksi, Brevo API key, JWT production secret) harus dijaga ketat.
 
 #### Solusi Strategi CD yang Aman (Guarded Deployment)
 Alur rilis pada `.github/workflows/cd.yml` dirancang dengan 2 mekanisme pengaman:
@@ -346,3 +376,8 @@ Alur rilis pada `.github/workflows/cd.yml` dirancang dengan 2 mekanisme pengaman
 ## Laporan Milestone 1
 
 URL Google Drive laporan: https://drive.google.com/file/d/1BSTLPsp-7W-tnikiPJc8-RwNzqkbFWUf/view?usp=sharing
+
+## Link Video Kelompok
+
+URL Video: https://drive.google.com/file/d/1SWm7KwgLv2XkrEV5sLe_bk7NtFPoUUzs/view?usp=sharing
+
