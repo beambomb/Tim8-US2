@@ -326,13 +326,13 @@ Untuk memfasilitasi kolaborasi 4 anggota tim tanpa saling tumpang tindih (*merge
 
 | Domain Modul | Folder Modul | Service File | Custom Hook File | Penanggung Jawab |
 |---|---|---|---|---|
-| **Autentikasi & Akun** | `src/features/auth/` | `authService.js` | `useAuthForm.js` | Anggota 1 |
-| **Administrasi Platform** | `src/features/admin/` | `adminService.js` | `useAdminSubmissions.js` | Anggota 1 |
-| **Katalog Kos & Geospasial** | `src/features/kos/` | `kosService.js` | `useKosList.js`, `useKosDetail.js` | Anggota 2 |
-| **Pemilik Kos (CRUD)** | `src/features/owner/` | `ownerService.js` | `useOwnerKos.js` | Anggota 2 |
-| **Detail Kos, Booking & Favorit** | `src/features/booking/` | `bookingService.js` | `useBookings.js`, `useOwnerBookings.js` | Anggota 3 |
-| **Chat Real-time & Notifikasi** | `src/features/chat/` | `chatService.js` | `useChat.js` | Anggota 4 |
-| **Ulasan & Rating Bintang** | `src/features/review/` | `kosService.js` | `useKosDetail.js` | Anggota 4 |
+| **Autentikasi & Akun** | `src/features/auth/` | `authService.js` | `useAuthForm.js` | **Desi D Simamora** (Auth, Sesi & Admin) |
+| **Administrasi Platform** | `src/features/admin/` | `adminService.js` | `useAdminSubmissions.js`, `useAdminKos.js`, `useAdminUsers.js`, `useAdminDashboard.js` | **Desi D Simamora** (Auth, Sesi & Admin) |
+| **Katalog Kos & Geospasial** | `src/features/kos/` | `kosService.js` | `useKosList.js`, `useNearbyKos.js` | **Johannes De Deo Dimas Aryobimo** (Katalog, Peta & Pemilik) |
+| **Pemilik Kos (CRUD & Peta)** | `src/features/owner/` | `ownerService.js` | `useOwnerKos.js`, `useOwnerKosForm.js`, `useOwnerDashboard.js` | **Johannes De Deo Dimas Aryobimo** (Katalog, Peta & Pemilik) |
+| **Detail Kos, Booking & Favorit** | `src/features/booking/` | `bookingService.js`, `kosService.js` | `useKosDetail.js`, `useBookings.js`, `useOwnerBookings.js`, `useFavorites.js` | **Bintang Daneswara** (Detail, Booking & Favorit) |
+| **Chat Real-time & Notifikasi** | `src/features/chat/` | `chatService.js` | `useChat.js`, `useNotifications.js` | **Javier Yazid Janadi** (Chat, Notifikasi & Review) |
+| **Ulasan & Rating Bintang** | `src/features/review/` | `reviewService.js` | `useReview.js` | **Javier Yazid Janadi** (Chat, Notifikasi & Review) |
 
 ### Aturan Baku Pengembangan
 1. **Dilarang melakukan panggilan `api.get()` / `api.post()` langsung di dalam file `page.jsx`**. Panggilan API wajib melalui `features/<domain>/services/<domain>Service.js`.
