@@ -44,7 +44,6 @@ export default function OwnerKosManagementPage() {
     <div className="flex flex-col gap-6">
       <PortalPageHeader
         title="Inventaris dan Manajemen Properti Kos"
-        subtitle="Perbarui kuota kamar secara instan, pantau status kurasi tim verifikator, dan kelola listing properti."
         actions={
           <>
             <RefreshButton

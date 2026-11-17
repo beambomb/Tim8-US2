@@ -23,7 +23,6 @@ export default function OwnerDashboardPage() {
     <div className="flex flex-col gap-6">
       <PortalPageHeader
         title="Dashboard Analitik Pemilik"
-        subtitle="Pantau okupansi kamar, status verifikasi properti, dan permohonan booking masuk."
         actions={
           <>
             <RefreshButton

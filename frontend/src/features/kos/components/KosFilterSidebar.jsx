@@ -70,7 +70,7 @@ export default function KosFilterSidebar({
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between gap-2">
           <span className="text-[13px] font-medium text-[#475569]">
-            Radius Kampus / GPS
+            Radius Kampus
           </span>
           <button
             type="button"
@@ -114,7 +114,7 @@ export default function KosFilterSidebar({
                 : 'bg-[#F5F7FA] text-[#475569] hover:bg-[#EFF6FF]/60 hover:text-[#0F172A]'
             }`}
           >
-            Semua Lokasi (Tanpa Batas Radius)
+            Semua Lokasi
           </button>
 
           {campuses.map((campus) => {
