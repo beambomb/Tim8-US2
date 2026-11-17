@@ -13,6 +13,9 @@ export const getPendingSubmissions = async (req, res) => {
 
 export const getSubmissionDetail = async (req, res) => {
     try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'ID kos tidak valid' });
+        }
         const kos = await adminService.fetchSubmissionById(req.params.id);
         if (!kos) return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });
         res.status(200).json({ success: true, data: kos });
@@ -23,6 +26,9 @@ export const getSubmissionDetail = async (req, res) => {
 
 export const approveSubmission = async (req, res) => {
     try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'ID kos tidak valid' });
+        }
         const kos = await adminService.approveKosSubmission(req.params.id);
         if (!kos) return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });
 
@@ -45,11 +51,14 @@ export const approveSubmission = async (req, res) => {
 
 export const rejectSubmission = async (req, res) => {
     try {
-        const { alasanPenolakan } = req.body;
-        if (!alasanPenolakan) {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'ID kos tidak valid' });
+        }
+        const trimmedReason = String(req.body?.alasanPenolakan || '').trim();
+        if (!trimmedReason) {
             return res.status(400).json({ success: false, message: 'Alasan penolakan wajib diisi' });
         }
-        const kos = await adminService.rejectKosSubmission(req.params.id, alasanPenolakan);
+        const kos = await adminService.rejectKosSubmission(req.params.id, trimmedReason);
         if (!kos) return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });
 
         const io = req.app.get('io');
@@ -57,7 +66,7 @@ export const rejectSubmission = async (req, res) => {
             await createNotificationService(io, {
                 userId: kos.ownerId,
                 judul: 'Pengajuan Kos Ditolak',
-                pesan: `Pengajuan kos '${kos.nama}' ditolak. Alasan: ${alasanPenolakan}`,
+                pesan: `Pengajuan kos '${kos.nama}' ditolak. Alasan: ${trimmedReason}`,
                 tipe: 'KOS_VERIFIKASI',
                 metadata: { kosId: kos._id },
             });
@@ -71,6 +80,12 @@ export const rejectSubmission = async (req, res) => {
 
 export const updateUserRole = async (req, res) => {
     try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'ID pengguna tidak valid' });
+        }
+        if (String(req.params.id) === String(req.user?.id)) {
+            return res.status(400).json({ success: false, message: 'Tidak dapat mengubah role akun Anda sendiri' });
+        }
         const { role } = req.body;
         const validRoles = ['PENCARI_KOS', 'PEMILIK_KOS', 'ADMIN'];
         if (!validRoles.includes(role)) {

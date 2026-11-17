@@ -43,6 +43,7 @@ const ALLOWED_KOS_UPDATE_FIELDS = [
     'tipe',
     'fasilitas',
     'jumlahKamar',
+    'jumlahKamarTersedia',
     'fotoUrls',
 ];
 
@@ -52,6 +53,13 @@ export const updateKosService = async (ownerId, kosId, data) => {
         if (data?.[key] !== undefined) {
             payload[key] = key === 'fasilitas' ? normalizeFacilities(data[key]) : data[key];
         }
+    }
+    if (
+        payload.jumlahKamarTersedia !== undefined &&
+        payload.jumlahKamar !== undefined &&
+        Number(payload.jumlahKamarTersedia) > Number(payload.jumlahKamar)
+    ) {
+        payload.jumlahKamarTersedia = Number(payload.jumlahKamar);
     }
     return await Kos.findOneAndUpdate(
         { _id: kosId, ownerId },

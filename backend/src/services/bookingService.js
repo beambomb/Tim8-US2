@@ -4,8 +4,8 @@ import Kos from '../models/Kos.js';
 
 export const createBookingService = async (userId, body) => {
   const { kosId, tanggalMulai, catatan } = body;
-  const durasiBulan = body.durasiBulan || body.durasiSewa;
-  if (!kosId || !tanggalMulai || !durasiBulan) {
+  const durasiBulan = body.durasiBulan !== undefined ? body.durasiBulan : body.durasiSewa;
+  if (!kosId || !tanggalMulai || durasiBulan === undefined || durasiBulan === null || durasiBulan === '') {
     const error = new Error('Field kosId, tanggalMulai, dan durasiBulan wajib diisi');
     error.statusCode = 400;
     throw error;
@@ -43,6 +43,12 @@ export const createBookingService = async (userId, body) => {
   if (!kos || kos.statusVerifikasi !== 'Approved') {
     const error = new Error('Kos tidak ditemukan atau belum tersedia');
     error.statusCode = 404;
+    throw error;
+  }
+
+  if (kos.ownerId && String(kos.ownerId) === String(userId)) {
+    const error = new Error('Anda tidak dapat mengajukan booking untuk kos milik sendiri');
+    error.statusCode = 400;
     throw error;
   }
 
@@ -139,6 +145,12 @@ export const approveBookingService = async (ownerId, bookingId) => {
     throw error;
   }
 
+  if (!booking.kosId) {
+    const error = new Error('Kos untuk booking ini sudah tidak tersedia');
+    error.statusCode = 404;
+    throw error;
+  }
+
   if (booking.kosId.ownerId.toString() !== ownerId.toString()) {
     const error = new Error('Anda tidak memiliki hak akses untuk menyetujui booking kos ini');
     error.statusCode = 403;
@@ -190,6 +202,12 @@ export const rejectBookingService = async (ownerId, bookingId) => {
   const booking = await Booking.findById(bookingId).populate('kosId');
   if (!booking) {
     const error = new Error('Booking tidak ditemukan');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (!booking.kosId) {
+    const error = new Error('Kos untuk booking ini sudah tidak tersedia');
     error.statusCode = 404;
     throw error;
   }

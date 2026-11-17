@@ -37,14 +37,20 @@ io.on("connection", (socket) => {
   // Menerima event kirim pesan dari client
   socket.on("sendMessage", async (payload, callback) => {
     try {
-      const { senderId, receiverId, kosId, pesan } = payload;
-      if (!senderId || !receiverId || !pesan) {
+      const { senderId, receiverId, kosId, pesan } = payload || {};
+      const trimmedMessage = String(pesan || "").trim();
+      if (!senderId || !receiverId || !trimmedMessage) {
         if (callback) callback({ success: false, message: "Field tidak lengkap" });
         return;
       }
 
+      if (String(senderId) === String(receiverId)) {
+        if (callback) callback({ success: false, message: "Tidak dapat mengirim pesan ke diri sendiri" });
+        return;
+      }
+
       // Simpan pesan ke MongoDB
-      const savedMessage = await saveMessageService(senderId, receiverId, kosId, pesan);
+      const savedMessage = await saveMessageService(senderId, receiverId, kosId, trimmedMessage);
 
       // Pancarkan langsung ke penerima di room miliknya
       io.to(receiverId.toString()).emit("receiveMessage", savedMessage);

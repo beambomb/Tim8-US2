@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import * as chatService from '../services/chatService.js';
 
 export const getConversation = async (req, res) => {
@@ -5,7 +6,11 @@ export const getConversation = async (req, res) => {
     const currentUserId = req.user.id;
     const { userId: targetUserId } = req.params;
 
-    if (currentUserId === targetUserId) {
+    if (!mongoose.isValidObjectId(targetUserId)) {
+      return res.status(400).json({ success: false, message: 'ID pengguna tidak valid' });
+    }
+
+    if (String(currentUserId) === String(targetUserId)) {
       return res.status(400).json({ success: false, message: 'Tidak dapat membuka percakapan dengan diri sendiri' });
     }
 
@@ -53,16 +58,21 @@ export const sendMessageHttp = async (req, res) => {
   try {
     const senderId = req.user.id;
     const { receiverId, kosId, pesan } = req.body;
+    const trimmedMessage = String(pesan || '').trim();
 
-    if (!receiverId || !pesan) {
+    if (!receiverId || !trimmedMessage) {
       return res.status(400).json({ success: false, message: 'receiverId dan pesan wajib diisi' });
     }
 
-    if (senderId === receiverId) {
+    if (!mongoose.isValidObjectId(receiverId)) {
+      return res.status(400).json({ success: false, message: 'ID penerima tidak valid' });
+    }
+
+    if (String(senderId) === String(receiverId)) {
       return res.status(400).json({ success: false, message: 'Tidak dapat mengirim pesan ke diri sendiri' });
     }
 
-    const savedMessage = await chatService.saveMessageService(senderId, receiverId, kosId, pesan);
+    const savedMessage = await chatService.saveMessageService(senderId, receiverId, kosId, trimmedMessage);
 
     const io = req.app.get('io');
     if (io) {

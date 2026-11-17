@@ -3,6 +3,7 @@ import Kos from '../models/Kos.js';
 
 const EARTH_RADIUS_METERS = 6371e3;
 const toRad = (value) => (value * Math.PI) / 180;
+const escapeRegex = (value) => String(value).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export function computeDistanceMeters(userLat, userLng, kosLat, kosLng) {
   const lat1 = toRad(userLat);
@@ -35,37 +36,43 @@ export const getAllKosService = async (filters = {}) => {
     statusVerifikasi: 'Approved'
   };
 
-  if (hargaMin) {
-    filter.harga = {
-      ...filter.harga,
-      $gte: Number(hargaMin)
-    };
+  if (hargaMin !== undefined && hargaMin !== '') {
+    const minPrice = Number(hargaMin);
+    if (Number.isFinite(minPrice) && minPrice >= 0) {
+      filter.harga = {
+        ...filter.harga,
+        $gte: minPrice
+      };
+    }
   }
 
-  if (hargaMax) {
-    filter.harga = {
-      ...filter.harga,
-      $lte: Number(hargaMax)
-    };
+  if (hargaMax !== undefined && hargaMax !== '') {
+    const maxPrice = Number(hargaMax);
+    if (Number.isFinite(maxPrice) && maxPrice >= 0) {
+      filter.harga = {
+        ...filter.harga,
+        $lte: maxPrice
+      };
+    }
   }
 
-  if (lokasi) {
+  if (lokasi && String(lokasi).trim()) {
     filter.lokasi = {
-      $regex: lokasi,
+      $regex: escapeRegex(lokasi),
       $options: 'i'
     };
   }
 
-  if (tipe) {
+  if (tipe && String(tipe).trim()) {
     filter.tipe = {
-      $regex: tipe,
+      $regex: escapeRegex(tipe),
       $options: 'i'
     };
   }
 
-  if (fasilitas) {
+  if (fasilitas && String(fasilitas).trim()) {
     filter.fasilitas = {
-      $regex: fasilitas,
+      $regex: escapeRegex(fasilitas),
       $options: 'i'
     };
   }
