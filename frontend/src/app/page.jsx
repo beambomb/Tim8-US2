@@ -14,6 +14,15 @@ import { featuredKos } from "../data/mockKos";
 import { kosService } from "../features/kos/services/kosService";
 import { formatRupiah } from "../lib/utils";
 
+function extractShortArea(lokasi) {
+  if (!lokasi) return "Terverifikasi";
+  const parts = String(lokasi)
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  return parts[parts.length - 1] || lokasi;
+}
+
 function mapApiKosToHomeCard(kos) {
   return {
     id: kos._id,
@@ -22,8 +31,10 @@ function mapApiKosToHomeCard(kos) {
     tipe: kos.tipe || "Campur",
     harga: formatRupiah(kos.harga),
     periode: "/ bulan",
-    lokasi: kos.lokasi || "Sekitar Kampus",
-    jarak: kos.jarakKm ? `${kos.jarakKm} km dari Kampus` : "Sekitar Kampus",
+    lokasi: kos.lokasi || "Indonesia",
+    jarak: kos.jarakKm
+      ? `${kos.jarakKm} km dari Kampus`
+      : extractShortArea(kos.lokasi),
     rating: kos.rating ? Number(kos.rating).toFixed(1) : "5.0",
     ulasanCount: kos.ulasanCount ?? 0,
     sisaKamar: kos.jumlahKamarTersedia ?? 0,

@@ -12,16 +12,18 @@ export default function FeaturedCatalog({
 }) {
   const [selectedCategory, setSelectedCategory] = useState("Semua");
 
-  const filteredList = (items || featuredKos).filter(
-    (item) => selectedCategory === "Semua" || item.tipe === selectedCategory
-  );
+  const filteredList = (items || featuredKos)
+    .filter(
+      (item) => selectedCategory === "Semua" || item.tipe === selectedCategory
+    )
+    .slice(0, 3);
 
   return (
     <section id="katalog" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4" data-reveal="0">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0F172A]">
-            Rekomendasi Kos Sekitar Kampus
+            Rekomendasi Kos Terverifikasi
           </h2>
         </div>
 
