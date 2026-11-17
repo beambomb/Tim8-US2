@@ -38,10 +38,16 @@ export function SocketProvider({ children }) {
     try {
       const res = await chatService.getInbox();
       const list = Array.isArray(res?.data) ? res.data : [];
-      const totalUnread = list.reduce(
-        (sum, conv) => sum + (Number(conv?.unreadCount) || 0),
-        0
-      );
+      const totalUnread = list.reduce((sum, conv) => {
+        if (typeof conv?.unreadCount === "number") {
+          return sum + conv.unreadCount;
+        }
+        const isUnreadConversation =
+          conv?.lastMessage &&
+          !conv.lastMessage.isSender &&
+          conv.lastMessage.dibaca === false;
+        return sum + (isUnreadConversation ? 1 : 0);
+      }, 0);
       setUnreadMessages(totalUnread);
     } catch {
       // Ignore silent background unread fetch errors

@@ -85,6 +85,7 @@ export function useChat(targetUserId = null, kosId = null) {
           if (!ignore) {
             setMessages(Array.isArray(msgRes?.data) ? msgRes.data : []);
             setKosContext(kosRes?.data || kosRes || null);
+            refreshUnreadMessages?.();
           }
         } else {
           const res = await chatService.getInbox();
@@ -111,7 +112,7 @@ export function useChat(targetUserId = null, kosId = null) {
     return () => {
       ignore = true;
     };
-  }, [authLoading, isAuthenticated, currentUserId, targetUserId, kosId]);
+  }, [authLoading, isAuthenticated, currentUserId, targetUserId, kosId, refreshUnreadMessages]);
 
   const reconcileMessage = useCallback(
     (incomingMessage) => {
