@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export default function KosCard({ kos, isFavorite, onToggleFavorite }) {
   return (
@@ -97,7 +98,7 @@ export default function KosCard({ kos, isFavorite, onToggleFavorite }) {
 
           {/* Facility Tags */}
           <div className="flex flex-wrap gap-1.5 mt-3.5">
-            {kos.fasilitas.map((f, i) => (
+            {kos.fasilitas.slice(0, 4).map((f, i) => (
               <span
                 key={i}
                 className="text-[13px] font-medium bg-[#F1F5F9] text-[#334155] px-2.5 py-0.5 rounded"
@@ -123,12 +124,12 @@ export default function KosCard({ kos, isFavorite, onToggleFavorite }) {
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            className="px-4 py-2 rounded-xl text-[13px] font-bold bg-[#EFF6FF] hover:bg-[#1D4ED8] text-[#1D4ED8] hover:text-white transition-colors cursor-pointer shrink-0"
+          <Link
+            href={kos._id ? `/kos/${kos._id}` : "/kos"}
+            className="px-4 py-2 rounded-xl text-[13px] font-bold bg-[#EFF6FF] hover:bg-[#1D4ED8] text-[#1D4ED8] hover:text-white transition-colors shrink-0"
           >
             Lihat Kamar
-          </button>
+          </Link>
         </div>
       </div>
     </article>

@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useOptionalSocket } from "@/context/SocketContext";
 import NavbarNotifications from "./layout/NavbarNotifications";
 
 const ROLE_LABELS = {
@@ -63,6 +64,8 @@ const FOCUS_OUTLINE_CLASS =
 function NavbarContent() {
   const pathname = usePathname();
   const { user, isAuthenticated, loading, logout } = useAuth();
+  const socketCtx = useOptionalSocket();
+  const unreadMessages = socketCtx?.unreadMessages || 0;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef(null);
@@ -156,13 +159,18 @@ function NavbarContent() {
                     <Link
                       href={item.href}
                       aria-current={active ? "page" : undefined}
-                      className={`inline-flex items-center min-h-[28px] py-1.5 border-b-2 whitespace-nowrap transition-colors ${FOCUS_OUTLINE_CLASS} ${
+                      className={`inline-flex items-center gap-1.5 min-h-[28px] py-1.5 border-b-2 whitespace-nowrap transition-colors ${FOCUS_OUTLINE_CLASS} ${
                         active
                           ? "text-[#1D4ED8] border-[#1D4ED8] font-semibold"
                           : "text-[#475569] border-transparent hover:text-[#0F172A]"
                       }`}
                     >
-                      {item.label}
+                      <span>{item.label}</span>
+                      {item.label === "Pesan" && unreadMessages > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#1D4ED8] text-white text-[10px] font-bold leading-none tabular-nums">
+                          {unreadMessages > 99 ? "99+" : unreadMessages}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );

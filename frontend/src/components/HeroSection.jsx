@@ -165,6 +165,7 @@ export default function HeroSection({
   searchQuery,
   setSearchQuery,
   onSearchSubmit,
+  kosItems,
 }) {
   const { user, isAuthenticated } = useAuth();
   const [isFocused, setIsFocused] = useState(false);
@@ -238,7 +239,7 @@ export default function HeroSection({
           className="min-w-0 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:row-span-2 lg:self-center"
           data-reveal="120"
         >
-          <HeroKosMarquee />
+          <HeroKosMarquee items={kosItems} />
         </div>
 
         {/* Typewriter Search, Quick Tags & Role-Adaptive CTA */}

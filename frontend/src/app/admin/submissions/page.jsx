@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import RefreshButton from "@/components/ui/RefreshButton";
 import {
   Panel,
@@ -55,6 +56,7 @@ export default function Submissions() {
 
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
+  const [confirmApproveOpen, setConfirmApproveOpen] = useState(false);
 
   const handleOpen = (id) => {
     setReason("");
@@ -64,30 +66,32 @@ export default function Submissions() {
 
   const handleClose = () => {
     setReason("");
+    setConfirmApproveOpen(false);
     closeDetail();
+  };
+
+  const executeApprove = async () => {
+    if (!selected) return;
+    const result = await approveKos(selected._id);
+    if (result.success) {
+      setReason("");
+      setConfirmApproveOpen(false);
+      setMessage("Pengajuan berhasil disetujui.");
+    }
   };
 
   const handleDecision = async (type) => {
     if (!selected) return;
-    if (
-      type === "approve" &&
-      !window.confirm(`Setujui kos ${selected.nama}?`)
-    ) {
+    if (type === "approve") {
+      setConfirmApproveOpen(true);
       return;
     }
 
-    const result =
-      type === "approve"
-        ? await approveKos(selected._id)
-        : await rejectKos(selected._id, reason);
+    const result = await rejectKos(selected._id, reason);
 
     if (result.success) {
       setReason("");
-      setMessage(
-        type === "approve"
-          ? "Pengajuan berhasil disetujui."
-          : "Pengajuan berhasil ditolak."
-      );
+      setMessage("Pengajuan berhasil ditolak.");
     }
   };
 
@@ -357,6 +361,21 @@ export default function Submissions() {
           )
         )}
       </Modal>
+
+      <ConfirmModal
+        isOpen={confirmApproveOpen && Boolean(selected)}
+        title="Setujui Pengajuan Kos"
+        message={
+          selected
+            ? `Setujui kos "${selected.nama}" agar langsung tampil di katalog publik CariKos?`
+            : ""
+        }
+        confirmLabel="Ya, Setujui"
+        cancelLabel="Batal"
+        isLoading={!!actionLoadingId}
+        onConfirm={executeApprove}
+        onCancel={() => setConfirmApproveOpen(false)}
+      />
     </AdminShell>
   );
 }

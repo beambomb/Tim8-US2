@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useOptionalSocket } from "@/context/SocketContext";
 
 function BrandHeader({ brandHref, portalLabel }) {
   return (
@@ -47,6 +48,8 @@ function PortalNavLinks({
   onNavigate,
 }) {
   const pathname = usePathname();
+  const socketCtx = useOptionalSocket();
+  const unreadMessages = socketCtx?.unreadMessages || 0;
 
   return (
     <nav aria-label={navLabel} className="px-3 py-4 flex flex-col gap-1">
@@ -75,7 +78,12 @@ function PortalNavLinks({
             <span className={isActive ? "text-[var(--accent)]" : "text-[#475569]"}>
               {item.icon}
             </span>
-            <span>{item.label}</span>
+            <span className="flex-1">{item.label}</span>
+            {item.label === "Pesan" && unreadMessages > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#1D4ED8] text-white text-[11px] font-bold leading-none tabular-nums">
+                {unreadMessages > 99 ? "99+" : unreadMessages}
+              </span>
+            )}
           </Link>
         );
       })}

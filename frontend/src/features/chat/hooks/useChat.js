@@ -12,7 +12,7 @@ const extractEntityId = (value) => {
 };
 
 export function useChat(targetUserId = null, kosId = null) {
-  const { socket, isConnected } = useSocket();
+  const { socket, isConnected, refreshUnreadMessages } = useSocket();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const currentUserId = user?._id || user?.id;
 
@@ -45,12 +45,13 @@ export function useChat(targetUserId = null, kosId = null) {
       ]);
       setMessages(Array.isArray(msgRes?.data) ? msgRes.data : []);
       setKosContext(kosRes?.data || kosRes || null);
+      refreshUnreadMessages?.();
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal memuat riwayat pesan.');
     } finally {
       setIsLoading(false);
     }
-  }, [targetUserId, kosId, isAuthenticated, currentUserId]);
+  }, [targetUserId, kosId, isAuthenticated, currentUserId, refreshUnreadMessages]);
 
   useEffect(() => {
     let ignore = false;

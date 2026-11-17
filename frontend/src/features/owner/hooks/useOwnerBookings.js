@@ -9,6 +9,7 @@ export function useOwnerBookings() {
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState(null);
   const [processingId, setProcessingId] = useState(null);
 
   const fetchOwnerBookingsData = useCallback(async () => {
@@ -75,14 +76,7 @@ export function useOwnerBookings() {
   }, [fetchOwnerBookingsData]);
 
   const handleApprove = async (bookingId) => {
-    if (
-      !window.confirm(
-        "Apakah Anda yakin ingin menyetujui permohonan sewa ini? Stok kamar kosong kos akan berkurang 1."
-      )
-    ) {
-      return;
-    }
-
+    setActionError(null);
     setProcessingId(bookingId);
     try {
       const res = await bookingService.approveBooking(bookingId);
@@ -94,22 +88,17 @@ export function useOwnerBookings() {
             : item
         )
       );
+      return { success: true };
     } catch (err) {
-      alert(err.response?.data?.message || "Gagal menyetujui permohonan booking.");
+      setActionError(err.response?.data?.message || "Gagal menyetujui permohonan booking.");
+      return { success: false };
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleReject = async (bookingId) => {
-    if (
-      !window.confirm(
-        "Apakah Anda yakin ingin menolak permohonan sewa ini?"
-      )
-    ) {
-      return;
-    }
-
+    setActionError(null);
     setProcessingId(bookingId);
     try {
       const res = await bookingService.rejectBooking(bookingId);
@@ -121,8 +110,10 @@ export function useOwnerBookings() {
             : item
         )
       );
+      return { success: true };
     } catch (err) {
-      alert(err.response?.data?.message || "Gagal menolak permohonan booking.");
+      setActionError(err.response?.data?.message || "Gagal menolak permohonan booking.");
+      return { success: false };
     } finally {
       setProcessingId(null);
     }
@@ -139,6 +130,8 @@ export function useOwnerBookings() {
     bookings,
     isLoading,
     error,
+    actionError,
+    clearActionError: () => setActionError(null),
     processingId,
     handleApprove,
     handleReject,

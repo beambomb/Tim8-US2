@@ -1,9 +1,17 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { useOptionalSocket } from '@/context/SocketContext';
 import { useNotifications } from '@/features/chat/hooks/useNotifications';
 
 export default function NavbarNotifications() {
+  const { user } = useAuth();
+  const socketCtx = useOptionalSocket();
+  const latestChatAlert = socketCtx?.latestChatAlert || null;
+  const clearLatestChatAlert = socketCtx?.clearLatestChatAlert;
+
   const {
     notifications,
     unreadCount,
@@ -13,6 +21,21 @@ export default function NavbarNotifications() {
     markAllAsRead,
     isLoading,
   } = useNotifications();
+
+  useEffect(() => {
+    if (!latestChatAlert || !clearLatestChatAlert) return undefined;
+    const timer = window.setTimeout(() => {
+      clearLatestChatAlert();
+    }, 6000);
+    return () => window.clearTimeout(timer);
+  }, [latestChatAlert, clearLatestChatAlert]);
+
+  const chatBasePath =
+    user?.role === 'ADMIN'
+      ? '/admin/chat'
+      : user?.role === 'PEMILIK_KOS'
+        ? '/owner/chat'
+        : '/chat';
 
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -202,6 +225,42 @@ export default function NavbarNotifications() {
                 );
               })
             )}
+          </div>
+        </div>
+      )}
+
+      {latestChatAlert && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-4 left-4 sm:left-auto sm:right-6 z-50 max-w-xs w-full bg-[#FFFFFF] border border-[#CBD5E1] rounded-2xl shadow-lg p-3.5 flex items-start gap-3"
+        >
+          <div className="w-8 h-8 rounded-full bg-[#EFF6FF] text-[#1D4ED8] flex items-center justify-center shrink-0 font-bold text-xs">
+            Chat
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-[#0F172A] truncate">
+              Pesan baru dari {latestChatAlert.senderName}
+            </p>
+            <p className="text-xs text-[#475569] mt-0.5 line-clamp-2">
+              {latestChatAlert.pesan}
+            </p>
+            <div className="mt-2 flex items-center gap-3">
+              <Link
+                href={`${chatBasePath}/${latestChatAlert.senderId}`}
+                onClick={() => clearLatestChatAlert?.()}
+                className="text-xs font-semibold text-[#1D4ED8] hover:underline"
+              >
+                Buka Chat
+              </Link>
+              <button
+                type="button"
+                onClick={() => clearLatestChatAlert?.()}
+                className="text-xs text-[#64748B] hover:text-[#0F172A] cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import AdminShell from "@/components/admin/AdminShell";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import RefreshButton from "@/components/ui/RefreshButton";
 import {
   Panel,
@@ -67,16 +69,17 @@ export default function AdminKosPage() {
     deleteKos,
   } = useAdminKos();
 
-  const handleDeleteKos = async (targetKos) => {
+  const [confirmTarget, setConfirmTarget] = useState(null);
+
+  const handleDeleteKos = (targetKos) => {
     if (!targetKos) return;
-    if (
-      !window.confirm(
-        `Hapus properti ${targetKos.nama}?\n\nSeluruh booking, ulasan, favorit, notifikasi, dan foto Cloudinary milik kos ini juga akan dihapus permanen.`
-      )
-    ) {
-      return;
-    }
-    await deleteKos(targetKos);
+    setConfirmTarget(targetKos);
+  };
+
+  const executeDeleteKos = async () => {
+    if (!confirmTarget) return;
+    await deleteKos(confirmTarget);
+    setConfirmTarget(null);
   };
 
   const detailMeta = getVerificationMeta(selected?.statusVerifikasi);
@@ -417,6 +420,22 @@ export default function AdminKosPage() {
           </>
         )}
       </Modal>
+
+      <ConfirmModal
+        isOpen={Boolean(confirmTarget)}
+        title="Hapus Properti Kos"
+        message={
+          confirmTarget
+            ? `Hapus properti "${confirmTarget.nama}"?\n\nSeluruh booking, ulasan, favorit, notifikasi, dan foto Cloudinary milik kos ini juga akan dihapus permanen.`
+            : ""
+        }
+        confirmLabel="Ya, Hapus Permanen"
+        cancelLabel="Batal"
+        variant="danger"
+        isLoading={Boolean(confirmTarget && deletingId === confirmTarget._id)}
+        onConfirm={executeDeleteKos}
+        onCancel={() => setConfirmTarget(null)}
+      />
     </AdminShell>
   );
 }

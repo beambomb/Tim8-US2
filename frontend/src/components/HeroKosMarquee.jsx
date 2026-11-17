@@ -17,9 +17,11 @@ const TIPE_BADGE_STYLES = {
 function MarqueeKosCard({ kos, slideIndex, totalSlides, isDuplicate = false }) {
   const badgeStyle =
     TIPE_BADGE_STYLES[kos.tipe] || TIPE_BADGE_STYLES.Campur;
-  const targetHref = kos.lokasi
-    ? `/kos?lokasi=${encodeURIComponent(kos.lokasi)}`
-    : "/kos";
+  const targetHref = kos._id
+    ? `/kos/${kos._id}`
+    : kos.lokasi
+      ? `/kos?lokasi=${encodeURIComponent(kos.lokasi)}`
+      : "/kos";
 
   return (
     <div
@@ -136,6 +138,11 @@ export default function HeroKosMarquee({ items = featuredKos }) {
     let rafId = null;
     let lastTime = performance.now();
 
+    const initialHalf = el.scrollWidth / 2;
+    if (el.scrollLeft === 0 && initialHalf > el.clientWidth) {
+      el.scrollLeft = initialHalf;
+    }
+
     const step = (now) => {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
@@ -143,9 +150,9 @@ export default function HeroKosMarquee({ items = featuredKos }) {
       if (!mediaQuery.matches && !pausedRef.current && !draggingRef.current.active) {
         const halfWidth = el.scrollWidth / 2;
         if (halfWidth > el.clientWidth) {
-          el.scrollLeft += AUTO_SCROLL_PX_PER_SEC * dt;
-          if (el.scrollLeft >= halfWidth) {
-            el.scrollLeft -= halfWidth;
+          el.scrollLeft -= AUTO_SCROLL_PX_PER_SEC * dt;
+          if (el.scrollLeft <= 0) {
+            el.scrollLeft += halfWidth;
           }
         }
       }

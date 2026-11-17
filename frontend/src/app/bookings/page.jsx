@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import RefreshButton from "@/components/ui/RefreshButton";
 import { useBookings } from "@/features/booking/hooks/useBookings";
 import { useAuth } from "@/context/AuthContext";
@@ -18,9 +19,24 @@ const TABS = [
 
 export default function MyBookingsPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const { bookings, isLoading, error, cancellingId, handleCancelBooking, refetch } =
-    useBookings();
+  const {
+    bookings,
+    isLoading,
+    error,
+    actionError,
+    clearActionError,
+    cancellingId,
+    handleCancelBooking,
+    refetch,
+  } = useBookings();
   const [activeTab, setActiveTab] = useState("Semua");
+  const [confirmCancelId, setConfirmCancelId] = useState(null);
+
+  const executeCancel = async () => {
+    if (!confirmCancelId) return;
+    await handleCancelBooking(confirmCancelId);
+    setConfirmCancelId(null);
+  };
 
   const formatRupiah = (angka) =>
     new Intl.NumberFormat("id-ID", {
@@ -331,7 +347,7 @@ export default function MyBookingsPage() {
                             <button
                               type="button"
                               disabled={cancellingId === booking._id}
-                              onClick={() => handleCancelBooking(booking._id)}
+                              onClick={() => setConfirmCancelId(booking._id)}
                               className="rounded-xl bg-[#FFEDEA] px-4 py-2 text-[13px] font-semibold text-[#831C1E] hover:bg-[#FEE2E2] disabled:opacity-50 transition-colors cursor-pointer"
                             >
                               {cancellingId === booking._id
@@ -379,8 +395,33 @@ export default function MyBookingsPage() {
               )}
             </>
           )}
+
+          {actionError && (
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-[#FFEDEA] px-4 py-3 text-xs font-medium text-[#831C1E] ring-1 ring-[#FECACA]">
+              <span>{actionError}</span>
+              <button
+                type="button"
+                onClick={clearActionError}
+                className="font-semibold underline cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          )}
         </div>
       </main>
+
+      <ConfirmModal
+        isOpen={Boolean(confirmCancelId)}
+        title="Batalkan Pengajuan Sewa"
+        message="Apakah Anda yakin ingin membatalkan pengajuan sewa kamar ini?"
+        confirmLabel="Ya, Batalkan"
+        cancelLabel="Kembali"
+        variant="danger"
+        isLoading={Boolean(confirmCancelId && cancellingId === confirmCancelId)}
+        onConfirm={executeCancel}
+        onCancel={() => setConfirmCancelId(null)}
+      />
 
       <Footer />
     </div>

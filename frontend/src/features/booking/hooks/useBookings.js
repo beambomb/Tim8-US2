@@ -9,6 +9,7 @@ export function useBookings() {
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState(null);
   const [cancellingId, setCancellingId] = useState(null);
 
   const fetchBookingsData = useCallback(async () => {
@@ -71,20 +72,15 @@ export function useBookings() {
   }, [fetchBookingsData]);
 
   const handleCancelBooking = async (bookingId) => {
-    if (
-      !window.confirm(
-        "Apakah Anda yakin ingin membatalkan pengajuan sewa kamar ini?"
-      )
-    ) {
-      return;
-    }
-
+    setActionError(null);
     setCancellingId(bookingId);
     try {
       await bookingService.cancelBooking(bookingId);
       await fetchBookingsData();
+      return { success: true };
     } catch (err) {
-      alert(err.response?.data?.message || "Gagal membatalkan booking.");
+      setActionError(err.response?.data?.message || "Gagal membatalkan booking.");
+      return { success: false };
     } finally {
       setCancellingId(null);
     }
@@ -94,6 +90,8 @@ export function useBookings() {
     bookings,
     isLoading,
     error,
+    actionError,
+    clearActionError: () => setActionError(null),
     cancellingId,
     handleCancelBooking,
     refetch,

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import RefreshButton from "@/components/ui/RefreshButton";
 import PortalPageHeader from "@/components/portal/PortalPageHeader";
 import { Alert, Badge, Button } from "@/components/portal/PortalUI";
@@ -22,6 +23,8 @@ export default function OwnerBookingsPage() {
     bookings,
     isLoading,
     error,
+    actionError,
+    clearActionError,
     processingId,
     handleApprove,
     handleReject,
@@ -29,6 +32,17 @@ export default function OwnerBookingsPage() {
   } = useOwnerBookings();
 
   const [activeTab, setActiveTab] = useState("ALL");
+  const [confirmDecision, setConfirmDecision] = useState(null);
+
+  const executeDecision = async () => {
+    if (!confirmDecision) return;
+    if (confirmDecision.type === "approve") {
+      await handleApprove(confirmDecision.id);
+    } else {
+      await handleReject(confirmDecision.id);
+    }
+    setConfirmDecision(null);
+  };
 
   const formatRupiah = (angka) =>
     new Intl.NumberFormat("id-ID", {
@@ -337,7 +351,9 @@ export default function OwnerBookingsPage() {
                         <Button
                           size="sm"
                           disabled={isProcessing}
-                          onClick={() => handleApprove(booking._id)}
+                          onClick={() =>
+                            setConfirmDecision({ id: booking._id, type: "approve" })
+                          }
                         >
                           <svg
                             className="w-3.5 h-3.5"
@@ -359,7 +375,9 @@ export default function OwnerBookingsPage() {
                           size="sm"
                           variant="dangerOutline"
                           disabled={isProcessing}
-                          onClick={() => handleReject(booking._id)}
+                          onClick={() =>
+                            setConfirmDecision({ id: booking._id, type: "reject" })
+                          }
                         >
                           <svg
                             className="w-3.5 h-3.5"
@@ -426,6 +444,41 @@ export default function OwnerBookingsPage() {
           })}
         </div>
       )}
+
+      {actionError && (
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-[#FFEDEA] px-4 py-3 text-xs font-medium text-[#831C1E] ring-1 ring-[#FECACA]">
+          <span>{actionError}</span>
+          <button
+            type="button"
+            onClick={clearActionError}
+            className="font-semibold underline cursor-pointer"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={Boolean(confirmDecision)}
+        title={
+          confirmDecision?.type === "approve"
+            ? "Setujui Permohonan Sewa"
+            : "Tolak Permohonan Sewa"
+        }
+        message={
+          confirmDecision?.type === "approve"
+            ? "Apakah Anda yakin ingin menyetujui permohonan sewa ini? Stok kamar kosong kos akan otomatis berkurang 1."
+            : "Apakah Anda yakin ingin menolak permohonan sewa ini?"
+        }
+        confirmLabel={
+          confirmDecision?.type === "approve" ? "Ya, Setujui" : "Ya, Tolak"
+        }
+        cancelLabel="Batal"
+        variant={confirmDecision?.type === "reject" ? "danger" : "primary"}
+        isLoading={Boolean(confirmDecision && processingId === confirmDecision.id)}
+        onConfirm={executeDecision}
+        onCancel={() => setConfirmDecision(null)}
+      />
     </div>
   );
 }

@@ -5,10 +5,14 @@ import Link from "next/link";
 import KosCard from "./KosCard";
 import { featuredKos } from "../data/mockKos";
 
-export default function FeaturedCatalog({ favorites, toggleFavorite }) {
+export default function FeaturedCatalog({
+  items = featuredKos,
+  favorites,
+  toggleFavorite,
+}) {
   const [selectedCategory, setSelectedCategory] = useState("Semua");
 
-  const filteredList = featuredKos.filter(
+  const filteredList = (items || featuredKos).filter(
     (item) => selectedCategory === "Semua" || item.tipe === selectedCategory
   );
 

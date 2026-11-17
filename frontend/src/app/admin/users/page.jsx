@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import AdminShell from "@/components/admin/AdminShell";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import RefreshButton from "@/components/ui/RefreshButton";
 import {
   Panel,
@@ -39,27 +42,32 @@ export default function Users() {
     deleteUser,
   } = useAdminUsers();
 
-  const handleRoleChange = async (targetUser, nextRole) => {
+  const [pendingAction, setPendingAction] = useState(null);
+
+  const handleRoleChange = (targetUser, nextRole) => {
     if (nextRole === targetUser.role) return;
-    if (
-      !window.confirm(
-        `Ubah role ${targetUser.nama} menjadi ${roleLabel[nextRole]}?`
-      )
-    ) {
-      return;
-    }
-    await updateRole(targetUser, nextRole);
+    setPendingAction({
+      type: "role",
+      user: targetUser,
+      nextRole,
+    });
   };
 
-  const handleDeleteUser = async (targetUser) => {
-    if (
-      !window.confirm(
-        `Hapus pengguna ${targetUser.nama} (${targetUser.email})?\n\nSeluruh riwayat chat, notifikasi, booking, ulasan, favorit, dan properti kos milik pengguna ini juga akan dihapus permanen.`
-      )
-    ) {
-      return;
+  const handleDeleteUser = (targetUser) => {
+    setPendingAction({
+      type: "delete",
+      user: targetUser,
+    });
+  };
+
+  const executePendingAction = async () => {
+    if (!pendingAction) return;
+    if (pendingAction.type === "role") {
+      await updateRole(pendingAction.user, pendingAction.nextRole);
+    } else if (pendingAction.type === "delete") {
+      await deleteUser(pendingAction.user);
     }
-    await deleteUser(targetUser);
+    setPendingAction(null);
   };
 
   return (
@@ -162,15 +170,26 @@ export default function Users() {
                       )}
                     </td>
                     <td className="py-4 text-right whitespace-nowrap">
-                      <Button
-                        variant="dangerOutline"
-                        size="sm"
-                        aria-label={`Hapus ${u.nama}`}
-                        disabled={busy === u._id || isSelf}
-                        onClick={() => handleDeleteUser(u)}
-                      >
-                        {busy === u._id ? "Menghapus..." : "Hapus"}
-                      </Button>
+                      <div className="inline-flex items-center justify-end gap-2">
+                        {!isSelf && (
+                          <Link
+                            href={`/admin/chat/${u._id}`}
+                            aria-label={`Chat ${u.nama}`}
+                            className="inline-flex items-center justify-center rounded-lg bg-[#EFF6FF] px-3 py-1.5 text-xs font-semibold text-[#1D4ED8] hover:bg-[#1D4ED8] hover:text-white transition-colors"
+                          >
+                            Chat
+                          </Link>
+                        )}
+                        <Button
+                          variant="dangerOutline"
+                          size="sm"
+                          aria-label={`Hapus ${u.nama}`}
+                          disabled={busy === u._id || isSelf}
+                          onClick={() => handleDeleteUser(u)}
+                        >
+                          {busy === u._id ? "Menghapus..." : "Hapus"}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -189,6 +208,30 @@ export default function Users() {
           </p>
         </Panel>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(pendingAction)}
+        title={
+          pendingAction?.type === "delete"
+            ? "Hapus Pengguna"
+            : "Ubah Peran Pengguna"
+        }
+        message={
+          pendingAction?.type === "delete"
+            ? `Hapus pengguna ${pendingAction.user.nama} (${pendingAction.user.email})?\n\nSeluruh riwayat chat, notifikasi, booking, ulasan, favorit, dan properti kos milik pengguna ini juga akan dihapus permanen.`
+            : pendingAction?.type === "role"
+              ? `Ubah role ${pendingAction.user.nama} menjadi ${roleLabel[pendingAction.nextRole]}?`
+              : ""
+        }
+        confirmLabel={
+          pendingAction?.type === "delete" ? "Ya, Hapus Pengguna" : "Ya, Ubah Role"
+        }
+        cancelLabel="Batal"
+        variant={pendingAction?.type === "delete" ? "danger" : "primary"}
+        isLoading={Boolean(pendingAction && busy === pendingAction.user._id)}
+        onConfirm={executePendingAction}
+        onCancel={() => setPendingAction(null)}
+      />
     </AdminShell>
   );
 }

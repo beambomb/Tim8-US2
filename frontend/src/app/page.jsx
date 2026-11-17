@@ -10,11 +10,52 @@ import FaqSection from "../components/FaqSection";
 import OwnerCTA from "../components/OwnerCTA";
 import Footer from "../components/Footer";
 import SupportButton from "../components/SupportButton";
+import { featuredKos } from "../data/mockKos";
+import { kosService } from "../features/kos/services/kosService";
+import { formatRupiah } from "../lib/utils";
+
+function mapApiKosToHomeCard(kos) {
+  return {
+    id: kos._id,
+    _id: kos._id,
+    nama: kos.nama,
+    tipe: kos.tipe || "Campur",
+    harga: formatRupiah(kos.harga),
+    periode: "/ bulan",
+    lokasi: kos.lokasi || "Sekitar Kampus",
+    jarak: kos.jarakKm ? `${kos.jarakKm} km dari Kampus` : "Sekitar Kampus",
+    rating: kos.rating ? Number(kos.rating).toFixed(1) : "5.0",
+    ulasanCount: kos.ulasanCount ?? 0,
+    sisaKamar: kos.jumlahKamarTersedia ?? 0,
+    gambar: kos.fotoUrls?.[0] || "/images/kamarKos2.webp",
+    fasilitas: Array.isArray(kos.fasilitas) ? kos.fasilitas : [],
+  };
+}
 
 export default function HomePage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [favorites, setFavorites] = useState({});
+  const [kosItems, setKosItems] = useState(featuredKos);
+
+  useEffect(() => {
+    let active = true;
+    kosService
+      .getKosList()
+      .then((res) => {
+        if (!active) return;
+        const list = Array.isArray(res?.data) ? res.data : [];
+        if (list.length > 0) {
+          setKosItems(list.map(mapApiKosToHomeCard));
+        }
+      })
+      .catch(() => {
+        // Keep featuredKos fallback if API is unreachable
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (
@@ -76,8 +117,10 @@ export default function HomePage() {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onSearchSubmit={handleSearchSubmit}
+          kosItems={kosItems}
         />
         <FeaturedCatalog
+          items={kosItems}
           favorites={favorites}
           toggleFavorite={toggleFavorite}
         />

@@ -37,7 +37,8 @@ export default function BookingModal({
 
   if (!isOpen || !kos) return null;
 
-  const totalBiaya = (kos.harga || 0) * Number(durasiBulan || 1);
+  const parsedDuration = Math.max(1, Number(durasiBulan) || 1);
+  const totalBiaya = (kos.harga || 0) * parsedDuration;
 
   const formatRupiah = (angka) =>
     new Intl.NumberFormat("id-ID", {
@@ -50,7 +51,7 @@ export default function BookingModal({
     e.preventDefault();
     const result = await onSubmit({
       tanggalMulai,
-      durasiBulan: Number(durasiBulan),
+      durasiBulan: parsedDuration,
       catatan: catatan.trim(),
     });
 
@@ -142,18 +143,46 @@ export default function BookingModal({
             >
               Durasi Sewa
             </label>
-            <select
-              id="booking-durasi-bulan"
-              value={durasiBulan}
-              onChange={(e) => setDurasiBulan(Number(e.target.value))}
-              className="w-full rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-3.5 py-2 text-sm text-[#0F172A] focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/20"
-            >
-              {[1, 2, 3, 6, 12].map((bulan) => (
-                <option key={bulan} value={bulan}>
-                  {bulan} Bulan
-                </option>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {[
+                { label: "1 Bln", value: 1 },
+                { label: "3 Bln", value: 3 },
+                { label: "6 Bln", value: 6 },
+                { label: "1 Thn", value: 12 },
+                { label: "2 Thn", value: 24 },
+                { label: "4 Thn", value: 48 },
+              ].map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  onClick={() => setDurasiBulan(preset.value)}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer ${
+                    parsedDuration === preset.value
+                      ? "bg-[#1D4ED8] text-white"
+                      : "bg-[#EEF2F7] text-[#334155] hover:bg-[#E2E8F0]"
+                  }`}
+                >
+                  {preset.label}
+                </button>
               ))}
-            </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="booking-durasi-bulan"
+                type="number"
+                min={1}
+                required
+                value={durasiBulan}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDurasiBulan(val === "" ? "" : Math.max(1, Number(val)));
+                }}
+                className="w-28 rounded-xl border border-[#CBD5E1] bg-[#FFFFFF] px-3.5 py-2 text-sm text-[#0F172A] tabular-nums focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/20"
+              />
+              <span className="text-xs font-medium text-[#475569]">
+                bulan {parsedDuration >= 12 ? `(${(parsedDuration / 12).toFixed(parsedDuration % 12 === 0 ? 0 : 1)} tahun)` : ""}
+              </span>
+            </div>
           </div>
 
           {/* Catatan */}
@@ -185,7 +214,7 @@ export default function BookingModal({
             <div className="flex justify-between text-[#475569]">
               <span>Durasi sewa dipilih</span>
               <span className="font-medium text-[#0F172A] tabular-nums">
-                {durasiBulan} bulan
+                {parsedDuration} bulan
               </span>
             </div>
             <div className="pt-2 flex items-baseline justify-between font-bold text-[#0F172A]">

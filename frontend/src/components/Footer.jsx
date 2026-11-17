@@ -22,12 +22,7 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             <li>
               <Link href="/kos" className="hover:text-[#1D4ED8] transition-colors">
-                Cari Kos Terverifikasi
-              </Link>
-            </li>
-            <li>
-              <Link href="/kos?campus=UGM&radius=5" className="hover:text-[#1D4ED8] transition-colors">
-                Kos Dekat Kampus
+                Katalog & Kos Terdekat
               </Link>
             </li>
             <li>
@@ -56,14 +51,6 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#64748B]">
         <p>© 2026 CariKos. Seluruh hak cipta dilindungi undang-undang.</p>
-        <div className="flex gap-4">
-          <a href="#" className="hover:text-[#0F172A]">
-            Syarat & Ketentuan
-          </a>
-          <a href="#" className="hover:text-[#0F172A]">
-            Kebijakan Privasi
-          </a>
-        </div>
       </div>
     </footer>
   );
