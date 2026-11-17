@@ -16,14 +16,14 @@ export default function FeaturedCatalog({
     .filter(
       (item) => selectedCategory === "Semua" || item.tipe === selectedCategory
     )
-    .slice(0, 3);
+    .slice(0, 9);
 
   return (
     <section id="katalog" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4" data-reveal="0">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0F172A]">
-            Rekomendasi Kos Terverifikasi
+            Jelajahi Kos
           </h2>
         </div>
 
