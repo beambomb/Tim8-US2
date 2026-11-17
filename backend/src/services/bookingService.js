@@ -11,6 +11,28 @@ export const createBookingService = async (userId, body) => {
     throw error;
   }
 
+  const numericDuration = Number(durasiBulan);
+  if (!Number.isInteger(numericDuration) || numericDuration < 1) {
+    const error = new Error('Durasi sewa minimal 1 bulan');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const startDate = new Date(tanggalMulai);
+  if (Number.isNaN(startDate.getTime())) {
+    const error = new Error('Tanggal mulai sewa tidak valid');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const todayUtcStart = new Date();
+  todayUtcStart.setUTCHours(0, 0, 0, 0);
+  if (startDate < todayUtcStart) {
+    const error = new Error('Tanggal mulai sewa tidak boleh di masa lalu');
+    error.statusCode = 400;
+    throw error;
+  }
+
   if (!mongoose.isValidObjectId(kosId)) {
     const error = new Error('ID kos tidak valid');
     error.statusCode = 400;
@@ -30,14 +52,18 @@ export const createBookingService = async (userId, body) => {
     throw error;
   }
 
-  const existingPending = await Booking.findOne({
+  const existingActive = await Booking.findOne({
     userId,
     kosId,
-    status: 'PENDING',
+    status: { $in: ['PENDING', 'DISETUJUI'] },
   });
 
-  if (existingPending) {
-    const error = new Error('Anda sudah memiliki pengajuan booking yang sedang menunggu konfirmasi untuk kos ini');
+  if (existingActive) {
+    const error = new Error(
+      existingActive.status === 'DISETUJUI'
+        ? 'Anda sudah memiliki sewa aktif yang disetujui untuk kos ini'
+        : 'Anda sudah memiliki pengajuan booking yang sedang menunggu konfirmasi untuk kos ini'
+    );
     error.statusCode = 400;
     throw error;
   }
@@ -45,8 +71,8 @@ export const createBookingService = async (userId, body) => {
   const booking = await Booking.create({
     userId,
     kosId,
-    tanggalMulai: new Date(tanggalMulai),
-    durasiBulan: Number(durasiBulan),
+    tanggalMulai: startDate,
+    durasiBulan: numericDuration,
     catatan: catatan ? catatan.trim() : '',
     status: 'PENDING',
   });

@@ -25,6 +25,7 @@ export function useKosDetail(kosId) {
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
   // State Pengajuan Booking
+  const [activeKosBooking, setActiveKosBooking] = useState(null);
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState(null);
 
@@ -90,13 +91,25 @@ export function useKosDetail(kosId) {
       return;
     }
 
-    const checkFavorite = async () => {
+    const checkSeekerStatus = async () => {
       try {
-        const res = await kosService.getFavorites();
-        const favList = Array.isArray(res?.data) ? res.data : [];
+        const [favRes, bookingsRes] = await Promise.all([
+          kosService.getFavorites().catch(() => ({ data: [] })),
+          bookingService.getMyBookings().catch(() => ({ data: [] })),
+        ]);
+        const favList = Array.isArray(favRes?.data) ? favRes.data : [];
         const found = favList.find(
           (item) => String(item.kosId?._id || item.kosId) === String(kosId)
         );
+        const myBookings = Array.isArray(bookingsRes?.data)
+          ? bookingsRes.data
+          : [];
+        const activeBooking = myBookings.find(
+          (item) =>
+            String(item.kosId?._id || item.kosId) === String(kosId) &&
+            (item.status === "PENDING" || item.status === "DISETUJUI")
+        );
+
         if (!ignore) {
           if (found) {
             setIsFavorite(true);
@@ -105,13 +118,14 @@ export function useKosDetail(kosId) {
             setIsFavorite(false);
             setFavoriteId(null);
           }
+          setActiveKosBooking(activeBooking || null);
         }
       } catch (err) {
         console.error("Gagal mengecek status favorit:", err);
       }
     };
 
-    checkFavorite();
+    checkSeekerStatus();
 
     return () => {
       ignore = true;
@@ -161,6 +175,9 @@ export function useKosDetail(kosId) {
         kosId,
         ...payload,
       });
+      if (res?.data) {
+        setActiveKosBooking(res.data);
+      }
       return { success: true, data: res?.data };
     } catch (err) {
       const msg = err.response?.data?.message || "Gagal mengajukan booking.";
@@ -179,6 +196,7 @@ export function useKosDetail(kosId) {
     isFavorite,
     isTogglingFavorite,
     handleToggleFavorite,
+    activeKosBooking,
     isBookingSubmitting,
     bookingError,
     setBookingError,

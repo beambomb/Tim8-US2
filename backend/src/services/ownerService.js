@@ -34,11 +34,25 @@ export const createKosService = async (ownerId, data) => {
     return await newKos.save();
 };
 
+const ALLOWED_KOS_UPDATE_FIELDS = [
+    'nama',
+    'harga',
+    'lokasi',
+    'latitude',
+    'longitude',
+    'tipe',
+    'fasilitas',
+    'jumlahKamar',
+    'fotoUrls',
+];
+
 export const updateKosService = async (ownerId, kosId, data) => {
-    const payload =
-        data?.fasilitas !== undefined
-            ? { ...data, fasilitas: normalizeFacilities(data.fasilitas) }
-            : data;
+    const payload = {};
+    for (const key of ALLOWED_KOS_UPDATE_FIELDS) {
+        if (data?.[key] !== undefined) {
+            payload[key] = key === 'fasilitas' ? normalizeFacilities(data[key]) : data[key];
+        }
+    }
     return await Kos.findOneAndUpdate(
         { _id: kosId, ownerId },
         { $set: payload },

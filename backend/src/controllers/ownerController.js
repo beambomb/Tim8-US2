@@ -16,8 +16,20 @@ export const createKos = async (req, res) => {
     const ownerId = req.user.id;
     const { nama, harga, lokasi, latitude, longitude, tipe, fasilitas, jumlahKamar, fotoUrls } = req.body;
 
-    if (!nama || !harga || !lokasi || !latitude || !longitude || !tipe || !jumlahKamar) {
+    if (
+      !nama ||
+      harga == null ||
+      !lokasi ||
+      latitude == null ||
+      longitude == null ||
+      !tipe ||
+      jumlahKamar == null
+    ) {
       return res.status(400).json({ success: false, message: 'Harap isi seluruh field wajib' });
+    }
+
+    if (Number(harga) <= 0 || !Number.isInteger(Number(jumlahKamar)) || Number(jumlahKamar) < 1) {
+      return res.status(400).json({ success: false, message: 'Harga dan jumlah kamar harus bernilai positif' });
     }
 
     const newKos = await ownerService.createKosService(ownerId, {
@@ -68,7 +80,12 @@ export const updateAvailability = async (req, res) => {
     const { id } = req.params;
     const { jumlahKamarTersedia } = req.body;
 
-    const updatedKos = await ownerService.updateAvailabilityService(ownerId, id, jumlahKamarTersedia);
+    const numericAvailability = Number(jumlahKamarTersedia);
+    if (!Number.isInteger(numericAvailability) || numericAvailability < 0) {
+      return res.status(400).json({ success: false, message: 'Jumlah kamar tersedia tidak boleh negatif' });
+    }
+
+    const updatedKos = await ownerService.updateAvailabilityService(ownerId, id, numericAvailability);
 
     if (!updatedKos) {
       return res.status(404).json({ success: false, message: 'Kos tidak ditemukan' });

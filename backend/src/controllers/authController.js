@@ -6,8 +6,14 @@ import { getJwtSecret } from "../config/env.js";
 export const register = async (req, res) => {
   try {
     const { nama, email, password, role, noHp } = req.body;
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const trimmedName = String(nama || "").trim();
 
-    const existingUser = await User.findOne({ email });
+    if (!trimmedName || !normalizedEmail || !password) {
+      return res.status(400).json({ message: "Nama, email, dan password wajib diisi" });
+    }
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "Email sudah terdaftar" });
     }
@@ -18,8 +24,8 @@ export const register = async (req, res) => {
     const assignedRole = role === "PEMILIK_KOS" ? "PEMILIK_KOS" : "PENCARI_KOS";
 
     const newUser = new User({
-      nama,
-      email,
+      nama: trimmedName,
+      email: normalizedEmail,
       password: hashedPassword,
       noHp: noHp || null,
       role: assignedRole,
@@ -46,8 +52,13 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = String(email || "").trim().toLowerCase();
 
-    const user = await User.findOne({ email });
+    if (!normalizedEmail || !password) {
+      return res.status(400).json({ message: "Email dan password wajib diisi" });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(404).json({ message: "Email tidak terdaftar" });
     }

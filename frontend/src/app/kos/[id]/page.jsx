@@ -23,6 +23,7 @@ function KosDetailContent() {
     isFavorite,
     isTogglingFavorite,
     handleToggleFavorite,
+    activeKosBooking,
     isBookingSubmitting,
     bookingError,
     setBookingError,
@@ -115,7 +116,7 @@ function KosDetailContent() {
   const ownerId = owner?._id || kos.ownerId;
   const isAvailable = (kos.jumlahKamarTersedia ?? 0) > 0;
   const isSeeker = isAuthenticated && user?.role === "PENCARI_KOS";
-  const canBook = isSeeker && isAvailable;
+  const canBook = isSeeker && isAvailable && !activeKosBooking;
 
   // Hitung rata-rata rating dari reviewList yang sudah tervalidasi array
   const avgRating =
@@ -594,6 +595,20 @@ function KosDetailContent() {
                 >
                   Login untuk Mengajukan Sewa
                 </button>
+              ) : activeKosBooking ? (
+                <div className="space-y-2">
+                  <div className="w-full rounded-xl bg-[#EEF2F7] px-4 py-3 text-center text-xs font-semibold text-[#0F172A]">
+                    {activeKosBooking.status === "DISETUJUI"
+                      ? "Anda Sudah Menyewa Kos Ini"
+                      : "Pengajuan Booking Sedang Diproses"}
+                  </div>
+                  <Link
+                    href="/bookings"
+                    className="block w-full rounded-xl border border-[#CBD5E1] py-2.5 text-center text-xs font-semibold text-[#1D4ED8] hover:bg-[#EFF6FF] transition-colors"
+                  >
+                    Lihat Status Booking Saya
+                  </Link>
+                </div>
               ) : (
                 <button
                   type="button"
